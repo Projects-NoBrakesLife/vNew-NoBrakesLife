@@ -3,6 +3,7 @@ package game;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelListener;
@@ -31,25 +32,13 @@ public class GameWindow extends JFrame {
     }
     
     private void addDragSupport() {
-        final int[] point = new int[2];
-        
-        addMouseListener(new java.awt.event.MouseAdapter() {
-            @Override
-            public void mousePressed(java.awt.event.MouseEvent e) {
-                point[0] = e.getXOnScreen();
-                point[1] = e.getYOnScreen();
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(e -> {
+            if (e.getID() == KeyEvent.KEY_PRESSED && e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                dispose();
+                System.exit(0);
+                return true;
             }
-        });
-        
-        addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
-            @Override
-            public void mouseDragged(java.awt.event.MouseEvent e) {
-                int newX = getX() + e.getXOnScreen() - point[0];
-                int newY = getY() + e.getYOnScreen() - point[1];
-                point[0] = e.getXOnScreen();
-                point[1] = e.getYOnScreen();
-                setLocation(newX, newY);
-            }
+            return false;
         });
     }
     
@@ -95,7 +84,44 @@ public class GameWindow extends JFrame {
             
             this.handler = handler;
             
+            addDragSupport();
+            
             startAnimationLoop();
+        }
+        
+        private void addDragSupport() {
+            final int[] point = new int[2];
+            final boolean[] isDraggingWindow = {false};
+            
+            addMouseListener(new java.awt.event.MouseAdapter() {
+                @Override
+                public void mousePressed(java.awt.event.MouseEvent e) {
+                    isDraggingWindow[0] = true;
+                    point[0] = e.getXOnScreen();
+                    point[1] = e.getYOnScreen();
+                }
+                
+                @Override
+                public void mouseReleased(java.awt.event.MouseEvent e) {
+                    isDraggingWindow[0] = false;
+                }
+            });
+            
+            addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
+                @Override
+                public void mouseDragged(java.awt.event.MouseEvent e) {
+                    if (isDraggingWindow[0]) {
+                        JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(GamePanel.this);
+                        if (frame != null) {
+                            int newX = frame.getX() + e.getXOnScreen() - point[0];
+                            int newY = frame.getY() + e.getYOnScreen() - point[1];
+                            point[0] = e.getXOnScreen();
+                            point[1] = e.getYOnScreen();
+                            frame.setLocation(newX, newY);
+                        }
+                    }
+                }
+            });
         }
         
         private void startAnimationLoop() {
