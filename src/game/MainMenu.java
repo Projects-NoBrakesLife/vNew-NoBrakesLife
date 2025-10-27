@@ -24,6 +24,31 @@ public class MainMenu extends JFrame {
         setTitle("No Brakes Life - Main Menu");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
+        setUndecorated(true);
+        addDragSupport();
+    }
+    
+    private void addDragSupport() {
+        final int[] point = new int[2];
+        
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                point[0] = e.getXOnScreen();
+                point[1] = e.getYOnScreen();
+            }
+        });
+        
+        addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                int newX = getX() + e.getXOnScreen() - point[0];
+                int newY = getY() + e.getYOnScreen() - point[1];
+                point[0] = e.getXOnScreen();
+                point[1] = e.getYOnScreen();
+                setLocation(newX, newY);
+            }
+        });
     }
     
     private void createMenuPanel() {

@@ -26,6 +26,31 @@ public class GameWindow extends JFrame {
         setTitle(TITLE);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
+        setUndecorated(true);
+        addDragSupport();
+    }
+    
+    private void addDragSupport() {
+        final int[] point = new int[2];
+        
+        addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mousePressed(java.awt.event.MouseEvent e) {
+                point[0] = e.getXOnScreen();
+                point[1] = e.getYOnScreen();
+            }
+        });
+        
+        addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
+            @Override
+            public void mouseDragged(java.awt.event.MouseEvent e) {
+                int newX = getX() + e.getXOnScreen() - point[0];
+                int newY = getY() + e.getYOnScreen() - point[1];
+                point[0] = e.getXOnScreen();
+                point[1] = e.getYOnScreen();
+                setLocation(newX, newY);
+            }
+        });
     }
     
     private void createGamePanel() {
