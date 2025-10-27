@@ -3,6 +3,8 @@ package editor;
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
+import java.awt.Toolkit;
+import java.awt.datatransfer.StringSelection;
 
 import game.GameWindow;
 import game.GameObject;
@@ -12,10 +14,12 @@ import javax.swing.plaf.FontUIResource;
 public class EditorApp {
     private GameWindow window;
     private GameWindow.GamePanel gamePanel;
+    private boolean positionMode;
     
     public EditorApp() {
         window = new GameWindow();
         gamePanel = window.getGamePanel();
+        this.positionMode = false;
     }
     
     public void start() {
@@ -23,6 +27,7 @@ public class EditorApp {
             setUIFont();
             createMenuBar();
             window.setVisible(true);
+            gamePanel.setEditorApp(this);
         });
     }
     
@@ -90,6 +95,10 @@ public class EditorApp {
         newPathBtn.setFont(buttonFont);
         newPathBtn.addActionListener(_ -> handleNewPath());
         
+        JButton positionModeBtn = new JButton("Position Mode");
+        positionModeBtn.setFont(buttonFont);
+        positionModeBtn.addActionListener(_ -> handlePositionMode());
+        
         JMenu fileMenu = new JMenu("File");
         fileMenu.setFont(menuFont);
         JMenuItem addItem = new JMenuItem("Add Object");
@@ -120,6 +129,8 @@ public class EditorApp {
         menuBar.add(newPathBtn);
         menuBar.add(exportWaypointBtn);
         menuBar.add(clearWaypointsBtn);
+        menuBar.add(Box.createHorizontalStrut(20));
+        menuBar.add(positionModeBtn);
         menuBar.add(Box.createHorizontalGlue());
         menuBar.add(fileMenu);
         window.setJMenuBar(menuBar);
@@ -291,5 +302,26 @@ public class EditorApp {
         gamePanel.getEditorManager().startNewPath();
         JOptionPane.showMessageDialog(window, "New path started. Current path: " + gamePanel.getEditorManager().getCurrentPathIndex());
         gamePanel.repaint();
+    }
+    
+    private void handlePositionMode() {
+        positionMode = !positionMode;
+        gamePanel.getEditorManager().setPositionMode(positionMode);
+        if (positionMode) {
+            JOptionPane.showMessageDialog(window, "Position Mode: ON\nClick on screen to copy X, Y coordinates");
+        } else {
+            JOptionPane.showMessageDialog(window, "Position Mode: OFF");
+        }
+        gamePanel.repaint();
+    }
+    
+    public void handlePositionClick(int x, int y) {
+        if (positionMode) {
+            String coords = String.format("%.1f, %.1f", (double)x, (double)y);
+            Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(coords), null);
+            JOptionPane.showMessageDialog(window, "Coordinates copied!\n" + coords);
+            positionMode = false;
+            gamePanel.getEditorManager().setPositionMode(false);
+        }
     }
 }

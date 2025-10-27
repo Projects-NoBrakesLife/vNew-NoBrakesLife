@@ -7,11 +7,13 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelListener;
 import editor.EditorManager;
+import editor.EditorApp;
 
 public class GameWindow extends JFrame {
     private static final String TITLE = "No Brakes Life";
     
     private GamePanel gamePanel;
+    private GameWindow window;
     
     public GameWindow() {
         initializeWindow();
@@ -46,6 +48,7 @@ public class GameWindow extends JFrame {
         private BackgroundManager backgroundManager;
         private EditorManager editorManager;
         private GameScene scene;
+        private MouseHandler handler;
         
         public GamePanel() {
             setPreferredSize(new Dimension(GameConfig.WINDOW_WIDTH, GameConfig.WINDOW_HEIGHT));
@@ -64,6 +67,8 @@ public class GameWindow extends JFrame {
             addMouseListener(handler);
             addMouseMotionListener(handler);
             addMouseWheelListener(handler);
+            
+            this.handler = handler;
             
             startAnimationLoop();
         }
@@ -115,6 +120,12 @@ public class GameWindow extends JFrame {
         public GameScene getScene() {
             return scene;
         }
+        
+        public void setEditorApp(EditorApp editorApp) {
+            if (handler != null) {
+                handler.setEditorApp(editorApp);
+            }
+        }
     }
 }
 
@@ -123,6 +134,7 @@ class MouseHandler implements MouseListener, MouseMotionListener, MouseWheelList
     private GameWindow.GamePanel panel;
     private boolean isDragging;
     private boolean isPressed;
+    private EditorApp editorApp;
     
     public MouseHandler(EditorManager editorManager, GameWindow.GamePanel panel) {
         this.editorManager = editorManager;
@@ -131,22 +143,25 @@ class MouseHandler implements MouseListener, MouseMotionListener, MouseWheelList
         this.isPressed = false;
     }
     
+    public void setEditorApp(EditorApp editorApp) {
+        this.editorApp = editorApp;
+    }
+    
     @Override
     public void mousePressed(java.awt.event.MouseEvent e) {
         isPressed = true;
-        panel.setCursor(CursorManager.getPressCursor());
         editorManager.handleMousePressed(e);
-        if (editorManager.isWaypointMode()) {
-            panel.repaint();
-        } else {
-            panel.repaint();
+        
+        if (editorManager.isPositionMode() && editorApp != null) {
+            editorApp.handlePositionClick(e.getX(), e.getY());
         }
+        
+        panel.repaint();
     }
     
     @Override
     public void mouseDragged(java.awt.event.MouseEvent e) {
         isDragging = true;
-        panel.setCursor(CursorManager.getPressCursor());
         editorManager.handleMouseDragged(e);
         panel.repaint();
     }
@@ -176,13 +191,7 @@ class MouseHandler implements MouseListener, MouseMotionListener, MouseWheelList
     @Override
     public void mouseMoved(java.awt.event.MouseEvent e) {
         panel.getScene().updateMousePosition(e.getX(), e.getY());
-        
-        if (isPressed || isDragging) {
-            panel.setCursor(CursorManager.getPressCursor());
-        } else {
-            panel.setCursor(CursorManager.getNormalCursor());
-        }
-        
+        panel.setCursor(CursorManager.getNormalCursor());
         panel.repaint();
     }
     

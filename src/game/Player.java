@@ -249,9 +249,12 @@ public class Player {
             int scaledWidth = (int)(currentImage.getWidth() * scale);
             int scaledHeight = (int)(currentImage.getHeight() * scale);
             
+            int drawX = (int)x - scaledWidth / 2;
+            int drawY = (int)y - scaledHeight;
+            
             Object oldHint = g2d.getRenderingHint(RenderingHints.KEY_INTERPOLATION);
             g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-            g2d.drawImage(currentImage, (int)x, (int)y, scaledWidth, scaledHeight, null);
+            g2d.drawImage(currentImage, drawX, drawY, scaledWidth, scaledHeight, null);
             
             if (oldHint != null) {
                 g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, oldHint);

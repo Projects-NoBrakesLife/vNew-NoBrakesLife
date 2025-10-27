@@ -16,12 +16,14 @@ public class EditorManager {
     private GameObject draggedObject;
     private Point dragOffset;
     private boolean waypointMode;
+    private boolean positionMode;
     
     public EditorManager() {
         objects = new ArrayList<>();
         waypointPaths = new ArrayList<>();
         currentPathIndex = 0;
         waypointMode = false;
+        positionMode = false;
     }
     
     public void addObject(GameObject obj) {
@@ -40,6 +42,10 @@ public class EditorManager {
     
     public void handleMousePressed(MouseEvent e) {
         Point p = e.getPoint();
+        
+        if (positionMode && e.getButton() == MouseEvent.BUTTON1) {
+            return;
+        }
         
         if (waypointMode && e.getButton() == MouseEvent.BUTTON1) {
             addWaypoint(p.x, p.y);
@@ -210,5 +216,13 @@ public class EditorManager {
     
     public boolean isWaypointMode() {
         return waypointMode;
+    }
+    
+    public void setPositionMode(boolean enabled) {
+        this.positionMode = enabled;
+    }
+    
+    public boolean isPositionMode() {
+        return positionMode;
     }
 }
