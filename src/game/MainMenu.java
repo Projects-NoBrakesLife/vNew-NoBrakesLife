@@ -190,6 +190,20 @@ public class MainMenu extends JFrame {
                 () -> panel.handleButton("button_2")
             );
             panel.addElement(button1);
+            
+            MenuElement logo = new MenuElement(
+                MenuElement.ElementType.IMAGE,
+                "assets/ui/logo/logo.png",
+                718.1, 23.0, 483.7, 285.2
+            );
+            panel.addElement(logo);
+            
+            MenuElement settings = new MenuElement(
+                MenuElement.ElementType.IMAGE,
+                "assets/ui/logo/Settings-Bar-Knob.png",
+                1127.0, 117.0, 121.7, 121.7
+            );
+            panel.addElement(settings);
         }
         
         @Override
