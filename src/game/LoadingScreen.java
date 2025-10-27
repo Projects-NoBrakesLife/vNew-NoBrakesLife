@@ -8,15 +8,27 @@ import java.util.ArrayList;
 import javax.imageio.ImageIO;
 
 public class LoadingScreen extends JFrame {
-    private static final String BACKGROUND = "assets/background/Card Positive Image BG.png";
+    private static final String BACKGROUND = "assets/background/bg.png";
     
     private LoadingPanel loadingPanel;
+    private MainMenu preloadedMenu;
     
     public LoadingScreen() {
         initializeWindow();
         createLoadingPanel();
+        preloadMainMenu();
         pack();
         centerWindow();
+    }
+    
+    private void preloadMainMenu() {
+        new Thread(() -> {
+            try {
+                preloadedMenu = new MainMenu();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
     
     private void initializeWindow() {
@@ -43,14 +55,20 @@ public class LoadingScreen extends JFrame {
         private ArrayList<BufferedImage> animationFrames;
         private int currentFrame;
         private long lastFrameTime;
-        private long frameDelay = 150;
-        private boolean animationComplete;
+        private long frameDelay = 50;
+        private boolean showAnimation;
+        private long animationStartTime;
+        private long delayAfterAnimation = GameConfig.LOADING_SCREEN_DELAY_MS;
+        private boolean inWaitingState;
+        private boolean menuOpened = false;
+        private long animationCompleteTime;
         
         public LoadingPanel() {
             setPreferredSize(new Dimension(GameConfig.WINDOW_WIDTH, GameConfig.WINDOW_HEIGHT));
             setLayout(null);
             loadBackgroundImage();
             loadAnimationFrames();
+            animationStartTime = System.currentTimeMillis() + 500;
             startAnimationTimer();
         }
         
@@ -87,19 +105,44 @@ public class LoadingScreen extends JFrame {
         }
         
         private void startAnimationTimer() {
-            javax.swing.Timer timer = new javax.swing.Timer(50, e -> {
+            javax.swing.Timer timer = new javax.swing.Timer(30, e -> {
                 long currentTime = System.currentTimeMillis();
-                if (currentTime - lastFrameTime >= frameDelay && !animationComplete) {
-                    if (animationFrames.size() > 0) {
-                        currentFrame++;
-                        lastFrameTime = currentTime;
-                        
-                        if (currentFrame >= animationFrames.size()) {
-                            animationComplete = true;
+                
+                if (!showAnimation && currentTime >= animationStartTime) {
+                    showAnimation = true;
+                    inWaitingState = false;
+                }
+                
+                if (showAnimation && !inWaitingState) {
+                    if (currentTime - lastFrameTime >= frameDelay) {
+                        if (animationFrames.size() > 0) {
+                            currentFrame = (currentFrame + 1) % animationFrames.size();
+                            lastFrameTime = currentTime;
+                        }
+                    }
+                    
+                    if (currentTime - animationStartTime >= delayAfterAnimation && !menuOpened) {
+                        inWaitingState = true;
+                        animationCompleteTime = currentTime;
+                    }
+                }
+                
+                if (inWaitingState && !menuOpened) {
+                    if (LoadingScreen.this.preloadedMenu != null) {
+                        long elapsed = currentTime - animationCompleteTime;
+                        if (elapsed > 100) {
+                            menuOpened = true;
+                            closeAndOpenMenu();
+                        }
+                    } else {
+                        long elapsed = currentTime - animationCompleteTime;
+                        if (elapsed > 2000) {
+                            menuOpened = true;
                             closeAndOpenMenu();
                         }
                     }
                 }
+                
                 repaint();
             });
             timer.start();
@@ -107,9 +150,15 @@ public class LoadingScreen extends JFrame {
         
         private void closeAndOpenMenu() {
             SwingUtilities.invokeLater(() -> {
-                dispose();
-                MainMenu mainMenu = new MainMenu();
-                mainMenu.setVisible(true);
+                MainMenu menuToShow = LoadingScreen.this.preloadedMenu;
+                
+                if (menuToShow == null) {
+                    menuToShow = new MainMenu();
+                }
+                
+                menuToShow.setVisible(true);
+                LoadingScreen.this.setVisible(false);
+                LoadingScreen.this.dispose();
             });
         }
         
@@ -120,6 +169,12 @@ public class LoadingScreen extends JFrame {
             Graphics2D g2d = (Graphics2D) g;
             g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            
+            if (!showAnimation) {
+                g2d.setColor(Color.BLACK);
+                g2d.fillRect(0, 0, getWidth(), getHeight());
+                return;
+            }
             
             if (backgroundImage != null) {
                 int imageWidth = backgroundImage.getWidth();
@@ -141,18 +196,31 @@ public class LoadingScreen extends JFrame {
                 g2d.fillRect(0, 0, getWidth(), getHeight());
             }
             
-            if (animationFrames != null && animationFrames.size() > 0 && currentFrame < animationFrames.size()) {
+            if (animationFrames != null && animationFrames.size() > 0 && currentFrame >= 0 && currentFrame < animationFrames.size()) {
                 BufferedImage currentFrameImg = animationFrames.get(currentFrame);
                 if (currentFrameImg != null) {
                     int frameWidth = currentFrameImg.getWidth();
                     int frameHeight = currentFrameImg.getHeight();
                     
-                    int frameX = (getWidth() - frameWidth) / 2;
-                    int frameY = (getHeight() - frameHeight) / 2;
+                    double scaleFactor = 0.3;
+                    int scaledFrameWidth = (int) (frameWidth * scaleFactor);
+                    int scaledFrameHeight = (int) (frameHeight * scaleFactor);
                     
-                    g2d.drawImage(currentFrameImg, frameX, frameY, null);
+                    int frameX = (getWidth() - scaledFrameWidth) / 2;
+                    int frameY = (getHeight() - scaledFrameHeight) / 2;
+                    
+                    g2d.drawImage(currentFrameImg, frameX, frameY, scaledFrameWidth, scaledFrameHeight, null);
                 }
             }
+            
+            g2d.setColor(Color.WHITE);
+            g2d.setFont(FontManager.getThaiFont(32));
+            String loadingText = "รอแป๊บกำลังโหลดนะน้องนะ...";
+            FontMetrics fm = g2d.getFontMetrics();
+            int textWidth = fm.stringWidth(loadingText);
+            int textX = getWidth() - textWidth - 60;
+            int textY = getHeight() - 30;
+            g2d.drawString(loadingText, textX, textY);
         }
     }
 }

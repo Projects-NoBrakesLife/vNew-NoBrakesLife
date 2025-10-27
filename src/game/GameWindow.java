@@ -148,6 +148,11 @@ public class GameWindow extends JFrame {
                 }
             });
             timer.start();
+            
+            javax.swing.Timer renderTimer = new javax.swing.Timer(50, _ -> {
+                repaint();
+            });
+            renderTimer.start();
         }
         
         private void loadGameScene() {
@@ -175,6 +180,16 @@ public class GameWindow extends JFrame {
             Point mouse = scene.getMousePosition();
             String debugText = "X: " + mouse.x + " Y: " + mouse.y;
             g2d.drawString(debugText, 10, 30);
+            
+            updateCursor();
+        }
+        
+        private void updateCursor() {
+            if (handler != null && handler.isPressed()) {
+                setCursor(CursorManager.getPressCursor());
+            } else {
+                setCursor(CursorManager.getNormalCursor());
+            }
         }
         
         public BackgroundManager getBackgroundManager() {
@@ -213,6 +228,10 @@ class MouseHandler implements MouseListener, MouseMotionListener, MouseWheelList
     
     public void setEditorApp(EditorApp editorApp) {
         this.editorApp = editorApp;
+    }
+    
+    public boolean isPressed() {
+        return isPressed;
     }
     
     @Override
@@ -259,7 +278,6 @@ class MouseHandler implements MouseListener, MouseMotionListener, MouseWheelList
     @Override
     public void mouseMoved(java.awt.event.MouseEvent e) {
         panel.getScene().updateMousePosition(e.getX(), e.getY());
-        panel.setCursor(CursorManager.getNormalCursor());
         panel.repaint();
     }
     

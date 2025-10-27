@@ -174,9 +174,9 @@ public class MainMenu extends JFrame {
         }
         
         private void updateCursor() {
-            if (isMousePressed && isHoveringButton) {
+            if (isMousePressed) {
                 setCursor(CursorManager.getPressCursor());
-            } else  {
+            } else {
                 setCursor(CursorManager.getNormalCursor());
             }
         }

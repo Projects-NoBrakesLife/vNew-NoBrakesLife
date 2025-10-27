@@ -9,6 +9,8 @@ public class GameConfig {
     
     public static final String BACKGROUND_IMAGE = "assets" + java.io.File.separator + "background" + java.io.File.separator + "NewTimesMapMock4a.png";
     public static final String HOVER_SOUND = "assets" + java.io.File.separator + "sfx" + java.io.File.separator + "Button Select.wav";
+    
+    public static final long LOADING_SCREEN_DELAY_MS = 15000;
 
     public static final HoverObject[] HOVER_OBJECTS = {
             new HoverObject("assets" + java.io.File.separator + "obj" + java.io.File.separator + "gym.png", "ยิม", 484.0, 176.0, 279.0, 243.0, 0.0, 697.0, 410.0, "BACK"),
