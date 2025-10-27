@@ -3,8 +3,8 @@ import javax.swing.SwingUtilities;
 
 public class Main {
     public static void main(String[] args) {
+        MainMenu mainMenu = new MainMenu();
         SwingUtilities.invokeLater(() -> {
-            MainMenu mainMenu = new MainMenu();
             mainMenu.setVisible(true);
         });
     }

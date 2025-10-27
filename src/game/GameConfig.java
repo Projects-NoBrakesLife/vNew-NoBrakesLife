@@ -11,11 +11,11 @@ public class GameConfig {
     public static final String HOVER_SOUND = "assets" + java.io.File.separator + "sfx" + java.io.File.separator + "Button Select.wav";
 
     public static final HoverObject[] HOVER_OBJECTS = {
-            new HoverObject("assets" + java.io.File.separator + "obj" + java.io.File.separator + "gym.png", "ยิม", 484.0, 176.0, 279.0, 243.0, 0.0, 697.0, 393.0, "BACK"),
+            new HoverObject("assets" + java.io.File.separator + "obj" + java.io.File.separator + "gym.png", "ยิม", 484.0, 176.0, 279.0, 243.0, 0.0, 697.0, 410.0, "BACK"),
             new HoverObject("assets" + java.io.File.separator + "obj" + java.io.File.separator + "laundry.png", "ร้านซักรีด", 371.0, 249.0, 217.0, 244.0, 0.0, 544.0, 459.0, "BACK"),
             new HoverObject("assets" + java.io.File.separator + "obj" + java.io.File.separator + "kfb.png", "ร้านไก่ทอดฟาสต์ฟู้ด", 202.0, 273.0, 234.0, 234.0, 0.0,366.0, 551.0, "BACK"),
             new HoverObject("assets" + java.io.File.separator + "obj" + java.io.File.separator + "shop.png", "ร้านขายของชำ", 388.0, 445.0, 311.0, 343.0, 0.0, 527.0, 766.0, "FRONT"),
-            new HoverObject("assets" + java.io.File.separator + "obj" + java.io.File.separator + "dormitory.png", "หอพัก", 848.0, 122.0, 218.0, 287.0, 0.0, 980.0, 405.0, "FRONT"),
+            new HoverObject("assets" + java.io.File.separator + "obj" + java.io.File.separator + "dormitory.png", "หอพัก", 848.0, 122.0, 218.0, 287.0, 0.0, 980.0, 410.0, "FRONT"),
             new HoverObject("assets" + java.io.File.separator + "obj" + java.io.File.separator + "bank.png", "ธนาคาร", 1464.0, 262.0, 269.0, 323.0, 0.0, 1508.0, 560.0, "BACK"),
             new HoverObject("assets" + java.io.File.separator + "obj" + java.io.File.separator + "collectibles.png", "ร้านของสะสม", 1010.0, 294.0, 268.0, 284.0, 0.0, 1193.0, 544.0, "BACK"),
             new HoverObject("assets" + java.io.File.separator + "obj" + java.io.File.separator + "garden.png", "สวนจก", 605.0, 406.0, 525.0, 283.0, 0.0, 874.0, 542.0, "FRONT"),

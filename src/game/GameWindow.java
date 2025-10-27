@@ -2,6 +2,7 @@
 package game;
 
 import javax.swing.*;
+import javax.swing.plaf.FontUIResource;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseListener;
@@ -24,14 +25,27 @@ public class GameWindow extends JFrame {
         setMaximumSize(new Dimension(GameConfig.WINDOW_WIDTH, GameConfig.WINDOW_HEIGHT));
         pack();
         centerWindow();
+
     }
     
     private void initializeWindow() {
         setTitle(TITLE);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
-        setUndecorated(true);
+
         addDragSupport();
+        JMenuBar menuBar = new JMenuBar();
+        Font thaiFont = FontManager.getThaiFont(12);
+        FontUIResource fontResource = new FontUIResource(thaiFont);
+        UIManager.put("OptionPane.font", fontResource);
+        UIManager.put("FileChooser.font", fontResource);
+        UIManager.put("Label.font", fontResource);
+        UIManager.put("Button.font", fontResource);
+        UIManager.put("Menu.font", fontResource);
+        UIManager.put("MenuItem.font", fontResource);
+        UIManager.put("TextField.font", fontResource);
+        UIManager.put("TextArea.font", fontResource);
+        setJMenuBar(menuBar);
     }
     
     private void addDragSupport() {
