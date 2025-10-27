@@ -21,7 +21,7 @@ public class GameScene {
         objectNames = new ArrayList<>();
         mousePosition = new Point(0, 0);
         currentHoverIndex = -1;
-        player = new Player(980.0, 401.0);
+        player = new Player(980.0, 406.0);
         allPaths = GameConfig.getWaypointPaths();
     }
     
