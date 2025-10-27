@@ -20,6 +20,7 @@ public class GameWindow extends JFrame {
         initializeWindow();
         createGamePanel();
         pack();
+        setSize(GameConfig.WINDOW_WIDTH, GameConfig.WINDOW_HEIGHT + 30);
         centerWindow();
     }
     
@@ -27,7 +28,6 @@ public class GameWindow extends JFrame {
         setTitle(TITLE);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
-        setUndecorated(true);
         addDragSupport();
     }
     
