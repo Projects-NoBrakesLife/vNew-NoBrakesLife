@@ -86,7 +86,7 @@ public class MainMenu extends JFrame {
         }
         
         private void startAnimationTimer() {
-            javax.swing.Timer timer = new javax.swing.Timer(50, e -> {
+            javax.swing.Timer timer = new javax.swing.Timer(15, e -> {
                 for (AnimatedMenuElement anim : animatedElements) {
                     anim.update();
                 }
@@ -148,9 +148,11 @@ public class MainMenu extends JFrame {
                 for (MenuElement element : uiElements) {
                     if (element.getType() == MenuElement.ElementType.IMAGE) {
                         boolean isHovering = element.contains(mousePosition.x, mousePosition.y);
-                        element.setHovered(isHovering);
-                        if (isHovering) {
-                            isHoveringButton = true;
+                        if (element.getButtonId() != null) {
+                            element.setHovered(isHovering);
+                            if (isHovering) {
+                                isHoveringButton = true;
+                            }
                         }
                     }
                     element.render(g2d);
