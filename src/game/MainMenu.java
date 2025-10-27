@@ -67,12 +67,14 @@ public class MainMenu extends JFrame {
         private BufferedImage backgroundImage;
         private Point mousePosition = new Point(0, 0);
         private ArrayList<MenuElement> uiElements;
+        private ArrayList<AnimatedMenuElement> animatedElements;
         private boolean isMousePressed = false;
         private boolean isHoveringButton = false;
         private boolean wasHoveringButton = false;
         
         public MenuPanel() {
             uiElements = new ArrayList<>();
+            animatedElements = new ArrayList<>();
             setPreferredSize(new Dimension(GameConfig.WINDOW_WIDTH, GameConfig.WINDOW_HEIGHT));
             setLayout(null);
             loadBackgroundImage();
@@ -80,10 +82,25 @@ public class MainMenu extends JFrame {
             addMouseListener(this);
             addMouseMotionListener(this);
             loadMenuElements(this);
+            startAnimationTimer();
+        }
+        
+        private void startAnimationTimer() {
+            javax.swing.Timer timer = new javax.swing.Timer(50, e -> {
+                for (AnimatedMenuElement anim : animatedElements) {
+                    anim.update();
+                }
+                repaint();
+            });
+            timer.start();
         }
         
         public void addElement(MenuElement element) {
             uiElements.add(element);
+        }
+        
+        public void addAnimatedElement(AnimatedMenuElement element) {
+            animatedElements.add(element);
         }
         
         private void loadBackgroundImage() {
@@ -145,6 +162,12 @@ public class MainMenu extends JFrame {
             }
             wasHoveringButton = isHoveringButton;
             
+            if (animatedElements != null) {
+                for (AnimatedMenuElement anim : animatedElements) {
+                    anim.render(g2d);
+                }
+            }
+            
             updateCursor();
         }
         
@@ -198,12 +221,12 @@ public class MainMenu extends JFrame {
             );
             panel.addElement(logo);
             
-            MenuElement settings = new MenuElement(
-                MenuElement.ElementType.IMAGE,
-                "assets/ui/logo/Settings-Bar-Knob.png",
-                1127.0, 117.0, 121.7, 121.7
+            AnimatedMenuElement settings = new AnimatedMenuElement(
+                "assets/ui/logo",
+                1127.0, 117.0, 121.7, 121.7,
+                200
             );
-            panel.addElement(settings);
+            panel.addAnimatedElement(settings);
         }
         
         @Override
