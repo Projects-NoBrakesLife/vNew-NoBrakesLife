@@ -25,7 +25,7 @@ public class GameWindow extends JFrame {
     private void initializeWindow() {
         setTitle(TITLE);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setResizable(true);
+        setResizable(false);
     }
     
     private void createGamePanel() {

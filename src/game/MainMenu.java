@@ -23,7 +23,7 @@ public class MainMenu extends JFrame {
     private void initializeWindow() {
         setTitle("No Brakes Life - Main Menu");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setResizable(true);
+        setResizable(false);
     }
     
     private void createMenuPanel() {
