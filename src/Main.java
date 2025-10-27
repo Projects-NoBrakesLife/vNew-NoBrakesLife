@@ -3,9 +3,9 @@ import javax.swing.SwingUtilities;
 
 public class Main {
     public static void main(String[] args) {
-        MainMenu mainMenu = new MainMenu();
+        LoadingScreen loadingScreen = new LoadingScreen();
         SwingUtilities.invokeLater(() -> {
-            mainMenu.setVisible(true);
+            loadingScreen.setVisible(true);
         });
     }
 }

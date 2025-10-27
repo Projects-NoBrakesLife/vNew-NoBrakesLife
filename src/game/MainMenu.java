@@ -93,12 +93,12 @@ public class MainMenu extends JFrame {
                 repaint();
             });
             timer.start();
-        }
-        
-        public void addElement(MenuElement element) {
-            uiElements.add(element);
-        }
-        
+    }
+    
+    public void addElement(MenuElement element) {
+        uiElements.add(element);
+    }
+    
         public void addAnimatedElement(AnimatedMenuElement element) {
             animatedElements.add(element);
         }
@@ -114,7 +114,7 @@ public class MainMenu extends JFrame {
                 System.err.println("ไม่สามารถโหลดภาพพื้นหลังได้: " + ex.getMessage());
             }
         }
-    
+        
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
