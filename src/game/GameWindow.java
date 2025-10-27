@@ -30,6 +30,7 @@ public class GameWindow extends JFrame {
         setTitle(TITLE);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
+        setUndecorated(true);
         addDragSupport();
     }
     
