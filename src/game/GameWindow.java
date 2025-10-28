@@ -205,6 +205,11 @@ public class GameWindow extends JFrame {
             String debugText = "X: " + mouse.x + " Y: " + mouse.y;
             g2d.drawString(debugText, 10, 30);
             
+            g2d.setColor(new Color(255, 255, 255, 255));
+            g2d.setFont(FontManager.getThaiFont(26));
+            String versionText = "v " + GitVersion.getVersion();
+            g2d.drawString(versionText, 20, getHeight() - 20);
+            
             updateCursor();
         }
         

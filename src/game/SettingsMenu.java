@@ -185,6 +185,11 @@ public class SettingsMenu extends JFrame {
                     slider.render(g2d);
                 }
             }
+
+            g2d.setColor(new Color(255, 255, 255, 255));
+            g2d.setFont(FontManager.getThaiFont(26));
+            String versionText = "v " + GitVersion.getVersion();
+            g2d.drawString(versionText, 20, getHeight() - 20);
             
             updateCursor();
         }
@@ -260,17 +265,17 @@ public class SettingsMenu extends JFrame {
             panel.addElement(text3);
             
             SliderBar slider1 = new SliderBar(984.9, 338.0, 654.6, 19.1);
-            slider1.setValue(1.0);
+            slider1.setValue(SoundManager.getInstance().getMasterVolume());
             panel.addSliderBar(slider1);
             panel.setMasterSlider(slider1);
             
             SliderBar slider2 = new SliderBar(984.9, 498.4, 656.7, 19.2);
-            slider2.setValue(0.3);
+            slider2.setValue(SoundManager.getInstance().getMusicVolume());
             panel.addSliderBar(slider2);
             panel.setMusicSlider(slider2);
             
             SliderBar slider3 = new SliderBar(983.3, 679.0, 659.9, 19.3);
-            slider3.setValue(1.0);
+            slider3.setValue(SoundManager.getInstance().getSFXVolume());
             panel.addSliderBar(slider3);
             panel.setSFXSlider(slider3);
             

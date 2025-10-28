@@ -1,17 +1,19 @@
 package game;
 
 import javax.sound.sampled.*;
-import java.io.File;
+import java.io.*;
+import java.nio.file.*;
 
 public class SoundManager {
     private static SoundManager instance;
     
     private Clip backgroundMusic;
     private float masterVolume = 1.0f;
-    private float musicVolume = 0.3f;
+    private float musicVolume = 0.5f;
     private float sfxVolume = 1.0f;
     
     private SoundManager() {
+        loadSettings();
     }
     
     public static SoundManager getInstance() {
@@ -24,15 +26,18 @@ public class SoundManager {
     public void setMasterVolume(float volume) {
         this.masterVolume = volume;
         updateBackgroundMusicVolume();
+        saveSettings();
     }
     
     public void setMusicVolume(float volume) {
         this.musicVolume = volume;
         updateBackgroundMusicVolume();
+        saveSettings();
     }
     
     public void setSFXVolume(float volume) {
         this.sfxVolume = volume;
+        saveSettings();
     }
     
     public float getMasterVolume() {
@@ -124,6 +129,42 @@ public class SoundManager {
                 ex.printStackTrace();
             }
         }).start();
+    }
+    
+    public void saveSettings() {
+        try {
+            File configFile = new File("audio_config.txt");
+            try (PrintWriter writer = new PrintWriter(new FileWriter(configFile))) {
+                writer.println("masterVolume=" + masterVolume);
+                writer.println("musicVolume=" + musicVolume);
+                writer.println("sfxVolume=" + sfxVolume);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public void loadSettings() {
+        try {
+            File configFile = new File("audio_config.txt");
+            if (configFile.exists()) {
+                try (BufferedReader reader = new BufferedReader(new FileReader(configFile))) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        if (line.startsWith("masterVolume=")) {
+                            masterVolume = Float.parseFloat(line.substring(14));
+                        } else if (line.startsWith("musicVolume=")) {
+                            musicVolume = Float.parseFloat(line.substring(12));
+                        } else if (line.startsWith("sfxVolume=")) {
+                            sfxVolume = Float.parseFloat(line.substring(10));
+                        }
+                    }
+                }
+                updateBackgroundMusicVolume();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
 

@@ -84,7 +84,6 @@ public class MainMenu extends JFrame {
             loadMenuElements(this);
             startAnimationTimer();
             
-    
             SoundManager.getInstance().playBackgroundMusic("assets" + File.separator + "sfx" + File.separator + "Walk_Of_Life_TRACK2.wav");
         }
         
@@ -231,6 +230,11 @@ public class MainMenu extends JFrame {
                     anim.render(g2d);
                 }
             }
+
+            g2d.setColor(new Color(255, 255, 255, 255));
+            g2d.setFont(FontManager.getThaiFont(26));
+            String versionText = "v " + GitVersion.getVersion();
+            g2d.drawString(versionText, 20, getHeight() - 20);
             
             updateCursor();
         }

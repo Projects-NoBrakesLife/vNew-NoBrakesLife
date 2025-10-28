@@ -222,6 +222,10 @@ public class LoadingScreen extends JFrame {
             int textX = getWidth() - textWidth - 60;
             int textY = getHeight() - 30;
             g2d.drawString(loadingText, textX, textY);
+            g2d.setColor(new Color(255, 255, 255, 255));
+            g2d.setFont(FontManager.getThaiFont(26));
+            String versionText = "v " + GitVersion.getVersion();
+            g2d.drawString(versionText, 20, getHeight() - 20);
         }
     }
 }
