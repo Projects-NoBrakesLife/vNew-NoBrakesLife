@@ -90,7 +90,7 @@ public class MainMenu extends JFrame {
         }
 
         private void startAnimationTimer() {
-            javax.swing.Timer timer = new javax.swing.Timer(15, e -> {
+            javax.swing.Timer timer = new javax.swing.Timer(15, _ -> {
                 for (AnimatedMenuElement anim : animatedElements) {
                     anim.update();
                 }
@@ -408,13 +408,11 @@ public class MainMenu extends JFrame {
         public void startGame() {
             JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
 
-            SoundManager.getInstance().stopBackgroundMusic();
-
             SwingUtilities.invokeLater(() -> {
-                GameWindow gameWindow = new GameWindow();
-                gameWindow.setVisible(true);
+                GameModeMenu gameModeMenu = new GameModeMenu();
+                gameModeMenu.setVisible(true);
 
-                javax.swing.Timer timer = new javax.swing.Timer(100, e -> {
+                javax.swing.Timer timer = new javax.swing.Timer(100, _ -> {
                     parentFrame.dispose();
                 });
                 timer.setRepeats(false);
@@ -429,7 +427,7 @@ public class MainMenu extends JFrame {
                 SettingsMenu settingsMenu = new SettingsMenu();
                 settingsMenu.setVisible(true);
 
-                javax.swing.Timer timer = new javax.swing.Timer(50, e -> {
+                javax.swing.Timer timer = new javax.swing.Timer(50, _ -> {
                     parentFrame.setVisible(false);
                 });
                 timer.setRepeats(false);
@@ -444,7 +442,7 @@ public class MainMenu extends JFrame {
                 AboutMenu aboutMenu = new AboutMenu();
                 aboutMenu.setVisible(true);
 
-                javax.swing.Timer timer = new javax.swing.Timer(50, e -> {
+                javax.swing.Timer timer = new javax.swing.Timer(50, _ -> {
                     parentFrame.setVisible(false);
                 });
                 timer.setRepeats(false);

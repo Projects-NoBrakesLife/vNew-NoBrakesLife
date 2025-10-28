@@ -117,6 +117,10 @@ public class MenuElement {
     }
     
     public void setHoverImage(String hoverPath) {
+        if (hoverPath == null) {
+            hoverImage = null;
+            return;
+        }
         try {
             String fullPath = System.getProperty("user.dir") + File.separator + hoverPath;
             File file = new File(fullPath);
