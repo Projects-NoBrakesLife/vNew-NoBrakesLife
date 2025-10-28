@@ -77,6 +77,7 @@ public class GameLobbyMenu extends JFrame {
         
         private MenuElement player1Text, player2Text, player3Text, player4Text, playerCountText;
         private MenuElement player1Img, player2Img, player3Img, player4Img;
+        private MenuElement player1Icon, player2Icon, player3Icon, player4Icon;
 
         public MenuPanel() {
             uiElements = new ArrayList<>();
@@ -211,6 +212,22 @@ public class GameLobbyMenu extends JFrame {
             panel.player4Img = new MenuElement(MenuElement.ElementType.IMAGE, "assets\\ui\\joins\\4.png", 1255.0, 479.3, 245.3, 245.3);
             panel.player4Img.setVisibility(false);
             panel.addElement(panel.player4Img);
+            
+            panel.player1Icon = new MenuElement(MenuElement.ElementType.IMAGE, "assets\\ui\\joins\\Icon-Attribute-Score.png", 550.5, 366.0, 193.2, 193.2);
+            panel.player1Icon.setVisibility(false);
+            panel.addElement(panel.player1Icon);
+            
+            panel.player2Icon = new MenuElement(MenuElement.ElementType.IMAGE, "assets\\ui\\joins\\Icon-Attribute-Score.png", 828.0, 364.3, 196.5, 196.5);
+            panel.player2Icon.setVisibility(false);
+            panel.addElement(panel.player2Icon);
+            
+            panel.player3Icon = new MenuElement(MenuElement.ElementType.IMAGE, "assets\\ui\\joins\\Icon-Attribute-Score.png", 1112.0, 378.4, 195.0, 195.0);
+            panel.player3Icon.setVisibility(false);
+            panel.addElement(panel.player3Icon);
+            
+            panel.player4Icon = new MenuElement(MenuElement.ElementType.IMAGE, "assets\\ui\\joins\\Icon-Attribute-Score.png", 1402.0, 379.0, 193.8, 193.8);
+            panel.player4Icon.setVisibility(false);
+            panel.addElement(panel.player4Icon);
             
             MenuElement img7 = new MenuElement(MenuElement.ElementType.IMAGE, "assets\\ui\\button\\Button-Medium-Gray.png", 693.0, 784.7, 540.0, 195.0);
             panel.addElement(img7);
@@ -374,35 +391,46 @@ public class GameLobbyMenu extends JFrame {
         SwingUtilities.invokeLater(() -> {
             if (menuPanel != null) {
                 int connectedCount = 0;
-                System.out.println("=== GameLobbyMenu: menuPanel is not null, updating UI ===");
+                int localPlayerId = NetworkManager.getInstance().getPlayerId();
+                System.out.println("=== GameLobbyMenu: menuPanel is not null, updating UI, localPlayerId=" + localPlayerId + " ===");
                 
                 for (int i = 0; i < 4; i++) {
                     MenuElement imgElement = null;
                     MenuElement textElement = null;
+                    MenuElement iconElement = null;
                     
                     switch (i) {
                         case 0: 
                             imgElement = menuPanel.player1Img;
                             textElement = menuPanel.player1Text; 
+                            iconElement = menuPanel.player1Icon;
                             break;
                         case 1: 
                             imgElement = menuPanel.player2Img;
                             textElement = menuPanel.player2Text; 
+                            iconElement = menuPanel.player2Icon;
                             break;
                         case 2: 
                             imgElement = menuPanel.player3Img;
                             textElement = menuPanel.player3Text; 
+                            iconElement = menuPanel.player3Icon;
                             break;
                         case 3: 
                             imgElement = menuPanel.player4Img;
                             textElement = menuPanel.player4Text; 
+                            iconElement = menuPanel.player4Icon;
                             break;
                     }
                     
                     boolean isConnected = (i < players.size() && players.get(i).isConnected);
+                    boolean isLocalPlayer = (i + 1 == localPlayerId);
                     
                     if (imgElement != null) {
                         imgElement.setVisibility(isConnected);
+                    }
+                    
+                    if (iconElement != null) {
+                        iconElement.setVisibility(isLocalPlayer && isConnected);
                     }
                     
                     if (textElement != null) {

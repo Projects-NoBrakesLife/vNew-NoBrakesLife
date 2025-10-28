@@ -38,10 +38,10 @@ public class GameScene {
             int connectedCount = network.NetworkManager.getInstance().getPlayers().size();
             
             double[][] positions = {
-                {980.0, 430.0},  
-                {1000.0, 430.0}, 
-                {980.0, 445.0}, 
-                {1000.0, 445.0}  
+                {970.0, 425.0},
+                {1010.0, 425.0},
+                {970.0, 450.0},
+                {1010.0, 450.0}
             };
             
             for (int i = 0; i < connectedCount && i < 4; i++) {
