@@ -26,9 +26,6 @@ public class GameWindow extends JFrame {
     public GameWindow() {
         initializeWindow();
         createGamePanel();
-        setPreferredSize(new Dimension(GameConfig.WINDOW_WIDTH, GameConfig.WINDOW_HEIGHT));
-        setMinimumSize(new Dimension(GameConfig.WINDOW_WIDTH, GameConfig.WINDOW_HEIGHT));
-        setMaximumSize(new Dimension(GameConfig.WINDOW_WIDTH, GameConfig.WINDOW_HEIGHT));
         pack();
 
         centerWindow();

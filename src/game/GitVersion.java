@@ -12,17 +12,29 @@ public class GitVersion {
         }
         
         try {
-            Process process = Runtime.getRuntime().exec("git rev-parse --short HEAD");
+            Process process = Runtime.getRuntime().exec("git describe --tags --always");
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
                 version = reader.readLine();
                 if (version != null && !version.isEmpty()) {
+                    return version.trim();
+                }
+            }
+        } catch (Exception e) {
+        }
+        
+        try {
+            Process process = Runtime.getRuntime().exec("git rev-list --count HEAD");
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                String count = reader.readLine();
+                if (count != null && !count.isEmpty()) {
+                    version = "1." + count.trim();
                     return version;
                 }
             }
         } catch (Exception e) {
         }
         
-        version = "dev";
+        version = "1.0";
         return version;
     }
 }

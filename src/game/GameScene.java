@@ -54,7 +54,7 @@ public class GameScene {
         player.render(g2d);
         
         if (anyHovering && hoverIndex != currentHoverIndex) {
-            playSound(GameConfig.HOVER_SOUND);
+            SoundManager.getInstance().playSFX(GameConfig.HOVER_SOUND);
             currentHoverIndex = hoverIndex;
         } else if (!anyHovering) {
             currentHoverIndex = -1;
@@ -62,22 +62,6 @@ public class GameScene {
         
         if (anyHovering && hoverName != null) {
             renderHoverUI(g2d, hoverName);
-        }
-    }
-    
-    private void playSound(String soundPath) {
-        try {
-            File soundFile = new File(soundPath);
-            if (!soundFile.exists()) {
-                soundFile = new File(System.getProperty("user.dir") + java.io.File.separator + soundPath);
-            }
-            if (soundFile.exists()) {
-                javax.sound.sampled.AudioInputStream audioStream = javax.sound.sampled.AudioSystem.getAudioInputStream(soundFile);
-                javax.sound.sampled.Clip clip = javax.sound.sampled.AudioSystem.getClip();
-                clip.open(audioStream);
-                clip.start();
-            }
-        } catch (Exception ex) {
         }
     }
     

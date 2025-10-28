@@ -264,18 +264,23 @@ public class SettingsMenu extends JFrame {
             text3.setTextColor(new Color(30, 30, 40));
             panel.addElement(text3);
             
+            float master = SoundManager.getInstance().getMasterVolume();
+            float music = SoundManager.getInstance().getMusicVolume();
+            float sfx = SoundManager.getInstance().getSFXVolume();
+            System.out.println("Settings panel load: master=" + master + ", music=" + music + ", sfx=" + sfx);
+            
             SliderBar slider1 = new SliderBar(984.9, 338.0, 654.6, 19.1);
-            slider1.setValue(SoundManager.getInstance().getMasterVolume());
+            slider1.setValue(master);
             panel.addSliderBar(slider1);
             panel.setMasterSlider(slider1);
             
             SliderBar slider2 = new SliderBar(984.9, 498.4, 656.7, 19.2);
-            slider2.setValue(SoundManager.getInstance().getMusicVolume());
+            slider2.setValue(music);
             panel.addSliderBar(slider2);
             panel.setMusicSlider(slider2);
             
             SliderBar slider3 = new SliderBar(983.3, 679.0, 659.9, 19.3);
-            slider3.setValue(SoundManager.getInstance().getSFXVolume());
+            slider3.setValue(sfx);
             panel.addSliderBar(slider3);
             panel.setSFXSlider(slider3);
             
@@ -385,28 +390,12 @@ public class SettingsMenu extends JFrame {
         @Override
         public void mouseExited(MouseEvent e) {}
         
-        private void playSound(String soundPath) {
-            try {
-                File soundFile = new File(soundPath);
-                if (!soundFile.exists()) {
-                    soundFile = new File(System.getProperty("user.dir") + File.separator + soundPath);
-                }
-                if (soundFile.exists()) {
-                    javax.sound.sampled.AudioInputStream audioStream = javax.sound.sampled.AudioSystem.getAudioInputStream(soundFile);
-                    javax.sound.sampled.Clip clip = javax.sound.sampled.AudioSystem.getClip();
-                    clip.open(audioStream);
-                    clip.start();
-                }
-            } catch (Exception ex) {
-            }
-        }
-        
         private void playHoverSound() {
-            playSound("assets" + File.separator + "sfx" + File.separator + "Button Select.wav");
+            SoundManager.getInstance().playSFX("assets" + File.separator + "sfx" + File.separator + "Button Select.wav");
         }
         
         private void playClickSound() {
-            playSound("assets" + File.separator + "sfx" + File.separator + "Button Click 1.wav");
+            SoundManager.getInstance().playSFX("assets" + File.separator + "sfx" + File.separator + "Button Click 1.wav");
         }
         
         public void backToMainMenu() {

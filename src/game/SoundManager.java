@@ -139,7 +139,9 @@ public class SoundManager {
                 writer.println("musicVolume=" + musicVolume);
                 writer.println("sfxVolume=" + sfxVolume);
             }
+            System.out.println("Saved audio settings: master=" + masterVolume + ", music=" + musicVolume + ", sfx=" + sfxVolume);
         } catch (Exception e) {
+            System.err.println("Error saving audio config: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -151,18 +153,27 @@ public class SoundManager {
                 try (BufferedReader reader = new BufferedReader(new FileReader(configFile))) {
                     String line;
                     while ((line = reader.readLine()) != null) {
+                        line = line.trim();
+                        if (line.isEmpty()) continue;
+                        
                         if (line.startsWith("masterVolume=")) {
-                            masterVolume = Float.parseFloat(line.substring(14));
+                            masterVolume = Float.parseFloat(line.substring(line.indexOf('=') + 1));
                         } else if (line.startsWith("musicVolume=")) {
-                            musicVolume = Float.parseFloat(line.substring(12));
+                            musicVolume = Float.parseFloat(line.substring(line.indexOf('=') + 1));
                         } else if (line.startsWith("sfxVolume=")) {
-                            sfxVolume = Float.parseFloat(line.substring(10));
+                            sfxVolume = Float.parseFloat(line.substring(line.indexOf('=') + 1));
                         }
                     }
                 }
-                updateBackgroundMusicVolume();
+                System.out.println("Loaded audio settings: master=" + masterVolume + ", music=" + musicVolume + ", sfx=" + sfxVolume);
+                if (backgroundMusic != null && backgroundMusic.isOpen()) {
+                    updateBackgroundMusicVolume();
+                }
+            } else {
+                System.out.println("No audio config file found, using defaults");
             }
         } catch (Exception e) {
+            System.err.println("Error loading audio config: " + e.getMessage());
             e.printStackTrace();
         }
     }
