@@ -45,7 +45,7 @@ public class CursorManager {
             if (cursorFile.exists()) {
                 BufferedImage originalImage = ImageIO.read(cursorFile);
                 
-                int scale = 5;
+                int scale = 2;
                 int newWidth = originalImage.getWidth() * scale;
                 int newHeight = originalImage.getHeight() * scale;
                 
