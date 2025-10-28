@@ -24,13 +24,23 @@ public class GameWindow extends JFrame {
     }
     
     public GameWindow() {
+        this(false);
+    }
+    
+    public GameWindow(boolean isOnlineMode) {
+        this.isOnlineMode = isOnlineMode;
         initializeWindow();
         createGamePanel();
         pack();
-
         centerWindow();
+        
 
+        if (isOnlineMode) {
+            network.NetworkManager.getInstance().setGameWindow(this);
+        }
     }
+    
+    private boolean isOnlineMode = false;
     
     private void initializeWindow() {
         setTitle(TITLE);
@@ -81,7 +91,7 @@ public class GameWindow extends JFrame {
     }
     
     private void createGamePanel() {
-        gamePanel = new GamePanel();
+        gamePanel = new GamePanel(isOnlineMode);
         add(gamePanel);
     }
     
@@ -103,13 +113,17 @@ public class GameWindow extends JFrame {
         private MouseHandler handler;
         
         public GamePanel() {
+            this(false);
+        }
+        
+        public GamePanel(boolean isOnlineMode) {
             setPreferredSize(new Dimension(GameConfig.WINDOW_WIDTH, GameConfig.WINDOW_HEIGHT));
             setLayout(null);
             setDoubleBuffered(true);
             
             backgroundManager = new BackgroundManager();
             editorManager = new EditorManager();
-            scene = new GameScene();
+            scene = new GameScene(isOnlineMode);
             
             loadGameScene();
             
@@ -227,6 +241,10 @@ public class GameWindow extends JFrame {
         }
         
         public GameScene getScene() {
+            return scene;
+        }
+        
+        public GameScene getGameScene() {
             return scene;
         }
         

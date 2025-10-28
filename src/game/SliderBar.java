@@ -1,7 +1,6 @@
 package game;
 
 import java.awt.*;
-import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import javax.imageio.ImageIO;
@@ -9,6 +8,7 @@ import javax.imageio.ImageIO;
 public class SliderBar {
     private double x, y, width, height;
     private BufferedImage backImage;
+    private BufferedImage frontImage;
     private BufferedImage knobImage;
     private double value; 
     private double knobX;
@@ -34,6 +34,12 @@ public class SliderBar {
                 backImage = ImageIO.read(backFile);
             }
             
+            String frontPath = System.getProperty("user.dir") + File.separator + "assets" + File.separator + "ui" + File.separator + "setting" + File.separator + "Settings-Bar-Front.png";
+            File frontFile = new File(frontPath);
+            if (frontFile.exists()) {
+                frontImage = ImageIO.read(frontFile);
+            }
+            
             String knobPath = System.getProperty("user.dir") + File.separator + "assets" + File.separator + "ui" + File.separator + "icon" + File.separator + "Settings-Bar-Knob.png";
             File knobFile = new File(knobPath);
             if (knobFile.exists()) {
@@ -46,19 +52,34 @@ public class SliderBar {
     
     private void updateKnobPosition() {
         minX = x;
-        maxX = x + width - (height *3.5);
-        knobX = minX + (maxX - minX) * value;
+        maxX = x + width - (height * 3.5);
+        if (maxX <= minX) {
+            knobX = minX;
+        } else {
+            knobX = minX + (maxX - minX) * value;
+        }
     }
     
     public void render(Graphics2D g2d) {
-    
+
         if (backImage != null) {
             g2d.drawImage(backImage, (int)x, (int)y, (int)width, (int)height, null);
         }
         
-    
+       
+        if (frontImage != null) {
+            double filledWidth = width * value;
+            if (filledWidth > 0) {
+             
+                g2d.drawImage(frontImage, 
+                    (int)x, (int)y, (int)(x + filledWidth), (int)(y + height), 
+                    0, 0, (int)(frontImage.getWidth() * value), frontImage.getHeight(), 
+                    null);
+            }
+        }
+      
         if (knobImage != null) {
-            double knobSize = height *3.5;
+            double knobSize = height * 3.5;
             double knobY = y + (height - knobSize) / 2;
             g2d.drawImage(knobImage, (int)knobX, (int)knobY, (int)knobSize, (int)knobSize, null);
         }
@@ -81,8 +102,10 @@ public class SliderBar {
     public void drag(double mx, double my) {
         if (isDragging) {
             knobX = Math.max(minX, Math.min(maxX, mx - (height * 0.75)));
-            value = (knobX - minX) / (maxX - minX);
-            value = Math.max(0.0, Math.min(1.0, value));
+            if (maxX > minX) {
+                value = (knobX - minX) / (maxX - minX);
+                value = Math.max(0.0, Math.min(1.0, value));
+            }
         }
     }
     

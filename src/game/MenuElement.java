@@ -34,6 +34,7 @@ public class MenuElement {
     private BufferedImage hoverImage;
     private boolean useScaleEffect = false;
     private boolean trackMouse = false;
+    private boolean visible = true;
     private Point mousePosition = new Point(0, 0);
     private double currentAngle = 0;
     private double forcedAngle = Double.NaN;
@@ -141,6 +142,10 @@ public class MenuElement {
     }
     
     public void render(Graphics2D g2d) {
+        if (!visible) {
+            return;
+        }
+        
         double scaleFactor = (hovered && useScaleEffect) ? 1.1 : 1.0;
         double scaledWidth = width * scaleFactor;
         double scaledHeight = height * scaleFactor;
@@ -254,6 +259,14 @@ public class MenuElement {
     
     public void setHeight(double height) {
         this.height = height;
+    }
+    
+    public void setVisibility(boolean visible) {
+        this.visible = visible;
+    }
+    
+    public boolean getVisibility() {
+        return visible;
     }
     
     public Color getTextColor() {

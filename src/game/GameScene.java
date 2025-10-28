@@ -1,6 +1,7 @@
 package game;
 
 import editor.Waypoint;
+import network.NetworkManager;
 
 import java.util.ArrayList;
 import java.awt.*;
@@ -13,16 +14,52 @@ public class GameScene {
     private ArrayList<String> objectNames;
     private Point mousePosition;
     private int currentHoverIndex;
-    private Player player;
+    private ArrayList<Player> players;
     private ArrayList<ArrayList<Waypoint>> allPaths;
+    private boolean isOnlineMode;
+    private NetworkManager networkManager;
     
     public GameScene() {
+        this(false);
+    }
+    
+    public GameScene(boolean isOnlineMode) {
+        this.isOnlineMode = isOnlineMode;
         hoverObjects = new ArrayList<>();
         objectNames = new ArrayList<>();
         mousePosition = new Point(0, 0);
         currentHoverIndex = -1;
-        player = new Player(980.0, 430.0);
+        players = new ArrayList<>();
         allPaths = GameConfig.getWaypointPaths();
+        networkManager = NetworkManager.getInstance();
+        
+        if (isOnlineMode) {
+            int localPlayerId = networkManager.getPlayerId();
+            int connectedCount = network.NetworkManager.getInstance().getPlayers().size();
+            
+            double[][] positions = {
+                {980.0, 430.0},  
+                {1000.0, 430.0}, 
+                {980.0, 445.0}, 
+                {1000.0, 445.0}  
+            };
+            
+            for (int i = 0; i < connectedCount && i < 4; i++) {
+                int playerNum = i + 1;
+                Player newPlayer = new Player(positions[i][0], positions[i][1], playerNum);
+                if (playerNum == localPlayerId) {
+                    newPlayer.setRemotePlayer(false);
+                    newPlayer.setShowIndicator(true);
+                } else {
+                    newPlayer.setRemotePlayer(true);
+                    newPlayer.setShowIndicator(false);
+                }
+                players.add(newPlayer);
+            }
+        } else {
+      
+            players.add(new Player(980.0, 430.0));
+        }
     }
     
     public void addHoverObject(GameObject obj, String name) {
@@ -50,8 +87,27 @@ public class GameScene {
             }
         }
         
-        player.update();
-        player.render(g2d);
+        for (Player player : players) {
+            if (!player.isRemotePlayer()) {
+                player.update();
+            } else {
+                player.forceUpdateAnimation();
+            }
+            player.render(g2d);
+        }
+        
+        
+        if (isOnlineMode && networkManager.isConnected()) {
+            int localPlayerIndex = networkManager.getPlayerId() - 1;
+            if (localPlayerIndex >= 0 && localPlayerIndex < players.size()) {
+                Player localPlayer = players.get(localPlayerIndex);
+                long currentTime = System.currentTimeMillis();
+                if (!networkManager.hasLastUpdate() || (currentTime - networkManager.getLastUpdateTime()) > 50) {
+                    networkManager.sendPlayerMove(localPlayer);
+                    networkManager.setLastUpdateTime(currentTime);
+                }
+            }
+        }
         
         if (anyHovering && hoverIndex != currentHoverIndex) {
             SoundManager.getInstance().playSFX(GameConfig.HOVER_SOUND);
@@ -144,8 +200,21 @@ public class GameScene {
                 GameConfig.HoverObject config = GameConfig.HOVER_OBJECTS[i];
                 double targetX = config.playerX;
                 double targetY = config.playerY;
-                player.setDirection(config.direction);
-                player.setDestination(targetX, targetY, allPaths);
+                
+            
+                if (!players.isEmpty()) {
+                    int localPlayerIndex = isOnlineMode ? networkManager.getPlayerId() - 1 : 0;
+                    if (localPlayerIndex >= 0 && localPlayerIndex < players.size()) {
+                        Player localPlayer = players.get(localPlayerIndex);
+                        localPlayer.setDirection(config.direction);
+                        localPlayer.setDestination(targetX, targetY, allPaths);
+                        
+                        if (isOnlineMode && networkManager.isConnected()) {
+                            networkManager.sendPlayerMove(localPlayer);
+                            networkManager.setLastUpdateTime(System.currentTimeMillis());
+                        }
+                    }
+                }
                 break;
             }
         }
@@ -165,7 +234,58 @@ public class GameScene {
     }
     
     public Player getPlayer() {
-        return player;
+        return players.isEmpty() ? null : players.get(0);
+    }
+    
+    public ArrayList<Player> getPlayers() {
+        return players;
+    }
+    
+    public void updateRemotePlayer(int playerId, double x, double y, String direction, boolean isMoving) {
+        int localPlayerId = networkManager.getPlayerId();
+        if (playerId == localPlayerId) {
+            return;
+        }
+        
+        int playerIndex = playerId - 1;
+        
+        if (playerIndex >= 0 && playerIndex < players.size()) {
+            Player remotePlayer = players.get(playerIndex);
+            
+            if (remotePlayer.getPlayerId() != playerId) {
+                remotePlayer.setPlayerId(playerId);
+            }
+            
+            boolean wasMoving = remotePlayer.isMoving();
+            
+            if (isMoving && !wasMoving) {
+                remotePlayer.setDirection(direction);
+                remotePlayer.setDestination(x, y, allPaths);
+            } else if (!isMoving && wasMoving) {
+                remotePlayer.forceUpdateAnimation();
+                remotePlayer.setX(x);
+                remotePlayer.setY(y);
+                remotePlayer.setMoving(false);
+            } else if (isMoving && wasMoving) {
+                remotePlayer.setDirection(direction);
+            } else if (!isMoving && !wasMoving) {
+                double dx = x - remotePlayer.getX();
+                double dy = y - remotePlayer.getY();
+                double dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist > 0.01) {
+                    remotePlayer.setX(x);
+                    remotePlayer.setY(y);
+                    remotePlayer.setDirection(direction);
+                }
+            }
+        }
+    }
+    
+    public void removePlayer(int playerId) {
+        int playerIndex = playerId - 1;
+        if (playerIndex >= 0 && playerIndex < players.size()) {
+            players.remove(playerIndex);
+        }
     }
 }
 

@@ -1,11 +1,14 @@
 package game;
 
+import network.NetworkManager;
+import network.PlayerInfo;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 import javax.imageio.ImageIO;
 
 public class GameLobbyMenu extends JFrame {
@@ -64,13 +67,16 @@ public class GameLobbyMenu extends JFrame {
         setLocation(x, y);
     }
 
-    private class MenuPanel extends JPanel implements ActionListener, MouseListener, MouseMotionListener {
+    public class MenuPanel extends JPanel implements ActionListener, MouseListener, MouseMotionListener {
         private BufferedImage backgroundImage;
         private Point mousePosition = new Point(0, 0);
         private ArrayList<MenuElement> uiElements;
         private boolean isMousePressed = false;
         private boolean isHoveringButton = false;
         private boolean wasHoveringButton = false;
+        
+        private MenuElement player1Text, player2Text, player3Text, player4Text, playerCountText;
+        private MenuElement player1Img, player2Img, player3Img, player4Img;
 
         public MenuPanel() {
             uiElements = new ArrayList<>();
@@ -81,6 +87,14 @@ public class GameLobbyMenu extends JFrame {
             addMouseListener(this);
             addMouseMotionListener(this);
             loadMenuElements(this);
+            
+            NetworkManager.getInstance().setLobbyMenu(GameLobbyMenu.this);
+            if (!NetworkManager.getInstance().isConnected()) {
+                boolean connected = NetworkManager.getInstance().connect(GameConfig.SERVER_HOST, GameConfig.SERVER_PORT);
+                if (!connected) {
+                    JOptionPane.showMessageDialog(this, "ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้", "Connection Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
         }
 
         public void addElement(MenuElement element) {
@@ -182,17 +196,21 @@ public class GameLobbyMenu extends JFrame {
             MenuElement img2 = new MenuElement(MenuElement.ElementType.IMAGE, "assets\\ui\\joins\\CD.png", 1496.0, 10.0, 774.7, 774.7);
             panel.addElement(img2);
             
-            MenuElement img3 = new MenuElement(MenuElement.ElementType.IMAGE, "assets\\ui\\joins\\1.png", 420.0, 479.0, 245.9, 245.9);
-            panel.addElement(img3);
+            panel.player1Img = new MenuElement(MenuElement.ElementType.IMAGE, "assets\\ui\\joins\\1.png", 420.0, 479.0, 245.9, 245.9);
+            panel.player1Img.setVisibility(false);
+            panel.addElement(panel.player1Img);
             
-            MenuElement img4 = new MenuElement(MenuElement.ElementType.IMAGE, "assets\\ui\\joins\\2.png", 693.0, 479.0, 245.8, 245.8);
-            panel.addElement(img4);
+            panel.player2Img = new MenuElement(MenuElement.ElementType.IMAGE, "assets\\ui\\joins\\2.png", 693.0, 479.0, 245.8, 245.8);
+            panel.player2Img.setVisibility(false);
+            panel.addElement(panel.player2Img);
             
-            MenuElement img5 = new MenuElement(MenuElement.ElementType.IMAGE, "assets\\ui\\joins\\3.png", 971.0, 478.1, 247.6, 247.6);
-            panel.addElement(img5);
+            panel.player3Img = new MenuElement(MenuElement.ElementType.IMAGE, "assets\\ui\\joins\\3.png", 971.0, 478.1, 247.6, 247.6);
+            panel.player3Img.setVisibility(false);
+            panel.addElement(panel.player3Img);
             
-            MenuElement img6 = new MenuElement(MenuElement.ElementType.IMAGE, "assets\\ui\\joins\\4.png", 1255.0, 479.3, 245.3, 245.3);
-            panel.addElement(img6);
+            panel.player4Img = new MenuElement(MenuElement.ElementType.IMAGE, "assets\\ui\\joins\\4.png", 1255.0, 479.3, 245.3, 245.3);
+            panel.player4Img.setVisibility(false);
+            panel.addElement(panel.player4Img);
             
             MenuElement img7 = new MenuElement(MenuElement.ElementType.IMAGE, "assets\\ui\\button\\Button-Medium-Gray.png", 693.0, 784.7, 540.0, 195.0);
             panel.addElement(img7);
@@ -200,20 +218,28 @@ public class GameLobbyMenu extends JFrame {
             MenuElement img8 = new MenuElement(MenuElement.ElementType.IMAGE, "assets\\ui\\joins\\QuestNotepad_Small.png", 529.1, 66.0, 861.8, 312.4);
             panel.addElement(img8);
             
-            MenuElement text1 = new MenuElement("Player_1", 473.9, 530.0, 32);
-            panel.addElement(text1);
+            panel.player1Text = new MenuElement("", 473.9, 530.0, 32);
+            panel.player1Text.setVisibility(false);
+            panel.player1Text.setTextColor(new Color(30, 30, 40));
+            panel.addElement(panel.player1Text);
             
-            MenuElement text2 = new MenuElement("Player_2", 746.9, 530.0, 32);
-            panel.addElement(text2);
+            panel.player2Text = new MenuElement("", 746.9, 530.0, 32);
+            panel.player2Text.setVisibility(false);
+            panel.player2Text.setTextColor(new Color(30, 30, 40));
+            panel.addElement(panel.player2Text);
             
-            MenuElement text3 = new MenuElement("Player_3", 1025.8, 530.0, 32);
-            panel.addElement(text3);
+            panel.player3Text = new MenuElement("", 1025.8, 530.0, 32);
+            panel.player3Text.setVisibility(false);
+            panel.player3Text.setTextColor(new Color(30, 30, 40));
+            panel.addElement(panel.player3Text);
             
-            MenuElement text4 = new MenuElement("Player_4", 1308.6, 530.0, 32);
-            panel.addElement(text4);
+            panel.player4Text = new MenuElement("", 1308.6, 530.0, 32);
+            panel.player4Text.setVisibility(false);
+            panel.player4Text.setTextColor(new Color(30, 30, 40));
+            panel.addElement(panel.player4Text);
             
-            MenuElement text5 = new MenuElement("รอผู้เล่น 2/4", 828.0, 893.0, 50);
-            panel.addElement(text5);
+            panel.playerCountText = new MenuElement("กำลังโหลด...", 828.0, 893.0, 50);
+            panel.addElement(panel.playerCountText);
 
             MenuElement backButton = new MenuElement(
                     MenuElement.ElementType.IMAGE,
@@ -299,7 +325,11 @@ public class GameLobbyMenu extends JFrame {
             SoundManager.getInstance().stopBackgroundMusic();
 
             SwingUtilities.invokeLater(() -> {
-                GameWindow gameWindow = new GameWindow();
+            
+                boolean isOnlineMode = NetworkManager.getInstance().isConnected();
+                System.out.println("=== GameLobbyMenu: Starting game in online mode: " + isOnlineMode + " ===");
+                
+                GameWindow gameWindow = new GameWindow(isOnlineMode);
                 gameWindow.setVisible(true);
 
                 javax.swing.Timer timer = new javax.swing.Timer(100, _ -> {
@@ -312,6 +342,8 @@ public class GameLobbyMenu extends JFrame {
 
         public void backToGameMode() {
             JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+            
+            NetworkManager.getInstance().disconnect();
 
             SwingUtilities.invokeLater(() -> {
                 GameModeMenu gameModeMenu = new GameModeMenu();
@@ -324,6 +356,83 @@ public class GameLobbyMenu extends JFrame {
                 timer.start();
             });
         }
+        
+    }
+    
+    public void showGameStartedMessage() {
+        if (menuPanel != null && menuPanel.playerCountText != null) {
+            menuPanel.playerCountText.setText("เกมเริ่มไปแล้ว...");
+            menuPanel.repaint();
+        }
+    }
+    
+    public void updateLobbyInfo(List<PlayerInfo> players) {
+        System.out.println("=== GameLobbyMenu: updateLobbyInfo called with " + players.size() + " players ===");
+        for (PlayerInfo p : players) {
+            System.out.println("  Player " + p.playerId + ": " + p.playerName + " - " + (p.isConnected ? "CONNECTED" : "DISCONNECTED"));
+        }
+        SwingUtilities.invokeLater(() -> {
+            if (menuPanel != null) {
+                int connectedCount = 0;
+                System.out.println("=== GameLobbyMenu: menuPanel is not null, updating UI ===");
+                
+                for (int i = 0; i < 4; i++) {
+                    MenuElement imgElement = null;
+                    MenuElement textElement = null;
+                    
+                    switch (i) {
+                        case 0: 
+                            imgElement = menuPanel.player1Img;
+                            textElement = menuPanel.player1Text; 
+                            break;
+                        case 1: 
+                            imgElement = menuPanel.player2Img;
+                            textElement = menuPanel.player2Text; 
+                            break;
+                        case 2: 
+                            imgElement = menuPanel.player3Img;
+                            textElement = menuPanel.player3Text; 
+                            break;
+                        case 3: 
+                            imgElement = menuPanel.player4Img;
+                            textElement = menuPanel.player4Text; 
+                            break;
+                    }
+                    
+                    boolean isConnected = (i < players.size() && players.get(i).isConnected);
+                    
+                    if (imgElement != null) {
+                        imgElement.setVisibility(isConnected);
+                    }
+                    
+                    if (textElement != null) {
+                        if (isConnected) {
+                            textElement.setText("Player_" + (i + 1));
+                            textElement.setTextColor(new Color(30, 30, 40));
+                            textElement.setVisibility(true);
+                            connectedCount++;
+                            System.out.println("Slot " + (i+1) + ": Set text to Player_" + (i + 1));
+                        } else {
+                            textElement.setText("");
+                            textElement.setVisibility(false);
+                        }
+                    }
+                }
+                
+                if (menuPanel.playerCountText != null) {
+                    menuPanel.playerCountText.setText("รอผู้เล่น " + connectedCount + "/" + GameConfig.MAX_PLAYERS);
+                }
+                
+                menuPanel.repaint();
+                System.out.println("=== GameLobbyMenu: UI update complete, called repaint() ===");
+            } else {
+                System.out.println("=== GameLobbyMenu: ERROR - menuPanel is null! ===");
+            }
+        });
+    }
+    
+    public void startGame() {
+        menuPanel.startGame();
     }
 }
 
