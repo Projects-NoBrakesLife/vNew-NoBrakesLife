@@ -15,7 +15,7 @@ public class GameConfig {
     public static final String SERVER_HOST = "localhost";
     public static final int SERVER_PORT = 8888;
     public static final int MAX_PLAYERS = 4;
-    public static final int MIN_PLAYERS_TO_START = 4;
+    public static final int MIN_PLAYERS_TO_START = 2;
 
     public static final HoverObject[] HOVER_OBJECTS = {
             new HoverObject("assets" + java.io.File.separator + "obj" + java.io.File.separator + "gym.png", "ยิม", 484.0, 201.0, 279.0, 243.0, 0.0, 697.0, 435.0, "BACK"),

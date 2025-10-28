@@ -18,6 +18,7 @@ public class GameScene {
     private ArrayList<ArrayList<Waypoint>> allPaths;
     private boolean isOnlineMode;
     private NetworkManager networkManager;
+    private ArrayList<MenuElement> hudElements;
     
     public GameScene() {
         this(false);
@@ -32,6 +33,8 @@ public class GameScene {
         players = new ArrayList<>();
         allPaths = GameConfig.getWaypointPaths();
         networkManager = NetworkManager.getInstance();
+        hudElements = new ArrayList<>();
+        loadGameHUD();
         
         if (isOnlineMode) {
             int localPlayerId = networkManager.getPlayerId();
@@ -65,6 +68,57 @@ public class GameScene {
     public void addHoverObject(GameObject obj, String name) {
         hoverObjects.add(obj);
         objectNames.add(name);
+    }
+    
+    private void loadGameHUD() {
+        MenuElement hudImg = new MenuElement(MenuElement.ElementType.IMAGE, "assets\\ui\\hud\\hud.png", -48.0, 736.0, 512.4, 325.7); // Y + 20
+        hudElements.add(hudImg);
+        
+        Player localPlayer = getLocalPlayer();
+        
+        MenuElement text1 = new MenuElement("ค่าทักษะ: " + (localPlayer != null ? localPlayer.getSkill() : 0), 230.0, 853.0, 15); // Y + 20
+        text1.setTextColor(new Color(30, 30, 40));
+        hudElements.add(text1);
+        
+        MenuElement text2 = new MenuElement("ค่าสุขภาพ: " + (localPlayer != null ? localPlayer.getHealth() : 100), 230.0, 907.0, 15); // Y + 20
+        text2.setTextColor(new Color(30, 30, 40));
+        hudElements.add(text2);
+        
+        MenuElement text3 = new MenuElement("ค่าการเรียน: " + (localPlayer != null ? localPlayer.getEducation() : 0), 230.0, 961.0, 15); // Y + 20
+        text3.setTextColor(new Color(30, 30, 40));
+        hudElements.add(text3);
+        
+        MenuElement text4 = new MenuElement("ค่าเงิน: " + (localPlayer != null ? localPlayer.getMoney() : 500), 203.0, 1020.0, 15); // Y + 20
+        text4.setTextColor(new Color(30, 30, 40));
+        hudElements.add(text4);
+        
+        MenuElement timerImg = new MenuElement(MenuElement.ElementType.IMAGE, "assets\\ui\\hud\\timer.png", 773.9, 866.1, 372.3, 173.7); // Y + 20
+        hudElements.add(timerImg);
+        
+        MenuElement timerText1 = new MenuElement("1", 876.0, 1000.0, 60); // Y + 20
+    
+        hudElements.add(timerText1);
+        
+        MenuElement timerText2 = new MenuElement("10", 994.0, 1000.0, 60); // Y + 20
+ 
+        hudElements.add(timerText2);
+        
+        MenuElement timerDesc = new MenuElement("เหลือเวลา 10/24 ชม.", 864.0, 897.0, 21); // Y + 20
+        timerDesc.setTextColor(new Color(30, 30, 40));
+        hudElements.add(timerDesc);
+    }
+    
+    private Player getLocalPlayer() {
+        if (players.isEmpty()) return null;
+        
+        if (isOnlineMode) {
+            int localPlayerId = networkManager.getPlayerId();
+            if (localPlayerId > 0 && localPlayerId <= players.size()) {
+                return players.get(localPlayerId - 1);
+            }
+        }
+        
+        return players.get(0);
     }
     
     public void updateMousePosition(int x, int y) {
@@ -118,6 +172,34 @@ public class GameScene {
         
         if (anyHovering && hoverName != null) {
             renderHoverUI(g2d, hoverName);
+        }
+        
+        for (int i = 0; i < hudElements.size(); i++) {
+            MenuElement element = hudElements.get(i);
+            
+            if (i >= 1 && i <= 4 && element.getType() == MenuElement.ElementType.TEXT) {
+                Player localPlayer = getLocalPlayer();
+                String newText = "";
+                
+                switch (i) {
+                    case 1:
+                        newText = "ค่าทักษะ: " + (localPlayer != null ? localPlayer.getSkill() : 0);
+                        break;
+                    case 2:
+                        newText = "ค่าสุขภาพ: " + (localPlayer != null ? localPlayer.getHealth() : 100);
+                        break;
+                    case 3:
+                        newText = "ค่าการเรียน: " + (localPlayer != null ? localPlayer.getEducation() : 0);
+                        break;
+                    case 4:
+                        newText = "ค่าเงิน: " + (localPlayer != null ? localPlayer.getMoney() : 500);
+                        break;
+                }
+                
+                element.setText(newText);
+            }
+            
+            element.render(g2d);
         }
     }
     

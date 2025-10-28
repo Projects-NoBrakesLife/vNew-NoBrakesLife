@@ -31,6 +31,11 @@ public class Player {
     
     private int playerId = 1;
     
+    private int skill = 0;
+    private int education = 0;
+    private int health = 100;
+    private int money = 500;
+    
     public Player(double x, double y) {
         this(x, y, 1);
     }
@@ -289,6 +294,42 @@ public class Player {
             this.playerId = playerId;
             loadImages();
         }
+    }
+    
+    public int getSkill() {
+        return skill;
+    }
+    
+    public void setSkill(int skill) {
+        this.skill = skill;
+    }
+    
+    public void increaseSkill(int amount) {
+        skill += amount;
+    }
+
+    public int getEducation() {
+        return education;
+    }
+    
+    public void setEducation(int education) {
+        this.education = education;
+    }
+    
+    public int getHealth() {
+        return health;
+    }
+    
+    public void setHealth(int health) {
+        this.health = health;
+    }
+    
+    public int getMoney() {
+        return money;
+    }
+    
+    public void setMoney(int money) {
+        this.money = money;
     }
 }
 
