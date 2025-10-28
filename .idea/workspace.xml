@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="49466268-9a68-4a29-907b-df1713d8936c" name="Changes" comment="" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 2
+}</component>
+  <component name="ProjectId" id="34bhDbt0maEvWdSvCi8RS6IZeV9" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Application.EditorMain.executor": "Run",
+    "Application.GameWindow.executor": "Run",
+    "Application.Main.executor": "Run",
+    "Application.MainMenuEditorMain.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "v1/dev/structure",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Users/uSeR/IdeaProjects/vNew-NoBrakesLife/assets/ui/logo",
+    "onboarding.tips.debug.path": "C:/Users/uSeR/IdeaProjects/vNew-NoBrakesLife/src/Main.java"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\uSeR\IdeaProjects\vNew-NoBrakesLife\assets\ui\logo" />
+      <recent name="C:\Users\uSeR\IdeaProjects\vNew-NoBrakesLife\assets\ui\button" />
+      <recent name="C:\Users\uSeR\IdeaProjects\vNew-NoBrakesLife\assets\background" />
+      <recent name="C:\Users\uSeR\IdeaProjects\vNew-NoBrakesLife\assets\sfx" />
+      <recent name="C:\Users\uSeR\IdeaProjects\vNew-NoBrakesLife\assets\obj" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\uSeR\IdeaProjects\vNew-NoBrakesLife\assets\ui" />
+      <recent name="C:\Users\uSeR\IdeaProjects\vNew-NoBrakesLife\assets\background" />
+    </key>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="49466268-9a68-4a29-907b-df1713d8936c" name="Changes" comment="" />
+      <created>1761488060714</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1761488060714</updated>
+    </task>
+    <servers />
+  </component>
+</project>
