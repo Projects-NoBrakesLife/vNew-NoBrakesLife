@@ -1,6 +1,7 @@
 package game;
 
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import javax.imageio.ImageIO;
@@ -31,6 +32,11 @@ public class MenuElement {
     private boolean selected;
     private boolean hovered;
     private BufferedImage hoverImage;
+    private boolean useScaleEffect = false;
+    private boolean trackMouse = false;
+    private Point mousePosition = new Point(0, 0);
+    private double currentAngle = 0;
+    private double forcedAngle = Double.NaN;
     
     public MenuElement(ElementType type, String imagePath, double x, double y, double width, double height) {
         this.type = type;
@@ -98,9 +104,22 @@ public class MenuElement {
     }
     
     private void loadHoverImage() {
+        if (buttonId != null) {
+            try {
+                String hoverPath = System.getProperty("user.dir") + File.separator + "assets/ui/button/Button-Big-Pink.png";
+                File file = new File(hoverPath);
+                if (file.exists()) {
+                    hoverImage = ImageIO.read(file);
+                }
+            } catch (Exception ex) {
+            }
+        }
+    }
+    
+    public void setHoverImage(String hoverPath) {
         try {
-            String hoverPath = System.getProperty("user.dir") + File.separator + "assets/ui/button/Button-Big-Pink.png";
-            File file = new File(hoverPath);
+            String fullPath = System.getProperty("user.dir") + File.separator + hoverPath;
+            File file = new File(fullPath);
             if (file.exists()) {
                 hoverImage = ImageIO.read(file);
             }
@@ -118,24 +137,51 @@ public class MenuElement {
     }
     
     public void render(Graphics2D g2d) {
+        double scaleFactor = (hovered && useScaleEffect) ? 1.1 : 1.0;
+        double scaledWidth = width * scaleFactor;
+        double scaledHeight = height * scaleFactor;
+        double offsetX = (width - scaledWidth) / 2;
+        double offsetY = (height - scaledHeight) / 2;
+        
         if (type == ElementType.IMAGE && image != null) {
-            BufferedImage imgToDraw = hovered && hoverImage != null ? hoverImage : image;
-            g2d.drawImage(imgToDraw, (int)x, (int)y, (int)width, (int)height, null);
+            BufferedImage imgToDraw = useScaleEffect ? image : (hovered && hoverImage != null ? hoverImage : image);
+            
+            if (trackMouse && imgToDraw != null) {
+                double centerX = x + width / 2;
+                double centerY = y + height / 2;
+                
+                if (!Double.isNaN(forcedAngle)) {
+                    double angle = forcedAngle;
+                    currentAngle = Math.toDegrees(angle);
+                    
+                    AffineTransform oldTransform = g2d.getTransform();
+                    g2d.translate(centerX, centerY);
+                    g2d.rotate(angle);
+                    g2d.drawImage(imgToDraw, (int)(-scaledWidth/2), (int)(-scaledHeight/2), (int)scaledWidth, (int)scaledHeight, null);
+                    g2d.setTransform(oldTransform);
+                } else {
+                    g2d.drawImage(imgToDraw, (int)(x + offsetX), (int)(y + offsetY), (int)scaledWidth, (int)scaledHeight, null);
+                }
+            } else {
+                g2d.drawImage(imgToDraw, (int)(x + offsetX), (int)(y + offsetY), (int)scaledWidth, (int)scaledHeight, null);
+            }
         } else if (type == ElementType.TEXT) {
             g2d.setColor(textColor);
-            g2d.setFont(textFont);
-            g2d.drawString(text, (int)x, (int)y);
+            Font scaledFont = textFont.deriveFont((float)(textFont.getSize() * scaleFactor));
+            g2d.setFont(scaledFont);
+            g2d.drawString(text, (int)(x - offsetX), (int)(y - offsetY));
         } else if (type == ElementType.BUTTON) {
-            BufferedImage imgToDraw = hovered && hoverImage != null ? hoverImage : image;
+            BufferedImage imgToDraw = useScaleEffect ? image : (hovered && hoverImage != null ? hoverImage : image);
             if (imgToDraw != null) {
-                g2d.drawImage(imgToDraw, (int)x, (int)y, (int)width, (int)height, null);
+                g2d.drawImage(imgToDraw, (int)(x + offsetX), (int)(y + offsetY), (int)scaledWidth, (int)scaledHeight, null);
             }
             if (text != null && !text.isEmpty()) {
                 g2d.setColor(textColor);
-                g2d.setFont(textFont);
+                Font scaledFont = textFont.deriveFont((float)(textFont.getSize() * scaleFactor));
+                g2d.setFont(scaledFont);
                 FontMetrics fm = g2d.getFontMetrics();
-                int textX = (int)(x + (width - fm.stringWidth(text)) / 2);
-                int textY = (int)(y + (height + fm.getAscent()) / 2);
+                int textX = (int)(x + offsetX + (scaledWidth - fm.stringWidth(text)) / 2);
+                int textY = (int)(y + offsetY + (scaledHeight + fm.getAscent()) / 2);
                 g2d.drawString(text, textX, textY);
             }
         }
@@ -148,6 +194,7 @@ public class MenuElement {
     }
     
     public boolean contains(double mx, double my) {
+       
         if (type == ElementType.TEXT) {
             return mx >= x && mx <= x + width && my >= y - height && my <= y;
         }
@@ -238,6 +285,30 @@ public class MenuElement {
     
     public void setHovered(boolean hovered) {
         this.hovered = hovered;
+    }
+    
+    public void setUseScaleEffect(boolean use) {
+        this.useScaleEffect = use;
+    }
+    
+    public void setTrackMouse(boolean track) {
+        this.trackMouse = track;
+    }
+    
+    public void setMousePosition(Point mousePos) {
+        this.mousePosition = mousePos;
+    }
+    
+    public double getCurrentAngle() {
+        return currentAngle;
+    }
+    
+    public void setForcedAngle(double angleDegrees) {
+        this.forcedAngle = Math.toRadians(angleDegrees);
+    }
+    
+    public void clearForcedAngle() {
+        this.forcedAngle = Double.NaN;
     }
     
     public String getButtonId() {

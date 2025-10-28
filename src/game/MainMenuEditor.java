@@ -47,6 +47,8 @@ public class MainMenuEditor extends JFrame {
         private JLabel scaleLabel;
         private JSlider fontSlider;
         private JLabel fontLabel;
+        private JButton colorBtn;
+        private Color currentTextColor = Color.WHITE;
         private int originalFontSize;
         private double originalWidth;
         private double originalHeight;
@@ -109,6 +111,12 @@ public class MainMenuEditor extends JFrame {
             clearBtn.setFont(buttonFont);
             clearBtn.addActionListener(e -> { handleClearAll(); });
             
+            JButton loadFromGameBtn = new JButton("โหลดจากเกมจริง");
+            loadFromGameBtn.setFont(buttonFont);
+            loadFromGameBtn.addActionListener(e -> { loadFromGame(); });
+            
+            toolBar.add(loadFromGameBtn);
+            toolBar.addSeparator();
             toolBar.add(addImageBtn);
             toolBar.add(addTextBtn);
             toolBar.add(deleteBtn);
@@ -147,6 +155,19 @@ public class MainMenuEditor extends JFrame {
             fontLabel = new JLabel("32");
             fontLabel.setFont(labelFont);
             toolBar.add(fontLabel);
+            
+            toolBar.addSeparator();
+            
+            JLabel colorLabel = new JLabel("สี:");
+            colorLabel.setFont(labelFont);
+            toolBar.add(colorLabel);
+            
+            colorBtn = new JButton("⚫");
+            colorBtn.setFont(labelFont);
+            colorBtn.setBackground(currentTextColor);
+            colorBtn.setOpaque(true);
+            colorBtn.addActionListener(e -> { handleColorChange(); });
+            toolBar.add(colorBtn);
             
             toolBar.addSeparator();
             toolBar.add(layerUpBtn);
@@ -317,6 +338,20 @@ public class MainMenuEditor extends JFrame {
             }
         }
         
+        private void handleColorChange() {
+            if (selectedElement != null && selectedElement.getType() == MenuElement.ElementType.TEXT) {
+                Color newColor = JColorChooser.showDialog(this, "เลือกสีข้อความ", currentTextColor);
+                if (newColor != null) {
+                    currentTextColor = newColor;
+                    selectedElement.setTextColor(newColor);
+                    colorBtn.setBackground(newColor);
+                    repaint();
+                }
+            } else {
+                JOptionPane.showMessageDialog(this, "กรุณาเลือกข้อความก่อน", "ข้อความแจ้งเตือน", JOptionPane.WARNING_MESSAGE);
+            }
+        }
+        
         private void updateScaleSlider() {
             if (selectedElement != null) {
                 if (selectedElement.getType() == MenuElement.ElementType.IMAGE) {
@@ -336,6 +371,9 @@ public class MainMenuEditor extends JFrame {
                     originalFontSize = currentSize;
                     fontSlider.setValue(currentSize);
                     fontLabel.setText(String.valueOf(currentSize));
+                    
+                    currentTextColor = selectedElement.getTextColor();
+                    colorBtn.setBackground(currentTextColor);
                 } else {
                     fontSlider.setEnabled(false);
                     fontLabel.setText("-");
@@ -402,6 +440,68 @@ public class MainMenuEditor extends JFrame {
                 draggedElement = null;
                 repaint();
             }
+        }
+        
+        private void loadFromGame() {
+            elements.clear();
+            
+            MenuElement buttonPlay = new MenuElement(
+                MenuElement.ElementType.IMAGE, 
+                "assets" + File.separator + "ui" + File.separator + "button" + File.separator + "Button-Big-Blue.png", 
+                561.0, 267.0, 798.0, 196.0,
+                "start_game",
+                null
+            );
+            elements.add(buttonPlay);
+            
+            MenuElement text1 = new MenuElement("เล่นเกม", 790.5, 395.0, 100);
+            elements.add(text1);
+            
+            MenuElement button2 = new MenuElement(
+                MenuElement.ElementType.IMAGE, 
+                "assets" + File.separator + "ui" + File.separator + "button" + File.separator + "Button-Big-Gray.png", 
+                561.0, 518.0, 798.0, 196.0,
+                "button_2",
+                null
+            );
+            elements.add(button2);
+            
+            MenuElement text2 = new MenuElement("ตั้งค่า", 840.5, 661.0, 100);
+            elements.add(text2);
+            
+            MenuElement button3 = new MenuElement(
+                MenuElement.ElementType.IMAGE, 
+                "assets" + File.separator + "ui" + File.separator + "button" + File.separator + "Button-Big-Gray.png", 
+                561.0, 785.0, 798.0, 196.0,
+                "button_3",
+                null
+            );
+            elements.add(button3);
+            
+            MenuElement text3 = new MenuElement("ออก", 840.5, 912.0, 100);
+            elements.add(text3);
+            
+            MenuElement logo = new MenuElement(
+                MenuElement.ElementType.IMAGE,
+                "assets" + File.separator + "ui" + File.separator + "logo" + File.separator + "logo.png",
+                718.1, 23.0, 483.7, 285.2
+            );
+            elements.add(logo);
+            
+            MenuElement card = new MenuElement(
+                MenuElement.ElementType.IMAGE,
+                "assets" + File.separator + "ui" + File.separator + "Card-Beg-For-Wishlist.png",
+                1460.0, 282.0, 409.8, 581.2
+            );
+            elements.add(card);
+            
+            MenuElement cardText = new MenuElement("เด็ก CS กำลังขอเกรด A", 1487.9, 383.0, 35);
+            elements.add(cardText);
+            
+            selectedElement = null;
+            draggedElement = null;
+            updateScaleSlider();
+            repaint();
         }
         
         private String getRelativePath(File file) {

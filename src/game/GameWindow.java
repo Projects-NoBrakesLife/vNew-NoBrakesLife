@@ -16,6 +16,12 @@ public class GameWindow extends JFrame {
     
     private GamePanel gamePanel;
     private GameWindow window;
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            new GameWindow().setVisible(true);
+         
+        });
+    }
     
     public GameWindow() {
         initializeWindow();
@@ -24,6 +30,7 @@ public class GameWindow extends JFrame {
         setMinimumSize(new Dimension(GameConfig.WINDOW_WIDTH, GameConfig.WINDOW_HEIGHT));
         setMaximumSize(new Dimension(GameConfig.WINDOW_WIDTH, GameConfig.WINDOW_HEIGHT));
         pack();
+
         centerWindow();
 
     }
@@ -32,6 +39,9 @@ public class GameWindow extends JFrame {
         setTitle(TITLE);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        setUndecorated(true);
+
 
         addDragSupport();
         JMenuBar menuBar = new JMenuBar();
@@ -46,6 +56,20 @@ public class GameWindow extends JFrame {
         UIManager.put("TextField.font", fontResource);
         UIManager.put("TextArea.font", fontResource);
         setJMenuBar(menuBar);
+        setupToolbar();
+    }
+
+    private void setupToolbar() {
+        JToolBar toolBar = new JToolBar();
+ 
+        toolBar.addSeparator();
+        SwingUtilities.invokeLater(() -> {
+            JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
+            if (frame != null) {
+                frame.setJMenuBar(new JMenuBar());
+                frame.getJMenuBar().add(toolBar);
+            }
+        });
     }
     
     private void addDragSupport() {

@@ -83,6 +83,9 @@ public class MainMenu extends JFrame {
             addMouseMotionListener(this);
             loadMenuElements(this);
             startAnimationTimer();
+            
+    
+            SoundManager.getInstance().playBackgroundMusic("assets" + File.separator + "sfx" + File.separator + "Walk_Of_Life_TRACK2.wav");
         }
         
         private void startAnimationTimer() {
@@ -145,6 +148,46 @@ public class MainMenu extends JFrame {
             
             if (uiElements != null) {
                 isHoveringButton = false;
+                MenuElement hoveredCard = null;
+                MenuElement hoveredCardText = null;
+                MenuElement iconElement = null;
+                MenuElement smallButtonElement = null;
+         
+                for (MenuElement element : uiElements) {
+                    element.setMousePosition(mousePosition);
+                
+                    String imagePath = element.getImagePath();
+                    if (imagePath != null && imagePath.contains("WOLTempIcon_Head")) {
+                        iconElement = element;
+                    } else if (imagePath != null && imagePath.contains("Button-Small-Blue")) {
+                        smallButtonElement = element;
+                    } else if (imagePath != null && imagePath.contains("Card-Beg-For-Wishlist")) {
+                        hoveredCard = element;
+                        boolean isHovering = element.contains(mousePosition.x, mousePosition.y);
+                        element.setHovered(isHovering);
+                    } else if (element.getText() != null && element.getText().equals("เด็ก CS กำลังขอเกรด A")) {
+                        hoveredCardText = element;
+                        boolean isHovering = element.contains(mousePosition.x, mousePosition.y);
+                        element.setHovered(isHovering);
+                        
+                     
+                        if (isHovering && hoveredCard != null) {
+                            hoveredCard.setHovered(true);
+                        }
+                    }
+                }
+                
+                if (iconElement != null && smallButtonElement != null) {
+                    boolean iconHovering = iconElement.contains(mousePosition.x, mousePosition.y);
+                    smallButtonElement.setHovered(iconHovering);
+                }
+        
+                if (hoveredCard != null && hoveredCardText != null && hoveredCard.isHovered()) {
+                    hoveredCardText.setHovered(true);
+                }
+                
+ 
+                boolean hasButtonHovered = false;
                 for (MenuElement element : uiElements) {
                     if (element.getType() == MenuElement.ElementType.IMAGE) {
                         boolean isHovering = element.contains(mousePosition.x, mousePosition.y);
@@ -152,9 +195,28 @@ public class MainMenu extends JFrame {
                             element.setHovered(isHovering);
                             if (isHovering) {
                                 isHoveringButton = true;
+                                hasButtonHovered = true;
+                                
+                                if (iconElement != null) {
+                                    String buttonId = element.getButtonId();
+                                    if ("start_game".equals(buttonId)) {
+                                        iconElement.setForcedAngle(-20);
+                                    } else if ("button_2".equals(buttonId)) {
+                                        iconElement.setForcedAngle(0.4);
+                                    } else if ("button_3".equals(buttonId)) {
+                                        iconElement.setForcedAngle(14);
+                                    }
+                                }
                             }
                         }
                     }
+                }
+                
+                if (iconElement != null && !hasButtonHovered) {
+                    iconElement.clearForcedAngle();
+                }
+                
+                for (MenuElement element : uiElements) {
                     element.render(g2d);
                 }
             }
@@ -186,6 +248,22 @@ public class MainMenu extends JFrame {
         }
         
         public static void loadMenuElements(MenuPanel panel) {
+            MenuElement smallButton = new MenuElement(
+                MenuElement.ElementType.IMAGE,
+                "assets" + File.separator + "ui" + File.separator + "button" + File.separator + "Button-Small-Blue.png",
+                81.0, 33.0, 385.4, 205.8
+            );
+            smallButton.setHoverImage("assets" + File.separator + "ui" + File.separator + "button" + File.separator + "Button-Small-Pink.png");
+            panel.addElement(smallButton);
+            
+            MenuElement icon = new MenuElement(
+                MenuElement.ElementType.IMAGE,
+                "assets" + File.separator + "ui" + File.separator + "icon" + File.separator + "WOLTempIcon_Head.png",
+                184.3, 57.4, 178.8, 157.1
+            );
+            icon.setTrackMouse(true);
+            panel.addElement(icon);
+            
             MenuElement buttonPlay = new MenuElement(
                 MenuElement.ElementType.IMAGE, 
                 "assets/ui/button/Button-Big-Blue.png", 
@@ -195,26 +273,32 @@ public class MainMenu extends JFrame {
             );
             panel.addElement(buttonPlay);
             
-            MenuElement text = new MenuElement("เล่นเกม", 790.5, 395.0, 100);
-            panel.addElement(text);
+            MenuElement text1 = new MenuElement("เล่นเกม", 790.5, 395.0, 100);
+            panel.addElement(text1);
+            
+            MenuElement button1 = new MenuElement(
+                MenuElement.ElementType.IMAGE, 
+                "assets" + File.separator + "ui" + File.separator + "button" + File.separator + "Button-Big-Blue.png", 
+                561.0, 518.0, 798.0, 196.0,
+                "button_2",
+                () -> panel.handleButton("button_2")
+            );
+            panel.addElement(button1);
+            
+            MenuElement text2 = new MenuElement("ตั้งค่า", 840.5, 661.0, 100);
+            panel.addElement(text2);
             
             MenuElement button2 = new MenuElement(
                 MenuElement.ElementType.IMAGE, 
-                "assets" + File.separator + "ui" + File.separator + "button" + File.separator + "Button-Big-Gray.png", 
+                "assets" + File.separator + "ui" + File.separator + "button" + File.separator + "Button-Big-Blue.png", 
                 561.0, 785.0, 798.0, 196.0,
                 "button_3",
                 () -> panel.handleButton("button_3")
             );
             panel.addElement(button2);
             
-            MenuElement button1 = new MenuElement(
-                MenuElement.ElementType.IMAGE, 
-                "assets" + File.separator + "ui" + File.separator + "button" + File.separator + "Button-Big-Gray.png", 
-                561.0, 518.0, 798.0, 196.0,
-                "button_2",
-                () -> panel.handleButton("button_2")
-            );
-            panel.addElement(button1);
+            MenuElement text3 = new MenuElement("ออก", 840.5, 912.0, 100);
+            panel.addElement(text3);
             
             MenuElement logo = new MenuElement(
                 MenuElement.ElementType.IMAGE,
@@ -229,6 +313,19 @@ public class MainMenu extends JFrame {
                 200
             );
             panel.addAnimatedElement(settings);
+            
+            MenuElement card = new MenuElement(
+                MenuElement.ElementType.IMAGE,
+                "assets" + File.separator + "ui" + File.separator + "Card-Beg-For-Wishlist.png",
+                1460.0, 282.0, 409.8, 581.2
+            );
+            card.setUseScaleEffect(true);
+            panel.addElement(card);
+            
+            MenuElement cardText = new MenuElement("เด็ก CS กำลังขอเกรด A", 1487.9, 383.0, 35);
+            cardText.setTextColor(new Color(30, 30, 40));
+        
+            panel.addElement(cardText);
         }
         
         @Override
@@ -281,10 +378,11 @@ public class MainMenu extends JFrame {
             
             switch(buttonId) {
                 case "button_2":
-                    System.out.println("Button 2 pressed!");
+                    openSettings();
                     break;
                 case "button_3":
-                    System.out.println("Button 3 pressed!");
+                    System.out.println("ออกจากเกม");
+                    System.exit(0);
                     break;
                 default:
                     break;
@@ -292,34 +390,44 @@ public class MainMenu extends JFrame {
         }
         
         private void playHoverSound() {
-            playSound("assets" + File.separator + "sfx" + File.separator + "Button Select.wav");
+            SoundManager.getInstance().playSFX("assets" + File.separator + "sfx" + File.separator + "Button Select.wav");
         }
         
         private void playClickSound() {
-            playSound("assets" + File.separator + "sfx" + File.separator + "Button Click 1.wav");
-        }
-        
-        private void playSound(String soundPath) {
-            try {
-                File soundFile = new File(soundPath);
-                if (!soundFile.exists()) {
-                    soundFile = new File(System.getProperty("user.dir") + File.separator + soundPath);
-                }
-                if (soundFile.exists()) {
-                    javax.sound.sampled.AudioInputStream audioStream = javax.sound.sampled.AudioSystem.getAudioInputStream(soundFile);
-                    javax.sound.sampled.Clip clip = javax.sound.sampled.AudioSystem.getClip();
-                    clip.open(audioStream);
-                    clip.start();
-                }
-            } catch (Exception ex) {
-            }
+            SoundManager.getInstance().playSFX("assets" + File.separator + "sfx" + File.separator + "Button Click 1.wav");
         }
         
         public void startGame() {
-            SwingUtilities.getWindowAncestor(this).dispose();
+            JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+            
+           
+            SoundManager.getInstance().stopBackgroundMusic();
+            
             SwingUtilities.invokeLater(() -> {
                 GameWindow gameWindow = new GameWindow();
                 gameWindow.setVisible(true);
+      
+                javax.swing.Timer timer = new javax.swing.Timer(100, e -> {
+                    parentFrame.dispose();
+                });
+                timer.setRepeats(false);
+                timer.start();
+            });
+        }
+        
+        public void openSettings() {
+            JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+            
+            SwingUtilities.invokeLater(() -> {
+                SettingsMenu settingsMenu = new SettingsMenu();
+                settingsMenu.setVisible(true);
+                
+          
+                javax.swing.Timer timer = new javax.swing.Timer(50, e -> {
+                    parentFrame.setVisible(false);
+                });
+                timer.setRepeats(false);
+                timer.start();
             });
         }
     }

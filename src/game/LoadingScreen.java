@@ -19,6 +19,7 @@ public class LoadingScreen extends JFrame {
         preloadMainMenu();
         pack();
         centerWindow();
+        setCursor(CursorManager.getNormalCursor());
     }
     
     private void preloadMainMenu() {
