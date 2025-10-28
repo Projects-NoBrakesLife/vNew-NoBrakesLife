@@ -315,11 +315,18 @@ public class Player {
     public void setEducation(int education) {
         this.education = education;
     }
+    public void increaseEducation(int amount) {
+        education += amount;
+    }
     
     public int getHealth() {
         return health;
     }
     
+    public void increaseHealth(int amount) {
+        health += amount;
+    }
+
     public void setHealth(int health) {
         this.health = health;
     }
@@ -328,6 +335,9 @@ public class Player {
         return money;
     }
     
+    public void increaseMoney(int amount) {
+        money += amount;
+    }
     public void setMoney(int money) {
         this.money = money;
     }
