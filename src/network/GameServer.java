@@ -24,44 +24,89 @@ public class GameServer {
         }
         
         logWindow = new ServerLogWindow();
+        logWindow.setServer(this);
         logWindow.setVisible(true);
-        System.out.println("=== GameServer: Constructor completed ===");
+        NetworkLogger.getInstance().log("=== GameServer: Constructor completed ===");
+    }
+    
+    public List<PlayerInfo> getPlayers() {
+        return new ArrayList<>(players);
+    }
+    
+    public ServerLogWindow getLogWindow() {
+        return logWindow;
+    }
+    
+    public void broadcastPlayerStatsUpdate(PlayerInfo playerInfo) {
+        String message = String.format("UPDATE_STATS:%d:%d:%d:%d:%d", 
+            playerInfo.playerId, 
+            playerInfo.skill, 
+            playerInfo.education, 
+            playerInfo.health, 
+            playerInfo.money);
+
+        synchronized (players) {
+            for (PlayerInfo p : players) {
+                if (p.playerId == playerInfo.playerId) {
+                    p.skill = playerInfo.skill;
+                    p.education = playerInfo.education;
+                    p.health = playerInfo.health;
+                    p.money = playerInfo.money;
+                    break;
+                }
+            }
+        }
+        
+        new Thread(() -> {
+            synchronized (clients) {
+                List<ClientHandler> clientsCopy = new ArrayList<>(clients);
+                for (ClientHandler client : clientsCopy) {
+                    try {
+                        client.sendText(message);
+                        NetworkLogger.getInstance().log("=== GameServer: Sent UPDATE_STATS to client: " + message + " ===");
+                    } catch (Exception e) {
+                        NetworkLogger.getInstance().log("=== GameServer: Error sending UPDATE_STATS: " + e.getMessage() + " ===");
+                    }
+                }
+            }
+        }).start();
+        
+        logWindow.addLog("Updated stats for Player_" + playerInfo.playerId + " - Skill:" + playerInfo.skill + " Education:" + playerInfo.education + " Health:" + playerInfo.health + " Money:" + playerInfo.money);
     }
     
     public void start() {
-        System.out.println("=== GameServer: start() called ===");
+        NetworkLogger.getInstance().log("=== GameServer: start() called ===");
         running = true;
         try {
             serverSocket = new ServerSocket(GameConfig.SERVER_PORT);
             logWindow.addLog("Server started on port " + GameConfig.SERVER_PORT);
-            System.out.println("=== GameServer: Server started, waiting for clients ===");
+            NetworkLogger.getInstance().log("=== GameServer: Server started, waiting for clients ===");
             
             while (running) {
                 Socket clientSocket = serverSocket.accept();
-                System.out.println("=== GameServer: Client connected: " + clientSocket.getInetAddress() + " ===");
+                NetworkLogger.getInstance().log("=== GameServer: Client connected: " + clientSocket.getInetAddress() + " ===");
                 logWindow.addLog("New client connected: " + clientSocket.getInetAddress());
                 
                 ClientHandler handler = new ClientHandler(clientSocket, this);
                 clients.add(handler);
-                System.out.println("=== GameServer: Starting handler thread ===");
+                NetworkLogger.getInstance().log("=== GameServer: Starting handler thread ===");
                 
                 Thread handlerThread = new Thread(handler, "Handler-" + clientSocket.getInetAddress());
                 handlerThread.setDaemon(true);
                 handlerThread.start();
-                System.out.println("=== GameServer: Handler thread started, returning to accept ===");
+                NetworkLogger.getInstance().log("=== GameServer: Handler thread started, returning to accept ===");
             }
         } catch (IOException e) {
             logWindow.addLog("Server error: " + e.getMessage());
-            System.out.println("=== GameServer: Error: " + e.getMessage() + " ===");
-            e.printStackTrace();
+            NetworkLogger.getInstance().log("=== GameServer: Error: " + e.getMessage() + " ===");
         }
     }
     
     public void handleClientJoin(ClientHandler client) {
-        System.out.println("=== GameServer.handleClientJoin called ===");
+        NetworkLogger.getInstance().log("=== GameServer.handleClientJoin called ===");
      
         if (gameStarted) {
-            System.out.println("=== GameServer: Game already started, rejecting client ===");
+            NetworkLogger.getInstance().log("=== GameServer: Game already started, rejecting client ===");
             client.sendText("GAME_STARTED");
             return;
         }
@@ -70,11 +115,11 @@ public class GameServer {
         for (PlayerInfo p : players) {
             if (p.isConnected) connectedCount++;
         }
-        System.out.println("=== GameServer: Current connected players: " + connectedCount + " ===");
+        NetworkLogger.getInstance().log("=== GameServer: Current connected players: " + connectedCount + " ===");
         
         if (connectedCount < GameConfig.MAX_PLAYERS) {
             int playerId = getNextAvailablePlayerId();
-            System.out.println("=== GameServer: Got playerId = " + playerId + " ===");
+            NetworkLogger.getInstance().log("=== GameServer: Got playerId = " + playerId + " ===");
             if (playerId > 0) {
                 client.setPlayerId(playerId);
                 players.get(playerId - 1).isConnected = true;
@@ -84,49 +129,50 @@ public class GameServer {
                 for (PlayerInfo p : players) {
                     if (p.isConnected) newConnectedCount++;
                 }
-                System.out.println("=== GameServer: Connected count AFTER update: " + newConnectedCount + " ===");
+                NetworkLogger.getInstance().log("=== GameServer: Connected count AFTER update: " + newConnectedCount + " ===");
                 
                 List<PlayerInfo> lobbyData = new ArrayList<>(players);
-                System.out.println("=== GameServer: Preparing lobby update with " + lobbyData.size() + " players ===");
+                NetworkLogger.getInstance().log("=== GameServer: Preparing lobby update with " + lobbyData.size() + " players ===");
                 for (PlayerInfo p : lobbyData) {
-                    System.out.println("  Player " + p.playerId + ": " + p.playerName + " - " + (p.isConnected ? "CONNECTED" : "DISCONNECTED"));
+                    NetworkLogger.getInstance().log("  Player " + p.playerId + ": " + p.playerName + " - " + (p.isConnected ? "CONNECTED" : "DISCONNECTED"));
                 }
                 
                 GameMessage message = new GameMessage(GameMessage.MessageType.UPDATE_LOBBY, lobbyData, -1);
                 
-                System.out.println("=== GameServer: Broadcasting to all clients ===");
+                NetworkLogger.getInstance().log("=== GameServer: Broadcasting to all clients ===");
                 broadcastToAll(message);
                 logWindow.addLog("Broadcasted lobby update to all clients");
-                System.out.println("=== GameServer: Message sent successfully ===");
+                NetworkLogger.getInstance().log("=== GameServer: Message sent successfully ===");
                 
                
                 client.sendText("PLAYER_ID:" + playerId);
-                System.out.println("=== GameServer: Sent player ID " + playerId + " to client ===");
+                NetworkLogger.getInstance().log("=== GameServer: Sent player ID " + playerId + " to client ===");
                 
               
                 final int checkCount = newConnectedCount;
-                System.out.println("checkCount "+checkCount);
+                NetworkLogger.getInstance().log("checkCount " + checkCount);
                 if (checkCount >= GameConfig.MIN_PLAYERS_TO_START) {
-                    System.out.println("=== GameServer: Player(s) joined (" + checkCount + "), will start game in 3 seconds ===");
+                    NetworkLogger.getInstance().log("=== GameServer: Player(s) joined (" + checkCount + "), will start game in 3 seconds ===");
                     gameStarted = true;
                     
                     final List<ClientHandler> clientsToNotify = new ArrayList<>(clients);
                     new Thread(() -> {
                         try {
                             Thread.sleep(3000);
-                            System.out.println("=== GameServer: Sending START_GAME message to " + clientsToNotify.size() + " client(s) ===");
+                            NetworkLogger.getInstance().log("=== GameServer: Sending START_GAME message to " + clientsToNotify.size() + " client(s) ===");
                             for (ClientHandler c : clientsToNotify) {
                                 c.sendText("START_GAME");
                             }
                             logWindow.addLog("Game started! Broadcasting to " + clientsToNotify.size() + " client(s)");
                         } catch (InterruptedException e) {
-                            e.printStackTrace();
+                            Thread.currentThread().interrupt();
+                            NetworkLogger.getInstance().log("=== GameServer: Thread interrupted ===");
                         }
                     }).start();
                 }
             }
         } else {
-            System.out.println("=== GameServer: Max players reached (" + connectedCount + "/" + GameConfig.MAX_PLAYERS + "), cannot join ===");
+            NetworkLogger.getInstance().log("=== GameServer: Max players reached (" + connectedCount + "/" + GameConfig.MAX_PLAYERS + "), cannot join ===");
         }
     }
     
@@ -151,12 +197,12 @@ public class GameServer {
     }
     
     public void broadcastToAll(GameMessage message) {
-        System.out.println("=== GameServer: Broadcasting to " + clients.size() + " clients ===");
+        NetworkLogger.getInstance().log("=== GameServer: Broadcasting to " + clients.size() + " clients ===");
         for (ClientHandler client : clients) {
-            System.out.println("=== GameServer: Sending to client " + client.getPlayerId() + " ===");
+            NetworkLogger.getInstance().log("=== GameServer: Sending to client " + client.getPlayerId() + " ===");
             client.sendMessage(message);
         }
-        System.out.println("=== GameServer: Broadcast complete ===");
+        NetworkLogger.getInstance().log("=== GameServer: Broadcast complete ===");
     }
     
     public void stop() {
@@ -189,32 +235,39 @@ public class GameServer {
         
         @Override
         public void run() {
-            System.out.println("=== ClientHandler.run() STARTED ===");
+            NetworkLogger.getInstance().log("=== ClientHandler.run() STARTED ===");
             
             try {
-                System.out.println("=== ClientHandler: Creating streams ===");
+                NetworkLogger.getInstance().log("=== ClientHandler: Creating streams ===");
                 in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 out = new PrintWriter(socket.getOutputStream(), true);
-                System.out.println("=== ClientHandler: Streams created successfully ===");
+                NetworkLogger.getInstance().log("=== ClientHandler: Streams created successfully ===");
                 
-                System.out.println("=== ClientHandler: Calling handleClientJoin ===");
+                NetworkLogger.getInstance().log("=== ClientHandler: Calling handleClientJoin ===");
                 server.handleClientJoin(this);
-                System.out.println("=== ClientHandler: handleClientJoin completed ===");
+                NetworkLogger.getInstance().log("=== ClientHandler: handleClientJoin completed ===");
                 
-                System.out.println("=== ClientHandler: Starting message loop ===");
+                NetworkLogger.getInstance().log("=== ClientHandler: Starting message loop ===");
                 while (connected && !socket.isClosed()) {
                     try {
                         String line = in.readLine();
                         if (line == null) {
-                            System.out.println("=== ClientHandler: Client disconnected ===");
+                            NetworkLogger.getInstance().log("=== ClientHandler: Client disconnected ===");
                             break;
                         }
-                        System.out.println("=== ClientHandler: Received: " + line + " ===");
+                        NetworkLogger.getInstance().log("=== ClientHandler: Received: " + line + " ===");
                         
                      
                         if (line != null && line.startsWith("PLAYER_MOVE:")) {
                       
-                            System.out.println("=== ClientHandler: Broadcasting player move to other clients ===");
+                            NetworkLogger.getInstance().log("=== ClientHandler: Broadcasting player move to other clients ===");
+                            for (ClientHandler client : server.clients) {
+                                if (client != this) {
+                                    client.sendText(line);
+                                }
+                            }
+                        } else if (line != null && line.startsWith("PLAYER_HOVER:")) {
+                            NetworkLogger.getInstance().log("=== ClientHandler: Broadcasting player hover to other clients ===");
                             for (ClientHandler client : server.clients) {
                                 if (client != this) {
                                     client.sendText(line);
@@ -245,7 +298,7 @@ public class GameServer {
                                 }
                                 
                                 String turnUpdate = "TURN_UPDATE:" + nextTurnPlayerId + ":" + turnNumber + ":" + (isNewWeek ? "WEEK" : "TURN");
-                                System.out.println("=== ClientHandler: Broadcasting turn update: " + turnUpdate + " ===");
+                                NetworkLogger.getInstance().log("=== ClientHandler: Broadcasting turn update: " + turnUpdate + " ===");
                                 for (ClientHandler client : server.clients) {
                                     client.sendText(turnUpdate);
                                 }
@@ -254,23 +307,22 @@ public class GameServer {
                      
                     } catch (IOException e) {
                         if (connected) {
-                            System.out.println("=== ClientHandler: IO error: " + e.getMessage() + " ===");
+                            NetworkLogger.getInstance().log("=== ClientHandler: IO error: " + e.getMessage() + " ===");
                         }
                         break;
                     }
                 }
-                System.out.println("=== ClientHandler: Message loop ended ===");
+                NetworkLogger.getInstance().log("=== ClientHandler: Message loop ended ===");
             } catch (IOException e) {
-                System.out.println("=== ClientHandler: IOException: " + e.getMessage() + " ===");
-                e.printStackTrace();
+                NetworkLogger.getInstance().log("=== ClientHandler: IOException: " + e.getMessage() + " ===");
                 server.logWindow.addLog("Client error: " + e.getMessage());
             } finally {
-                System.out.println("=== ClientHandler: Cleaning up ===");
+                NetworkLogger.getInstance().log("=== ClientHandler: Cleaning up ===");
                 connected = false;
                 
                 int disconnectedPlayerId = getPlayerId();
                 if (disconnectedPlayerId > 0) {
-                    System.out.println("=== ClientHandler: Broadcasting disconnect for player " + disconnectedPlayerId + " ===");
+                    NetworkLogger.getInstance().log("=== ClientHandler: Broadcasting disconnect for player " + disconnectedPlayerId + " ===");
                     for (ClientHandler client : server.clients) {
                         if (client != this && client.connected) {
                             client.sendText("PLAYER_DISCONNECT:" + disconnectedPlayerId);
@@ -282,12 +334,12 @@ public class GameServer {
                 try {
                     if (socket != null && !socket.isClosed()) {
                         socket.close();
-                        System.out.println("=== ClientHandler: Socket closed ===");
+                        NetworkLogger.getInstance().log("=== ClientHandler: Socket closed ===");
                     }
                 } catch (IOException e) {
-                    System.out.println("=== ClientHandler: Error closing socket: " + e.getMessage() + " ===");
+                    NetworkLogger.getInstance().log("=== ClientHandler: Error closing socket: " + e.getMessage() + " ===");
                 }
-                System.out.println("=== ClientHandler.run() ENDED ===");
+                NetworkLogger.getInstance().log("=== ClientHandler.run() ENDED ===");
             }
         }
         
@@ -295,7 +347,7 @@ public class GameServer {
         public void sendMessage(GameMessage message) {
             if (out != null) {
                 try {
-                    System.out.println("=== ClientHandler: Sending LOBBY_UPDATE ===");
+                    NetworkLogger.getInstance().log("=== ClientHandler: Sending LOBBY_UPDATE ===");
                     if (message.data instanceof List) {
                         List<PlayerInfo> players = (List<PlayerInfo>) message.data;
                         int connectedCount = 0;
@@ -306,28 +358,28 @@ public class GameServer {
                         out.println("LOBBY_UPDATE");
                         out.println("PLAYER_COUNT:" + connectedCount);
                         out.flush();
-                        System.out.println("=== ClientHandler: Sent player count: " + connectedCount + " ===");
+                        NetworkLogger.getInstance().log("=== ClientHandler: Sent player count: " + connectedCount + " ===");
                     }
                 } catch (Exception e) {
                     server.logWindow.addLog("Error sending message: " + e.getMessage());
-                    System.out.println("=== ClientHandler: Error sending: " + e.getMessage() + " ===");
-                    e.printStackTrace();
+                    NetworkLogger.getInstance().log("=== ClientHandler: Error sending: " + e.getMessage() + " ===");
                 }
             } else {
-                System.out.println("=== ClientHandler: ERROR - out is null! ===");
+                NetworkLogger.getInstance().log("=== ClientHandler: ERROR - out is null! ===");
             }
         }
         
-        public void sendText(String message) {
-            if (out != null) {
+        public synchronized void sendText(String message) {
+            if (out != null && connected) {
                 try {
-                    System.out.println("=== ClientHandler: Sending text: " + message + " ===");
+                    NetworkLogger.getInstance().log("=== ClientHandler: Sending text: " + message + " ===");
                     out.println(message);
                     out.flush();
-                    System.out.println("=== ClientHandler: Text sent successfully ===");
+                    NetworkLogger.getInstance().log("=== ClientHandler: Text sent successfully ===");
                 } catch (Exception e) {
                     server.logWindow.addLog("Error sending text: " + e.getMessage());
-                    System.out.println("=== ClientHandler: Error sending text: " + e.getMessage() + " ===");
+                    NetworkLogger.getInstance().log("=== ClientHandler: Error sending text: " + e.getMessage() + " ===");
+                    connected = false;
                 }
             }
         }

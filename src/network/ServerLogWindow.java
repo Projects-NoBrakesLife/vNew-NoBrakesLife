@@ -1,15 +1,22 @@
 package network;
 
+import game.FontManager;
 import javax.swing.*;
+import javax.swing.border.Border;
 import java.awt.*;
 import java.util.Date;
 import java.text.SimpleDateFormat;
+import java.util.List;
+import java.io.File;
 
 public class ServerLogWindow extends JFrame {
     private JTextArea logArea;
     private JScrollPane scrollPane;
     private JButton clearButton;
     private SimpleDateFormat dateFormat;
+    private JPanel playerListPanel;
+    private GameServer server;
+    private java.util.Timer updateTimer;
     
     public ServerLogWindow() {
         initializeWindow();
@@ -17,6 +24,11 @@ public class ServerLogWindow extends JFrame {
         centerWindow();
         
         dateFormat = new SimpleDateFormat("HH:mm:ss");
+        startPlayerListUpdate();
+    }
+    
+    public void setServer(GameServer server) {
+        this.server = server;
     }
     
     private void initializeWindow() {
@@ -44,7 +56,24 @@ public class ServerLogWindow extends JFrame {
     
     private void createComponents() {
         setLayout(new BorderLayout());
+   
+        playerListPanel = new JPanel();
+        playerListPanel.setLayout(new BoxLayout(playerListPanel, BoxLayout.Y_AXIS));
+        Border titledBorder = BorderFactory.createTitledBorder(
+            BorderFactory.createEmptyBorder(5, 5, 5, 5),
+            "ผู้เล่นออนไลน์",
+            0, 0,
+            FontManager.getThaiFont(Font.BOLD, 14)
+        );
+        playerListPanel.setBorder(titledBorder);
+        playerListPanel.setPreferredSize(new Dimension(220, 0));
+        playerListPanel.setBackground(new Color(250, 250, 250));
         
+        JScrollPane playerListScroll = new JScrollPane(playerListPanel);
+        playerListScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        playerListScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        
+ 
         logArea = new JTextArea();
         logArea.setEditable(false);
         logArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
@@ -52,10 +81,23 @@ public class ServerLogWindow extends JFrame {
         logArea.setForeground(Color.GREEN);
         
         scrollPane = new JScrollPane(logArea);
-        add(scrollPane, BorderLayout.CENTER);
         
-        JPanel buttonPanel = new JPanel(new FlowLayout());
-        clearButton = new JButton("Clear Log");
+   
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, scrollPane, playerListScroll);
+        splitPane.setDividerLocation(700);
+        splitPane.setResizeWeight(0.7);
+        add(splitPane, BorderLayout.CENTER);
+        
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
+        buttonPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        buttonPanel.setBackground(new Color(240, 240, 240));
+        clearButton = new JButton("ล้าง Log");
+        clearButton.setFont(FontManager.getThaiFont(Font.BOLD, 12));
+        clearButton.setPreferredSize(new Dimension(100, 30));
+        clearButton.setBackground(new Color(158, 158, 158));
+        clearButton.setForeground(Color.WHITE);
+        clearButton.setFocusPainted(false);
+        clearButton.setBorderPainted(false);
         clearButton.addActionListener(_ -> {
             logArea.setText("");
             addLog("Log cleared");
@@ -63,6 +105,8 @@ public class ServerLogWindow extends JFrame {
         buttonPanel.add(clearButton);
         
         add(buttonPanel, BorderLayout.SOUTH);
+        
+        updatePlayerList();
     }
     
     private void centerWindow() {
@@ -80,12 +124,345 @@ public class ServerLogWindow extends JFrame {
         });
     }
     
+    private void startPlayerListUpdate() {
+        updateTimer = new java.util.Timer(true);
+        updateTimer.scheduleAtFixedRate(new java.util.TimerTask() {
+            @Override
+            public void run() {
+                SwingUtilities.invokeLater(() -> updatePlayerList());
+            }
+        }, 0, 500);
+    }
+    
+    private void updatePlayerList() {
+        if (server == null) {
+            playerListPanel.removeAll();
+            playerListPanel.revalidate();
+            playerListPanel.repaint();
+            return;
+        }
+        
+        List<PlayerInfo> players = server.getPlayers();
+        playerListPanel.removeAll();
+        
+        for (PlayerInfo player : players) {
+            if (player.isConnected) {
+                JPanel playerCard = createPlayerCard(player);
+                playerListPanel.add(playerCard);
+                playerListPanel.add(Box.createVerticalStrut(5));
+            }
+        }
+        
+        playerListPanel.revalidate();
+        playerListPanel.repaint();
+    }
+    
+    private JPanel createPlayerCard(PlayerInfo player) {
+        JPanel card = new JPanel(new BorderLayout(8, 8));
+        card.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(200, 200, 200), 1),
+            BorderFactory.createEmptyBorder(10, 10, 10, 10)
+        ));
+        card.setBackground(new Color(255, 255, 255));
+        card.setMaximumSize(new Dimension(Integer.MAX_VALUE, 130));
+        
+        card.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent e) {
+                card.setBackground(new Color(240, 248, 255));
+                card.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createLineBorder(new Color(100, 149, 237), 2),
+                    BorderFactory.createEmptyBorder(10, 10, 10, 10)
+                ));
+            }
+            
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent e) {
+                card.setBackground(new Color(255, 255, 255));
+                card.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createLineBorder(new Color(200, 200, 200), 1),
+                    BorderFactory.createEmptyBorder(10, 10, 10, 10)
+                ));
+            }
+        });
+
+        try {
+            String iconPath = "assets" + File.separator + "ui" + File.separator + "hud" + File.separator + player.playerId + ".png";
+            File iconFile = new File(iconPath);
+            if (!iconFile.exists()) {
+                iconFile = new File(System.getProperty("user.dir") + File.separator + iconPath);
+            }
+            
+            if (iconFile.exists()) {
+                ImageIcon icon = new ImageIcon(iconFile.getAbsolutePath());
+                Image img = icon.getImage();
+                Image scaledImg = img.getScaledInstance(80, 80, Image.SCALE_SMOOTH);
+                icon = new ImageIcon(scaledImg);
+                
+                JLabel iconLabel = new JLabel(icon);
+                iconLabel.setHorizontalAlignment(JLabel.CENTER);
+                card.add(iconLabel, BorderLayout.CENTER);
+            }
+        } catch (Exception e) {
+            JLabel iconLabel = new JLabel("P" + player.playerId);
+            iconLabel.setHorizontalAlignment(JLabel.CENTER);
+            card.add(iconLabel, BorderLayout.CENTER);
+        }
+        
+        JLabel nameLabel = new JLabel(player.playerName, JLabel.CENTER);
+        nameLabel.setFont(FontManager.getThaiFont(Font.BOLD, 13));
+        nameLabel.setForeground(new Color(50, 50, 50));
+        card.add(nameLabel, BorderLayout.SOUTH);
+        
+        JLabel hintLabel = new JLabel("(ดับเบิ้ลคลิกเพื่อแก้ไข)", JLabel.CENTER);
+        hintLabel.setFont(FontManager.getThaiFont(Font.PLAIN, 10));
+        hintLabel.setForeground(new Color(150, 150, 150));
+        JPanel hintPanel = new JPanel(new BorderLayout());
+        hintPanel.setOpaque(false);
+        hintPanel.add(nameLabel, BorderLayout.CENTER);
+        hintPanel.add(hintLabel, BorderLayout.SOUTH);
+        card.remove(nameLabel);
+        card.add(hintPanel, BorderLayout.SOUTH);
+        
+        card.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    showPlayerStatsDialog(player);
+                }
+            }
+        });
+        card.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        
+        return card;
+    }
+    
+    private void showPlayerStatsDialog(PlayerInfo player) {
+        JDialog dialog = new JDialog(this, "แก้ไข Stats - " + player.playerName, true);
+        dialog.setLayout(new BorderLayout());
+        dialog.setSize(450, 550);
+        dialog.setLocationRelativeTo(this);
+        dialog.getContentPane().setBackground(new Color(250, 250, 250));
+        
+        JPanel titlePanel = new JPanel(new BorderLayout());
+        titlePanel.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
+        titlePanel.setBackground(new Color(240, 240, 240));
+        JLabel titleLabel = new JLabel("แก้ไข Stats - " + player.playerName);
+        titleLabel.setFont(FontManager.getThaiFont(Font.BOLD, 16));
+        titlePanel.add(titleLabel, BorderLayout.WEST);
+        dialog.add(titlePanel, BorderLayout.NORTH);
+        
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(30, 30, 20, 30));
+        mainPanel.setBackground(new Color(250, 250, 250));
+        
+        int[] skillValue = {player.skill};
+        int[] educationValue = {player.education};
+        int[] healthValue = {player.health};
+        int[] moneyValue = {player.money};
+        
+        JPanel skillPanel = createStatPanel("ค่าทักษะ:", skillValue[0], (newValue) -> skillValue[0] = newValue);
+        mainPanel.add(skillPanel);
+        mainPanel.add(Box.createVerticalStrut(20));
+        
+        JPanel educationPanel = createStatPanel("ค่าการเรียน:", educationValue[0], (newValue) -> educationValue[0] = newValue);
+        mainPanel.add(educationPanel);
+        mainPanel.add(Box.createVerticalStrut(20));
+        
+        JPanel healthPanel = createStatPanel("ค่าสุขภาพ:", healthValue[0], (newValue) -> healthValue[0] = newValue);
+        mainPanel.add(healthPanel);
+        mainPanel.add(Box.createVerticalStrut(20));
+        
+        JPanel moneyPanel = createStatPanel("ค่าเงิน:", moneyValue[0], (newValue) -> moneyValue[0] = newValue);
+        mainPanel.add(moneyPanel);
+        
+        dialog.add(mainPanel, BorderLayout.CENTER);
+        
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 0));
+        buttonPanel.setBorder(BorderFactory.createEmptyBorder(15, 20, 20, 20));
+        buttonPanel.setBackground(new Color(250, 250, 250));
+        
+        JButton saveButton = new JButton("บันทึก");
+        saveButton.setFont(FontManager.getThaiFont(Font.BOLD, 14));
+        saveButton.setPreferredSize(new Dimension(120, 35));
+        saveButton.setBackground(new Color(76, 175, 80));
+        saveButton.setForeground(Color.WHITE);
+        saveButton.setFocusPainted(false);
+        saveButton.setBorderPainted(false);
+        saveButton.addActionListener(_ -> {
+            if (server != null) {
+                player.skill = skillValue[0];
+                player.education = educationValue[0];
+                player.health = healthValue[0];
+                player.money = moneyValue[0];
+                
+                PlayerInfo tempPlayer = new PlayerInfo(player.playerId, player.playerName, player.isConnected);
+                tempPlayer.skill = skillValue[0];
+                tempPlayer.education = educationValue[0];
+                tempPlayer.health = healthValue[0];
+                tempPlayer.money = moneyValue[0];
+                
+                new Thread(() -> {
+                    server.broadcastPlayerStatsUpdate(tempPlayer);
+                }).start();
+            }
+            dialog.dispose();
+        });
+        
+        JButton cancelButton = new JButton("ยกเลิก");
+        cancelButton.setFont(FontManager.getThaiFont(Font.BOLD, 14));
+        cancelButton.setPreferredSize(new Dimension(120, 35));
+        cancelButton.setBackground(new Color(158, 158, 158));
+        cancelButton.setForeground(Color.WHITE);
+        cancelButton.setFocusPainted(false);
+        cancelButton.setBorderPainted(false);
+        cancelButton.addActionListener(_ -> dialog.dispose());
+        
+        buttonPanel.add(saveButton);
+        buttonPanel.add(cancelButton);
+        dialog.add(buttonPanel, BorderLayout.SOUTH);
+        
+        dialog.setVisible(true);
+    }
+    
+    private interface StatUpdateCallback {
+        void update(int newValue);
+    }
+    
+    private JPanel createStatPanel(String labelText, int initialValue, StatUpdateCallback callback) {
+        JPanel panel = new JPanel(new BorderLayout(15, 5));
+        panel.setOpaque(false);
+        
+        JLabel label = new JLabel(labelText);
+        label.setFont(FontManager.getThaiFont(Font.BOLD, 15));
+        label.setForeground(new Color(60, 60, 60));
+        panel.add(label, BorderLayout.WEST);
+        
+        JPanel valuePanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 0));
+        valuePanel.setOpaque(false);
+        
+        JLabel valueLabel = new JLabel(String.valueOf(initialValue));
+        valueLabel.setFont(FontManager.getThaiFont(Font.BOLD, 18));
+        valueLabel.setPreferredSize(new Dimension(100, 35));
+        valueLabel.setHorizontalAlignment(JLabel.CENTER);
+        valueLabel.setOpaque(true);
+        valueLabel.setBackground(Color.WHITE);
+        valueLabel.setForeground(new Color(50, 50, 50));
+        valueLabel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(200, 200, 200), 1),
+            BorderFactory.createEmptyBorder(5, 10, 5, 10)
+        ));
+        
+        JButton decreaseButton = new JButton("-");
+        decreaseButton.setFont(FontManager.getThaiFont(Font.BOLD, 20));
+        decreaseButton.setPreferredSize(new Dimension(50, 40));
+        decreaseButton.setBackground(new Color(244, 67, 54));
+        decreaseButton.setForeground(Color.WHITE);
+        decreaseButton.setFocusPainted(false);
+        decreaseButton.setBorderPainted(false);
+        decreaseButton.addActionListener(_ -> {
+            try {
+                int current = Integer.parseInt(valueLabel.getText());
+                int newValue = Math.max(0, current - 1);
+                valueLabel.setText(String.valueOf(newValue));
+                callback.update(newValue);
+                valuePanel.revalidate();
+                valuePanel.repaint();
+            } catch (Exception ex) {
+                NetworkLogger.getInstance().log("Error decreasing value: " + ex.getMessage());
+            }
+        });
+        valuePanel.add(decreaseButton);
+        valuePanel.add(valueLabel);
+        
+        JButton increaseButton = new JButton("+");
+        increaseButton.setFont(FontManager.getThaiFont(Font.BOLD, 20));
+        increaseButton.setPreferredSize(new Dimension(50, 40));
+        increaseButton.setBackground(new Color(76, 175, 80));
+        increaseButton.setForeground(Color.WHITE);
+        increaseButton.setFocusPainted(false);
+        increaseButton.setBorderPainted(false);
+        increaseButton.addActionListener(_ -> {
+            try {
+                int current = Integer.parseInt(valueLabel.getText());
+                int newValue = current + 1;
+                valueLabel.setText(String.valueOf(newValue));
+                callback.update(newValue);
+                valuePanel.revalidate();
+                valuePanel.repaint();
+            } catch (Exception ex) {
+                NetworkLogger.getInstance().log("Error increasing value: " + ex.getMessage());
+            }
+        });
+        valuePanel.add(increaseButton);
+        
+        JTextField inputField = new JTextField(String.valueOf(initialValue), 5);
+        inputField.setFont(FontManager.getThaiFont(Font.PLAIN, 16));
+        inputField.setHorizontalAlignment(JTextField.CENTER);
+        inputField.setPreferredSize(new Dimension(100, 35));
+        inputField.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(100, 149, 237), 2),
+            BorderFactory.createEmptyBorder(5, 10, 5, 10)
+        ));
+        inputField.setVisible(false);
+        inputField.addActionListener(_ -> {
+            try {
+                int newValue = Integer.parseInt(inputField.getText());
+                valueLabel.setText(String.valueOf(newValue));
+                callback.update(newValue);
+                inputField.setVisible(false);
+                valueLabel.setVisible(true);
+            } catch (NumberFormatException e) {
+                inputField.setText(valueLabel.getText());
+            }
+        });
+        valuePanel.add(inputField);
+        
+        valueLabel.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                valueLabel.setVisible(false);
+                inputField.setText(valueLabel.getText());
+                inputField.setVisible(true);
+                inputField.requestFocus();
+                inputField.selectAll();
+            }
+            
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent e) {
+                valueLabel.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createLineBorder(new Color(100, 149, 237), 2),
+                    BorderFactory.createEmptyBorder(5, 10, 5, 10)
+                ));
+            }
+            
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent e) {
+                if (valueLabel.isVisible()) {
+                    valueLabel.setBorder(BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(new Color(200, 200, 200), 1),
+                        BorderFactory.createEmptyBorder(5, 10, 5, 10)
+                    ));
+                }
+            }
+        });
+        
+        panel.add(valuePanel, BorderLayout.CENTER);
+        
+        return panel;
+    }
+    
+    
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             GameServer server = new GameServer(8888);
+            ServerLogWindow logWindow = server.getLogWindow();
+            if (logWindow != null) {
+                logWindow.setServer(server);
+            }
             
             new Thread(() -> server.start()).start();
         });
     }
 }
-
