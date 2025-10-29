@@ -1,6 +1,5 @@
 package game;
 
-import editor.Waypoint;
 import network.NetworkManager;
 
 import java.util.ArrayList;
@@ -15,7 +14,6 @@ public class GameScene {
     private Point mousePosition;
     private int currentHoverIndex;
     private ArrayList<Player> players;
-    private ArrayList<ArrayList<Waypoint>> allPaths;
     private boolean isOnlineMode;
     private NetworkManager networkManager;
     private ArrayList<MenuElement> hudElements;
@@ -41,7 +39,6 @@ public class GameScene {
         mousePosition = new Point(0, 0);
         currentHoverIndex = -1;
         players = new ArrayList<>();
-        allPaths = GameConfig.getWaypointPaths();
         networkManager = NetworkManager.getInstance();
         hudElements = new ArrayList<>();
         loadGameHUD();
@@ -530,7 +527,7 @@ public class GameScene {
                         }
                         
                         localPlayer.setDirection(config.direction);
-                        localPlayer.setDestination(targetX, targetY, allPaths);
+                        localPlayer.setDestination(targetX, targetY);
                         
                         if (isOnlineMode && networkManager.isConnected()) {
                             networkManager.sendPlayerMove(localPlayer);
@@ -589,7 +586,7 @@ public class GameScene {
             
             if (isMoving && !wasMoving) {
                 remotePlayer.setDirection(direction);
-                remotePlayer.setDestination(x, y, allPaths, false);
+                remotePlayer.setDestination(x, y, false);
             } else if (!isMoving && wasMoving) {
                 remotePlayer.forceUpdateAnimation();
                 remotePlayer.setX(x);

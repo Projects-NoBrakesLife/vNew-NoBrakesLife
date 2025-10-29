@@ -5,7 +5,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import javax.imageio.ImageIO;
 import java.util.ArrayList;
-import editor.Waypoint;
 
 public class Player {
     private double x;
@@ -20,8 +19,6 @@ public class Player {
     private boolean isBlinking;
     private long animationInterval;
     private double scale;
-    private ArrayList<Waypoint> currentPath;
-    private int currentWaypointIndex;
     private double speed;
     private boolean isMoving;
     private boolean isAnimating;
@@ -50,8 +47,6 @@ public class Player {
         this.isBlinking = false;
         this.animationInterval = 300;
         this.scale = 0.4;
-        this.currentPath = new ArrayList<>();
-        this.currentWaypointIndex = 0;
         this.speed = 3.0;
         this.isMoving = false;
         this.currentDirection = "FRONT";
@@ -144,14 +139,6 @@ public class Player {
                     isAnimating = false;
                     currentAnimFrame = 0;
                     isMoving = false;
-                    
-                    if (currentPath != null && currentWaypointIndex < currentPath.size()) {
-                        Waypoint target = currentPath.get(currentWaypointIndex);
-                        x = target.getX();
-                        y = target.getY();
-                        currentPath = null;
-                        currentWaypointIndex = 0;
-                    }
                 }
             }
         } else {
@@ -163,9 +150,9 @@ public class Player {
     }
     
     public double consumeTime(double distance) {
-        double timeCost = 5.0 + (distance / 100.0);
-        if (timeCost > 7.0) {
-            timeCost = 7.0;
+        double timeCost = GameConfig.TIME_BASE_COST + (distance / GameConfig.TIME_DISTANCE_MULTIPLIER);
+        if (timeCost > GameConfig.TIME_MAX_COST) {
+            timeCost = GameConfig.TIME_MAX_COST;
         }
         
         double oldTime = remainingTime;
@@ -180,11 +167,11 @@ public class Player {
         return actualTimeCost;
     }
     
-    public void setDestination(double targetX, double targetY, ArrayList<ArrayList<Waypoint>> allPaths) {
-        setDestination(targetX, targetY, allPaths, true);
+    public void setDestination(double targetX, double targetY) {
+        setDestination(targetX, targetY, true);
     }
     
-    public void setDestination(double targetX, double targetY, ArrayList<ArrayList<Waypoint>> allPaths, boolean consumeTime) {
+    public void setDestination(double targetX, double targetY, boolean consumeTime) {
         if (isMoving || isAnimating) {
             System.out.println("Player " + playerId + " is already moving, ignoring setDestination");
             return;
@@ -202,9 +189,6 @@ public class Player {
             consumeTime(distance);
         }
         
-        currentPath = new ArrayList<>();
-        currentPath.add(new Waypoint(targetX, targetY));
-        currentWaypointIndex = 0;
         isMoving = true;
         isAnimating = true;
         currentAnimFrame = 0;
@@ -225,7 +209,7 @@ public class Player {
     }
     
     public boolean hasDestination() {
-        return currentPath != null && !currentPath.isEmpty() && currentWaypointIndex < currentPath.size();
+        return isMoving || isAnimating;
     }
     
     public void setMoving(boolean moving) {
@@ -246,13 +230,6 @@ public class Player {
                 if (currentAnimFrame >= frontWalkFrames.size()) {
                     isAnimating = false;
                     currentAnimFrame = 0;
-                    
-                    if (currentPath != null && currentWaypointIndex < currentPath.size()) {
-                        Waypoint target = currentPath.get(currentWaypointIndex);
-                        x = target.getX();
-                        y = target.getY();
-                    }
-                    
                     isMoving = false;
                 }
             }
