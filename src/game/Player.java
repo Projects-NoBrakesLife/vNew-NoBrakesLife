@@ -25,6 +25,8 @@ public class Player {
     private int currentAnimFrame;
     private long lastAnimTime;
     private boolean showIndicator;
+    private double destinationX;
+    private double destinationY;
     
     private int playerId = 1;
     
@@ -53,6 +55,8 @@ public class Player {
         this.isAnimating = false;
         this.currentAnimFrame = 0;
         this.lastAnimTime = System.currentTimeMillis();
+        this.destinationX = x;
+        this.destinationY = y;
         this.frontWalkFrames = new ArrayList<>();
         this.showIndicator = false;
         
@@ -139,6 +143,9 @@ public class Player {
                     isAnimating = false;
                     currentAnimFrame = 0;
                     isMoving = false;
+                    
+                    x = destinationX;
+                    y = destinationY;
                 }
             }
         } else {
@@ -189,6 +196,8 @@ public class Player {
             consumeTime(distance);
         }
         
+        this.destinationX = targetX;
+        this.destinationY = targetY;
         isMoving = true;
         isAnimating = true;
         currentAnimFrame = 0;
@@ -231,6 +240,9 @@ public class Player {
                     isAnimating = false;
                     currentAnimFrame = 0;
                     isMoving = false;
+                    
+                    x = destinationX;
+                    y = destinationY;
                 }
             }
         } else {
