@@ -1,6 +1,7 @@
 package game;
 
 import network.NetworkManager;
+import javax.swing.SwingUtilities;
 
 import java.util.ArrayList;
 import java.awt.*;
@@ -17,6 +18,8 @@ public class GameScene {
     private boolean isOnlineMode;
     private NetworkManager networkManager;
     private ArrayList<MenuElement> hudElements;
+    private java.util.HashMap<Integer, Integer> remotePlayerHoverIndexes;
+    private MenuElement playerIconElement;
     
     private int currentTurnPlayerId = 1;
     private int currentTurnNumber = 1;
@@ -27,6 +30,7 @@ public class GameScene {
     private static final long TURN_DISPLAY_FADE_IN = 500;
     private static final long TURN_DISPLAY_FADE_OUT = 500;
     private boolean waitingForTurnToComplete = false;
+    private long lastTimeDecrease = 0;
     
     public GameScene() {
         this(false);
@@ -41,6 +45,7 @@ public class GameScene {
         players = new ArrayList<>();
         networkManager = NetworkManager.getInstance();
         hudElements = new ArrayList<>();
+        remotePlayerHoverIndexes = new java.util.HashMap<>();
         loadGameHUD();
         
         if (isOnlineMode) {
@@ -81,6 +86,9 @@ public class GameScene {
     private void loadGameHUD() {
         MenuElement hudImg = new MenuElement(MenuElement.ElementType.IMAGE, "assets" + File.separator + "ui" + File.separator + "hud" + File.separator + "hud.png", -48.0, 736.0, 512.4, 325.7); // Y + 20
         hudElements.add(hudImg);
+        
+        playerIconElement = new MenuElement(MenuElement.ElementType.IMAGE, "assets" + File.separator + "ui" + File.separator + "hud" + File.separator + "1.png", -80.0, 693.0, 349.4, 349.4);
+        hudElements.add(playerIconElement);
         
         Player localPlayer = getLocalPlayer();
         
@@ -129,17 +137,6 @@ public class GameScene {
         String hoverName = null;
         int hoverIndex = -1;
         
-        for (int i = 0; i < hoverObjects.size(); i++) {
-            GameObject obj = hoverObjects.get(i);
-            if (isHovering(obj)) {
-                obj.render(g2d);
-                anyHovering = true;
-                hoverName = objectNames.get(i);
-                hoverIndex = i;
-                break;
-            }
-        }
-        
         Player localPlayerForTurn = null;
         if (isOnlineMode) {
             int localPlayerIndex = networkManager.getPlayerId() - 1;
@@ -150,6 +147,50 @@ public class GameScene {
             localPlayerForTurn = players.get(0);
         }
         
+      
+        long currentTime = System.currentTimeMillis();
+        if (isMyTurn() && localPlayerForTurn != null && localPlayerForTurn.hasTimeRemaining()) {
+            if (lastTimeDecrease == 0 || (currentTime - lastTimeDecrease) >= GameConfig.TIME_AUTO_DECREASE_INTERVAL_MS) {
+                double oldTime = localPlayerForTurn.getRemainingTime();
+                double newTime = Math.max(0.0, oldTime - GameConfig.TIME_AUTO_DECREASE);
+                localPlayerForTurn.setRemainingTime(newTime);
+                lastTimeDecrease = currentTime;
+                
+                if (oldTime > 0.0 && newTime <= 0.0) {
+                
+                    nextTurn();
+                }
+            }
+        }
+        
+
+        if (isMyTurn()) {
+            for (int i = 0; i < hoverObjects.size(); i++) {
+                GameObject obj = hoverObjects.get(i);
+                if (isHovering(obj)) {
+                    obj.render(g2d);
+                    anyHovering = true;
+                    hoverName = objectNames.get(i);
+                    hoverIndex = i;
+                    break;
+                }
+            }
+        }
+        
+   
+        for (java.util.Map.Entry<Integer, Integer> entry : remotePlayerHoverIndexes.entrySet()) {
+            int remotePlayerId = entry.getKey();
+            int remoteHoverIndex = entry.getValue();
+            
+            if (remoteHoverIndex >= 0 && remoteHoverIndex < hoverObjects.size()) {
+                GameObject hoverObj = hoverObjects.get(remoteHoverIndex);
+                if (remotePlayerId == currentTurnPlayerId) {
+                    hoverObj.render(g2d);
+                }
+            }
+        }
+        
+      
         for (Player player : players) {
             if (!player.isRemotePlayer()) {
                 player.update();
@@ -180,10 +221,10 @@ public class GameScene {
             int localPlayerIndex = networkManager.getPlayerId() - 1;
             if (localPlayerIndex >= 0 && localPlayerIndex < players.size()) {
                 Player localPlayer = players.get(localPlayerIndex);
-                long currentTime = System.currentTimeMillis();
-                if (!networkManager.hasLastUpdate() || (currentTime - networkManager.getLastUpdateTime()) > 50) {
+                long networkUpdateTime = System.currentTimeMillis();
+                if (!networkManager.hasLastUpdate() || (networkUpdateTime - networkManager.getLastUpdateTime()) > 50) {
                     networkManager.sendPlayerMove(localPlayer);
-                    networkManager.setLastUpdateTime(currentTime);
+                    networkManager.setLastUpdateTime(networkUpdateTime);
                 }
             }
         }
@@ -193,6 +234,16 @@ public class GameScene {
             currentHoverIndex = hoverIndex;
         } else if (!anyHovering) {
             currentHoverIndex = -1;
+        }
+        
+
+        if (isOnlineMode && networkManager.isConnected() && isMyTurn()) {
+            int localPlayerId = networkManager.getPlayerId();
+            if (anyHovering && hoverIndex != -1) {
+                networkManager.sendPlayerHover(localPlayerId, hoverIndex);
+            } else if (!anyHovering) {
+                networkManager.sendPlayerHover(localPlayerId, -1);
+            }
         }
         
         if (anyHovering && hoverName != null) {
@@ -208,29 +259,38 @@ public class GameScene {
             currentTurnPlayer = players.get(0);
         }
         
+      
+        if (playerIconElement != null) {
+            String currentIconPath = playerIconElement.getImagePath();
+            String newIconPath = "assets" + File.separator + "ui" + File.separator + "hud" + File.separator + currentTurnPlayerId + ".png";
+            if (!newIconPath.equals(currentIconPath)) {
+                playerIconElement.setImagePath(newIconPath);
+            }
+        }
+        
         for (int i = 0; i < hudElements.size(); i++) {
             MenuElement element = hudElements.get(i);
             
-            if (i >= 1 && i <= 4 && element.getType() == MenuElement.ElementType.TEXT) {
+            if (i >= 2 && i <= 5 && element.getType() == MenuElement.ElementType.TEXT) {
                 String newText = "";
                 
                 switch (i) {
-                    case 1:
+                    case 2:
                         newText = "ค่าทักษะ: " + (currentTurnPlayer != null ? currentTurnPlayer.getSkill() : 0);
                         break;
-                    case 2:
+                    case 3:
                         newText = "ค่าสุขภาพ: " + (currentTurnPlayer != null ? currentTurnPlayer.getHealth() : 100);
                         break;
-                    case 3:
+                    case 4:
                         newText = "ค่าการเรียน: " + (currentTurnPlayer != null ? currentTurnPlayer.getEducation() : 0);
                         break;
-                    case 4:
+                    case 5:
                         newText = "ค่าเงิน: " + (currentTurnPlayer != null ? currentTurnPlayer.getMoney() : 500);
                         break;
                 }
                 
                 element.setText(newText);
-            } else if (i == 6 && element.getType() == MenuElement.ElementType.TEXT) {
+            } else if (i == 7 && element.getType() == MenuElement.ElementType.TEXT) {
                 if (currentTurnPlayer != null) {
                     double remaining = currentTurnPlayer.getRemainingTime();
                     int remainingInt = (int)Math.ceil(remaining);
@@ -356,6 +416,16 @@ public class GameScene {
             return networkManager.getPlayerId() == currentTurnPlayerId;
         }
         return currentTurnPlayerId == 1;
+    }
+    
+    public void setRemotePlayerHover(int playerId, int hoverIndex) {
+        if (hoverIndex >= -1) {
+            if (hoverIndex == -1) {
+                remotePlayerHoverIndexes.remove(playerId);
+            } else {
+                remotePlayerHoverIndexes.put(playerId, hoverIndex);
+            }
+        }
     }
     
     public void setTurn(int turnPlayerId, int turnNumber, String updateType) {
@@ -535,6 +605,40 @@ public class GameScene {
                         }
                         
                         waitingForTurnToComplete = true;
+
+                        if (config.name != null && config.name.equals("ร้านขายของชำ")) {
+                            javax.swing.SwingUtilities.invokeLater(() -> {
+                                game.PopupWindow.PopupWindowConfig cfg = new game.PopupWindow.PopupWindowConfig();
+                                cfg.width = 1632;
+                                cfg.height = 918;
+                                cfg.backgroundColor = new java.awt.Color(102, 102, 102);
+                                cfg.useBackgroundImage = false;
+
+                                java.util.ArrayList<game.MenuElement> popupElements = new java.util.ArrayList<>();
+                                popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "NPC_Fallback.png", 888.0, -20.0, 1024.0, 1024.0));
+                                popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Background-Border-02.png", 869.0, -164.0, 1215.8, 1047.8));
+                                popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "TEMP_Exit_button.png", 22.0, 15.0, 149.0, 95.0));
+                                popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Square.png", 42.0, 152.0, 153.6, 153.6));
+                                popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Price Tag Background.png", 130.0, 287.0, 104.0, 32.0));
+                                popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Square.png", 265.0, 152.0, 153.6, 153.6));
+                                popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Furniture_KnivesWall.png", 273.0, 157.0, 136.8, 136.8));
+                                popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Price Tag Background.png", 359.0, 291.0, 104.0, 32.0));
+                                popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Icon-Attribute-Cash.png", 300.0, 246.0, 107.5, 107.5));
+                                popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Icon-Attribute-Cash.png", 73.0, 242.0, 108.2, 108.2));
+                                popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Furniture_Fridge.png", 41.0, 151.0, 136.8, 136.8));
+
+                                game.MenuElement t1 = new game.MenuElement("120", 396.0, 316.0, 25);
+                                t1.setTextColor(new java.awt.Color(0, 0, 0));
+                                popupElements.add(t1);
+
+                                game.MenuElement t2 = new game.MenuElement("550", 164.0, 313.0, 23);
+                                t2.setTextColor(new java.awt.Color(0, 0, 0));
+                                popupElements.add(t2);
+
+                                game.PopupWindow window = new game.PopupWindow(cfg, popupElements);
+                                window.setVisible(true);
+                            });
+                        }
                         
                         System.out.println("=== Turn started: Player " + (isOnlineMode ? networkManager.getPlayerId() : 1) + " clicked, remaining time: " + localPlayer.getRemainingTime() + " hours ===");
                     }
@@ -620,6 +724,58 @@ public class GameScene {
         int playerIndex = playerId - 1;
         if (playerIndex >= 0 && playerIndex < players.size()) {
             players.remove(playerIndex);
+        }
+    }
+    
+    public synchronized void updatePlayerStats(int playerId, int skill, int education, int health, int money) {
+        int playerIndex = playerId - 1;
+        if (playerIndex >= 0 && playerIndex < players.size()) {
+            Player player = players.get(playerIndex);
+            player.setSkill(skill);
+            player.setEducation(education);
+            player.setHealth(health);
+            player.setMoney(money);
+            System.out.println("=== GameScene: Updated stats for Player " + playerId + " - Skill:" + skill + " Education:" + education + " Health:" + health + " Money:" + money + " ===");
+            
+            SwingUtilities.invokeLater(() -> {
+                updateHUDStats();
+            });
+        }
+    }
+    
+    private void updateHUDStats() {
+        Player currentTurnPlayer = null;
+        if (isOnlineMode) {
+            if (currentTurnPlayerId > 0 && currentTurnPlayerId <= players.size()) {
+                currentTurnPlayer = players.get(currentTurnPlayerId - 1);
+            }
+        } else if (!players.isEmpty()) {
+            currentTurnPlayer = players.get(0);
+        }
+   
+        for (int i = 0; i < hudElements.size(); i++) {
+            MenuElement element = hudElements.get(i);
+            
+            if (i >= 2 && i <= 5 && element.getType() == MenuElement.ElementType.TEXT) {
+                String newText = "";
+                
+                switch (i) {
+                    case 2:
+                        newText = "ค่าทักษะ: " + (currentTurnPlayer != null ? currentTurnPlayer.getSkill() : 0);
+                        break;
+                    case 3:
+                        newText = "ค่าสุขภาพ: " + (currentTurnPlayer != null ? currentTurnPlayer.getHealth() : 100);
+                        break;
+                    case 4:
+                        newText = "ค่าการเรียน: " + (currentTurnPlayer != null ? currentTurnPlayer.getEducation() : 0);
+                        break;
+                    case 5:
+                        newText = "ค่าเงิน: " + (currentTurnPlayer != null ? currentTurnPlayer.getMoney() : 500);
+                        break;
+                }
+                
+                element.setText(newText);
+            }
         }
     }
 }
