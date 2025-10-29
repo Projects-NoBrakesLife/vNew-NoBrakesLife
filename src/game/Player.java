@@ -230,6 +230,10 @@ public class Player {
     }
     
     public void forceUpdateAnimation() {
+        if (!isRemotePlayer && !isAnimating) {
+            return;
+        }
+        
         long currentTime = System.currentTimeMillis();
         if (isAnimating) {
             if (currentTime - lastAnimTime >= 100) {

@@ -1,3 +1,3 @@
 masterVolume=0.7244151
-musicVolume=0.05207803
+musicVolume=0.046988975
 sfxVolume=1.0

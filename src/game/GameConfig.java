@@ -10,8 +10,16 @@ public class GameConfig {
     
     public static final long LOADING_SCREEN_DELAY_MS = 5000;
 
-    public static final String SERVER_HOST = "localhost";
+    private static String SERVER_HOST = "127.0.0.1";
     public static final int SERVER_PORT = 8888;
+    
+    public static String getServerHost() {
+        return SERVER_HOST;
+    }
+    
+    public static void setServerHost(String host) {
+        SERVER_HOST = host;
+    }
     public static final int MAX_PLAYERS = 4;
     public static final int MIN_PLAYERS_TO_START = 2;
     public static final int MAX_TURNS = 4;

@@ -78,6 +78,10 @@ public class GameLobbyMenu extends JFrame {
         private MenuElement player1Text, player2Text, player3Text, player4Text, playerCountText;
         private MenuElement player1Img, player2Img, player3Img, player4Img;
         private MenuElement player1Icon, player2Icon, player3Icon, player4Icon;
+        
+        private MenuElement connectionErrorText, ipInputField, ipInputText, connectButton, connectButtonText, priceTagBg;
+        private javax.swing.JTextField ipTextField;
+        private boolean showConnectionUI = false;
 
         public MenuPanel() {
             uiElements = new ArrayList<>();
@@ -91,10 +95,18 @@ public class GameLobbyMenu extends JFrame {
             
             NetworkManager.getInstance().setLobbyMenu(GameLobbyMenu.this);
             if (!NetworkManager.getInstance().isConnected()) {
-                boolean connected = NetworkManager.getInstance().connect(GameConfig.SERVER_HOST, GameConfig.SERVER_PORT);
+                boolean connected = NetworkManager.getInstance().connect(GameConfig.getServerHost(), GameConfig.SERVER_PORT);
                 if (!connected) {
-                    JOptionPane.showMessageDialog(this, "ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้", "Connection Error", JOptionPane.ERROR_MESSAGE);
+                    showConnectionUI = true;
+                    if (playerCountText != null) {
+                        playerCountText.setText("ไม่พบเซิร์ฟเวอร์");
+                        playerCountText.setVisibility(true);
+                    }
+                    setupConnectionUI();
                 }
+            } else {
+                showConnectionUI = false;
+                hideConnectionUI();
             }
         }
 
@@ -145,17 +157,32 @@ public class GameLobbyMenu extends JFrame {
                 isHoveringButton = false;
 
                 for (MenuElement element : uiElements) {
-                    if (element.getType() == MenuElement.ElementType.IMAGE && element.getButtonId() != null) {
-                        String buttonId = element.getButtonId();
-                        if (!"back_icon".equals(buttonId)) {
-                            boolean isHovering = element.contains(mousePosition.x, mousePosition.y);
-                            element.setHovered(isHovering);
-                            
-                            if (isHovering) {
-                                isHoveringButton = true;
+                    if (element.getType() == MenuElement.ElementType.IMAGE) {
+                        if (element.getButtonId() != null) {
+                            String buttonId = element.getButtonId();
+                            if (!"back_icon".equals(buttonId)) {
+                                boolean isHovering = element.contains(mousePosition.x, mousePosition.y);
+                                element.setHovered(isHovering);
+                                
+                                
+                                if (isHovering) {
+                                    isHoveringButton = true;
+                                }
+                            } else {
+                                element.setHovered(false);
                             }
-                        } else {
-                            element.setHovered(false);
+                        } else if (element == menuPanel.player1Img || element == menuPanel.player2Img || 
+                                   element == menuPanel.player3Img || element == menuPanel.player4Img) {
+                            if (element.getVisibility()) {
+                                boolean isHovering = element.contains(mousePosition.x, mousePosition.y);
+                                element.setHovered(isHovering);
+                                
+                                if (isHovering) {
+                                    isHoveringButton = true;
+                                }
+                            } else {
+                                element.setHovered(false);
+                            }
                         }
                     }
                 }
@@ -191,48 +218,52 @@ public class GameLobbyMenu extends JFrame {
         }
 
         public static void loadMenuElements(MenuPanel panel) {
-            MenuElement img1 = new MenuElement(MenuElement.ElementType.IMAGE, "assets\\ui\\joins\\Computer-Crappy.png", 26.0, 293.0, 524.5, 481.4);
+            MenuElement img1 = new MenuElement(MenuElement.ElementType.IMAGE, "assets" + File.separator + "ui" + File.separator + "joins" + File.separator + "Computer-Crappy.png", 26.0, 293.0, 524.5, 481.4);
             panel.addElement(img1);
             
-            MenuElement img2 = new MenuElement(MenuElement.ElementType.IMAGE, "assets\\ui\\joins\\CD.png", 1496.0, 10.0, 774.7, 774.7);
+            MenuElement img2 = new MenuElement(MenuElement.ElementType.IMAGE, "assets" + File.separator + "ui" + File.separator + "joins" + File.separator + "CD.png", 1496.0, 10.0, 774.7, 774.7);
             panel.addElement(img2);
             
-            panel.player1Img = new MenuElement(MenuElement.ElementType.IMAGE, "assets\\ui\\joins\\1.png", 420.0, 479.0, 245.9, 245.9);
+            panel.player1Img = new MenuElement(MenuElement.ElementType.IMAGE, "assets" + File.separator + "ui" + File.separator + "joins" + File.separator + "1.png", 420.0, 479.0, 245.9, 245.9);
             panel.player1Img.setVisibility(false);
+            panel.player1Img.setUseScaleEffect(true);
             panel.addElement(panel.player1Img);
             
-            panel.player2Img = new MenuElement(MenuElement.ElementType.IMAGE, "assets\\ui\\joins\\2.png", 693.0, 479.0, 245.8, 245.8);
+            panel.player2Img = new MenuElement(MenuElement.ElementType.IMAGE, "assets" + File.separator + "ui" + File.separator + "joins" + File.separator + "2.png", 693.0, 479.0, 245.8, 245.8);
             panel.player2Img.setVisibility(false);
+            panel.player2Img.setUseScaleEffect(true);
             panel.addElement(panel.player2Img);
             
-            panel.player3Img = new MenuElement(MenuElement.ElementType.IMAGE, "assets\\ui\\joins\\3.png", 971.0, 478.1, 247.6, 247.6);
+            panel.player3Img = new MenuElement(MenuElement.ElementType.IMAGE, "assets" + File.separator + "ui" + File.separator + "joins" + File.separator + "3.png", 971.0, 478.1, 247.6, 247.6);
             panel.player3Img.setVisibility(false);
+            panel.player3Img.setUseScaleEffect(true);
             panel.addElement(panel.player3Img);
             
-            panel.player4Img = new MenuElement(MenuElement.ElementType.IMAGE, "assets\\ui\\joins\\4.png", 1255.0, 479.3, 245.3, 245.3);
+            panel.player4Img = new MenuElement(MenuElement.ElementType.IMAGE, "assets" + File.separator + "ui" + File.separator + "joins" + File.separator + "4.png", 1255.0, 479.3, 245.3, 245.3);
             panel.player4Img.setVisibility(false);
+            panel.player4Img.setUseScaleEffect(true);
             panel.addElement(panel.player4Img);
             
-            panel.player1Icon = new MenuElement(MenuElement.ElementType.IMAGE, "assets\\ui\\joins\\Icon-Attribute-Score.png", 550.5, 366.0, 193.2, 193.2);
+            panel.player1Icon = new MenuElement(MenuElement.ElementType.IMAGE, "assets" + File.separator + "ui" + File.separator + "joins" + File.separator + "Icon-Attribute-Score.png", 550.5, 366.0, 193.2, 193.2);
             panel.player1Icon.setVisibility(false);
             panel.addElement(panel.player1Icon);
             
-            panel.player2Icon = new MenuElement(MenuElement.ElementType.IMAGE, "assets\\ui\\joins\\Icon-Attribute-Score.png", 828.0, 364.3, 196.5, 196.5);
+            panel.player2Icon = new MenuElement(MenuElement.ElementType.IMAGE, "assets" + File.separator + "ui" + File.separator + "joins" + File.separator + "Icon-Attribute-Score.png", 828.0, 364.3, 196.5, 196.5);
             panel.player2Icon.setVisibility(false);
             panel.addElement(panel.player2Icon);
             
-            panel.player3Icon = new MenuElement(MenuElement.ElementType.IMAGE, "assets\\ui\\joins\\Icon-Attribute-Score.png", 1112.0, 378.4, 195.0, 195.0);
+            panel.player3Icon = new MenuElement(MenuElement.ElementType.IMAGE, "assets" + File.separator + "ui" + File.separator + "joins" + File.separator + "Icon-Attribute-Score.png", 1112.0, 378.4, 195.0, 195.0);
             panel.player3Icon.setVisibility(false);
             panel.addElement(panel.player3Icon);
             
-            panel.player4Icon = new MenuElement(MenuElement.ElementType.IMAGE, "assets\\ui\\joins\\Icon-Attribute-Score.png", 1402.0, 379.0, 193.8, 193.8);
+            panel.player4Icon = new MenuElement(MenuElement.ElementType.IMAGE, "assets" + File.separator + "ui" + File.separator + "joins" + File.separator + "Icon-Attribute-Score.png", 1402.0, 379.0, 193.8, 193.8);
             panel.player4Icon.setVisibility(false);
             panel.addElement(panel.player4Icon);
             
-            MenuElement img7 = new MenuElement(MenuElement.ElementType.IMAGE, "assets\\ui\\button\\Button-Medium-Gray.png", 693.0, 784.7, 540.0, 195.0);
+            MenuElement img7 = new MenuElement(MenuElement.ElementType.IMAGE, "assets" + File.separator + "ui" + File.separator + "button" + File.separator + "Button-Medium-Gray.png", 693.0, 784.7, 540.0, 195.0);
             panel.addElement(img7);
             
-            MenuElement img8 = new MenuElement(MenuElement.ElementType.IMAGE, "assets\\ui\\joins\\QuestNotepad_Small.png", 529.1, 66.0, 861.8, 312.4);
+            MenuElement img8 = new MenuElement(MenuElement.ElementType.IMAGE, "assets" + File.separator + "ui" + File.separator + "joins" + File.separator + "QuestNotepad_Small.png", 529.1, 66.0, 861.8, 312.4);
             panel.addElement(img8);
             
             panel.player1Text = new MenuElement("", 473.9, 530.0, 32);
@@ -276,6 +307,124 @@ public class GameLobbyMenu extends JFrame {
                     "back_icon",
                     () -> panel.backToGameMode());
             panel.addElement(backIcon);
+            
+            panel.priceTagBg = new MenuElement(MenuElement.ElementType.IMAGE, "assets" + File.separator + "ui" + File.separator + "icon" + File.separator + "Price Tag Background.png", 1012.5, 611.8, 260.0, 80.0);
+            panel.priceTagBg.setVisibility(false);
+            panel.addElement(panel.priceTagBg);
+            
+            panel.connectButtonText = new MenuElement("เชื่อมต่อ", 1069.0, 663.0, 41);
+            panel.connectButtonText.setVisibility(false);
+            panel.connectButtonText.setTextColor(new Color(30, 30, 40));
+            panel.addElement(panel.connectButtonText);
+            
+            panel.connectButton = new MenuElement(
+                    MenuElement.ElementType.IMAGE,
+                    "assets" + File.separator + "ui" + File.separator + "icon" + File.separator + "Icon-Settings-Controller #42393.png",
+                    866.7, 594.0, 186.7, 115.6,
+                    "connect_button",
+                    () -> panel.handleConnect());
+            panel.connectButton.setVisibility(false);
+            panel.connectButton.setUseScaleEffect(true);
+            panel.connectButton.setUseRotationEffect(true);
+            panel.addElement(panel.connectButton);
+            
+            panel.ipInputField = new MenuElement(MenuElement.ElementType.IMAGE, "assets" + File.separator + "ui" + File.separator + "Input-Field-Small-White_0.png",  677.5, 485.0, 565.0, 94.1);
+            panel.ipInputField.setVisibility(false);
+            panel.addElement(panel.ipInputField);
+            
+            panel.ipInputText = new MenuElement("10.10.10.10", 900.5, 551.0, 58);
+            panel.ipInputText.setVisibility(false);
+            panel.ipInputText.setTextColor(new Color(30, 30, 40));
+            panel.addElement(panel.ipInputText);
+            
+            panel.connectionErrorText = new MenuElement("โปรดเชื่อมต่อเชิฟเวอร์ให้ถูกต้อง กรอก IP ด้านล่าง", 613.5, 447.0, 32);
+            panel.connectionErrorText.setVisibility(false);
+          
+            panel.addElement(panel.connectionErrorText);
+        }
+        
+        private void setupConnectionUI() {
+            if (ipTextField == null) {
+                ipTextField = new javax.swing.JTextField(GameConfig.getServerHost());
+                ipTextField.setBounds((int)777.5, (int)485.0, 565, 94);
+                ipTextField.setFont(FontManager.getThaiFont(Font.PLAIN, 58));
+                ipTextField.setBackground(new Color(255, 255, 255, 0));
+                ipTextField.setForeground(new Color(30, 30, 40));
+                ipTextField.setBorder(null);
+                ipTextField.setOpaque(false);
+                ipTextField.setVisible(showConnectionUI);
+                add(ipTextField);
+            } else {
+                ipTextField.setText(GameConfig.getServerHost());
+                ipTextField.setBounds((int)777.5, (int)485.0, 565, 94);
+                ipTextField.setVisible(showConnectionUI);
+            }
+            
+            if (connectionErrorText != null) connectionErrorText.setVisibility(showConnectionUI);
+            if (ipInputField != null) {
+                ipInputField.setVisibility(showConnectionUI);
+                
+            }
+            if (ipInputText != null) {
+                ipInputText.setVisibility(false);
+            }
+            if (connectButton != null) connectButton.setVisibility(showConnectionUI);
+            if (connectButtonText != null) connectButtonText.setVisibility(showConnectionUI);
+            if (priceTagBg != null) priceTagBg.setVisibility(showConnectionUI);
+            
+            if (playerCountText != null) {
+                playerCountText.setText("ไม่พบเซิร์ฟเวอร์");
+                playerCountText.setVisibility(true);
+            }
+            
+            repaint();
+        }
+        
+        private void hideConnectionUI() {
+            if (connectionErrorText != null) connectionErrorText.setVisibility(false);
+            if (ipInputField != null) ipInputField.setVisibility(false);
+            if (ipInputText != null) ipInputText.setVisibility(false);
+            if (ipTextField != null) ipTextField.setVisible(false);
+            if (connectButton != null) connectButton.setVisibility(false);
+            if (connectButtonText != null) connectButtonText.setVisibility(false);
+            if (priceTagBg != null) priceTagBg.setVisibility(false);
+            repaint();
+        }
+        
+        private void handleConnect() {
+            String ipAddress = ipTextField != null ? ipTextField.getText().trim() : GameConfig.getServerHost();
+            if (ipAddress.isEmpty()) {
+                ipAddress = "localhost";
+            }
+            
+            NetworkManager.getInstance().disconnect();
+            
+            boolean connected = false;
+            try {
+                connected = NetworkManager.getInstance().connect(ipAddress, GameConfig.SERVER_PORT);
+            } catch (Exception e) {
+                System.err.println("=== Connection error: " + e.getMessage() + " ===");
+                connected = false;
+            }
+            
+            if (connected) {
+                GameConfig.setServerHost(ipAddress);
+                showConnectionUI = false;
+                hideConnectionUI();
+                if (playerCountText != null) {
+                    playerCountText.setText("กำลังโหลด...");
+                    playerCountText.setVisibility(true);
+                }
+            } else {
+                showConnectionUI = true;
+                if (playerCountText != null) {
+                    playerCountText.setText("Error เชื่อมต่อไม่ได้");
+                    playerCountText.setVisibility(true);
+                }
+                setupConnectionUI();
+            }
+            
+            repaint();
         }
 
         @Override
@@ -293,6 +442,12 @@ public class GameLobbyMenu extends JFrame {
                         playClickSound();
                         element.executeAction();
                         return;
+                    }
+                }
+                
+                if (ipTextField != null && showConnectionUI) {
+                    if (ipTextField.contains(p.x, p.y)) {
+                        ipTextField.requestFocus();
                     }
                 }
             }
@@ -383,6 +538,18 @@ public class GameLobbyMenu extends JFrame {
         }
     }
     
+    public void showConnectionError() {
+        if (menuPanel != null) {
+            menuPanel.showConnectionUI = true;
+            if (menuPanel.playerCountText != null) {
+                menuPanel.playerCountText.setText("ไม่พบเซิร์ฟเวอร์");
+                menuPanel.playerCountText.setVisibility(true);
+            }
+            menuPanel.setupConnectionUI();
+            menuPanel.repaint();
+        }
+    }
+    
     public void updateLobbyInfo(List<PlayerInfo> players) {
         System.out.println("=== GameLobbyMenu: updateLobbyInfo called with " + players.size() + " players ===");
         for (PlayerInfo p : players) {
@@ -449,6 +616,12 @@ public class GameLobbyMenu extends JFrame {
                 
                 if (menuPanel.playerCountText != null) {
                     menuPanel.playerCountText.setText("รอผู้เล่น " + connectedCount + "/" + GameConfig.MAX_PLAYERS);
+                    menuPanel.playerCountText.setVisibility(true);
+                }
+                
+                if (connectedCount > 0) {
+                    menuPanel.showConnectionUI = false;
+                    menuPanel.hideConnectionUI();
                 }
                 
                 menuPanel.repaint();

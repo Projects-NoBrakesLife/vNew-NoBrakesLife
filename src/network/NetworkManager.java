@@ -49,7 +49,10 @@ public class NetworkManager {
             return true;
         } catch (IOException e) {
             System.err.println("=== NetworkManager: Connection failed: " + e.getMessage() + " ===");
-            e.printStackTrace();
+            connected = false;
+            return false;
+        } catch (Exception e) {
+            System.err.println("=== NetworkManager: Unexpected error: " + e.getMessage() + " ===");
             connected = false;
             return false;
         }
@@ -132,6 +135,13 @@ public class NetworkManager {
                     e.printStackTrace();
                 }
                 connected = false;
+                
+                SwingUtilities.invokeLater(() -> {
+                    if (lobbyMenu != null) {
+                        lobbyMenu.showConnectionError();
+                    }
+                });
+                
                 break;
             }
         }

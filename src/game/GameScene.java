@@ -583,17 +583,26 @@ public class GameScene {
             remotePlayer.setRemainingTime(remainingTime);
             
             boolean wasMoving = remotePlayer.isMoving();
+            boolean wasAnimating = remotePlayer.isAnimating();
             
-            if (isMoving && !wasMoving) {
+            if (isMoving && !wasMoving && !wasAnimating) {
                 remotePlayer.setDirection(direction);
                 remotePlayer.setDestination(x, y, false);
             } else if (!isMoving && wasMoving) {
+                if (remotePlayer.isAnimating()) {
+                    remotePlayer.forceUpdateAnimation();
+                } else {
+                    remotePlayer.setX(x);
+                    remotePlayer.setY(y);
+                    remotePlayer.setMoving(false);
+                }
+            } else if (isMoving && wasMoving && remotePlayer.isAnimating()) {
+                remotePlayer.setDirection(direction);
                 remotePlayer.forceUpdateAnimation();
+            } else if (isMoving && wasMoving && !remotePlayer.isAnimating()) {
+                remotePlayer.setDirection(direction);
                 remotePlayer.setX(x);
                 remotePlayer.setY(y);
-                remotePlayer.setMoving(false);
-            } else if (isMoving && wasMoving) {
-                remotePlayer.setDirection(direction);
             } else if (!isMoving && !wasMoving) {
                 double dx = x - remotePlayer.getX();
                 double dy = y - remotePlayer.getY();

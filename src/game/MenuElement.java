@@ -38,6 +38,7 @@ public class MenuElement {
     private Point mousePosition = new Point(0, 0);
     private double currentAngle = 0;
     private double forcedAngle = Double.NaN;
+    private boolean useRotationEffect = false;
     
     public MenuElement(ElementType type, String imagePath, double x, double y, double width, double height) {
         this.type = type;
@@ -306,6 +307,14 @@ public class MenuElement {
     
     public void setUseScaleEffect(boolean use) {
         this.useScaleEffect = use;
+    }
+    
+    public void setUseRotationEffect(boolean use) {
+        this.useRotationEffect = use;
+    }
+    
+    public boolean getUseRotationEffect() {
+        return useRotationEffect;
     }
     
     public void setTrackMouse(boolean track) {
