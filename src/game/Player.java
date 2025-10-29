@@ -36,6 +36,8 @@ public class Player {
     private int health = 100;
     private int money = 500;
     
+    private double remainingTime = 24.0;
+    
     public Player(double x, double y) {
         this(x, y, 1);
     }
@@ -147,6 +149,8 @@ public class Player {
                         Waypoint target = currentPath.get(currentWaypointIndex);
                         x = target.getX();
                         y = target.getY();
+                        currentPath = null;
+                        currentWaypointIndex = 0;
                     }
                 }
             }
@@ -158,8 +162,45 @@ public class Player {
         }
     }
     
+    public double consumeTime(double distance) {
+        double timeCost = 5.0 + (distance / 100.0);
+        if (timeCost > 7.0) {
+            timeCost = 7.0;
+        }
+        
+        double oldTime = remainingTime;
+        remainingTime -= timeCost;
+        if (remainingTime < 0.0) {
+            remainingTime = 0.0;
+        }
+        
+        double actualTimeCost = oldTime - remainingTime;
+        System.out.println("Player " + playerId + " consumed " + actualTimeCost + " hours (distance: " + distance + "), remaining: " + remainingTime);
+        
+        return actualTimeCost;
+    }
+    
     public void setDestination(double targetX, double targetY, ArrayList<ArrayList<Waypoint>> allPaths) {
-        System.out.println("Setting destination to (" + targetX + ", " + targetY + ")");
+        setDestination(targetX, targetY, allPaths, true);
+    }
+    
+    public void setDestination(double targetX, double targetY, ArrayList<ArrayList<Waypoint>> allPaths, boolean consumeTime) {
+        if (isMoving || isAnimating) {
+            System.out.println("Player " + playerId + " is already moving, ignoring setDestination");
+            return;
+        }
+        
+        double distance = Math.sqrt((targetX - x) * (targetX - x) + (targetY - y) * (targetY - y));
+        if (distance < 10.0) {
+            System.out.println("Player " + playerId + " destination too close (distance: " + distance + "), ignoring");
+            return;
+        }
+        
+        System.out.println("Setting destination to (" + targetX + ", " + targetY + "), consumeTime=" + consumeTime);
+        
+        if (consumeTime && !isRemotePlayer) {
+            consumeTime(distance);
+        }
         
         currentPath = new ArrayList<>();
         currentPath.add(new Waypoint(targetX, targetY));
@@ -177,6 +218,14 @@ public class Player {
     
     public boolean isMoving() {
         return isMoving || isAnimating;
+    }
+    
+    public boolean isAnimating() {
+        return isAnimating;
+    }
+    
+    public boolean hasDestination() {
+        return currentPath != null && !currentPath.isEmpty() && currentWaypointIndex < currentPath.size();
     }
     
     public void setMoving(boolean moving) {
@@ -340,6 +389,24 @@ public class Player {
     }
     public void setMoney(int money) {
         this.money = money;
+    }
+    
+    public double getRemainingTime() {
+        return remainingTime;
+    }
+    
+    public void setRemainingTime(double time) {
+        this.remainingTime = time;
+        if (this.remainingTime < 0.0) {
+            this.remainingTime = 0.0;
+        }
+        if (this.remainingTime > 24.0) {
+            this.remainingTime = 24.0;
+        }
+    }
+    
+    public boolean hasTimeRemaining() {
+        return remainingTime > 0.0;
     }
 }
 

@@ -9,6 +9,7 @@ public class GameConfig {
     
     public static final String BACKGROUND_IMAGE = "assets" + java.io.File.separator + "background" + java.io.File.separator + "NewTimesMapMock4a.png";
     public static final String HOVER_SOUND = "assets" + java.io.File.separator + "sfx" + java.io.File.separator + "Button Select.wav";
+    public static final String TURN_SOUND = "assets" + java.io.File.separator + "sfx" + java.io.File.separator + "Bubble Pop.wav";
     
     public static final long LOADING_SCREEN_DELAY_MS = 5000;
 
@@ -16,6 +17,7 @@ public class GameConfig {
     public static final int SERVER_PORT = 8888;
     public static final int MAX_PLAYERS = 4;
     public static final int MIN_PLAYERS_TO_START = 2;
+    public static final int MAX_TURNS = 4;
 
     public static final HoverObject[] HOVER_OBJECTS = {
             new HoverObject("assets" + java.io.File.separator + "obj" + java.io.File.separator + "gym.png", "ยิม", 484.0, 201.0, 279.0, 243.0, 0.0, 697.0, 435.0, "BACK"),

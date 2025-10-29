@@ -220,6 +220,36 @@ public class GameServer {
                                     client.sendText(line);
                                 }
                             }
+                        } else if (line != null && line.startsWith("TURN_COMPLETE:")) {
+                            String[] parts = line.split(":");
+                            if (parts.length >= 3) {
+                                int turnPlayerId = Integer.parseInt(parts[1]);
+                                int turnNumber = Integer.parseInt(parts[2]);
+                                
+                                int connectedCount = 0;
+                                for (PlayerInfo p : server.players) {
+                                    if (p.isConnected) connectedCount++;
+                                }
+                                
+                                int nextTurnPlayerId = turnPlayerId + 1;
+                                boolean isNewWeek = false;
+                                
+                                if (nextTurnPlayerId > connectedCount) {
+                                    nextTurnPlayerId = 1;
+                                    turnNumber++;
+                                    isNewWeek = true;
+                                    
+                                    if (turnNumber > GameConfig.MAX_TURNS) {
+                                        turnNumber = GameConfig.MAX_TURNS;
+                                    }
+                                }
+                                
+                                String turnUpdate = "TURN_UPDATE:" + nextTurnPlayerId + ":" + turnNumber + ":" + (isNewWeek ? "WEEK" : "TURN");
+                                System.out.println("=== ClientHandler: Broadcasting turn update: " + turnUpdate + " ===");
+                                for (ClientHandler client : server.clients) {
+                                    client.sendText(turnUpdate);
+                                }
+                            }
                         }
                      
                     } catch (IOException e) {
