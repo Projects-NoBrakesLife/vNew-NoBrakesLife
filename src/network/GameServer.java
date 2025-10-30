@@ -219,6 +219,25 @@ public class GameServer {
             logWindow.addLog("Error stopping server: " + e.getMessage());
         }
     }
+
+    public synchronized void resetGame() {
+        gameStarted = false;
+        synchronized (players) {
+            for (PlayerInfo p : players) {
+                p.isConnected = false;
+            }
+        }
+        List<ClientHandler> clientsCopy = new ArrayList<>(clients);
+        for (ClientHandler c : clientsCopy) {
+            try {
+                c.sendText("GAME_RESET");
+            } catch (Exception ignored) {}
+        }
+        if (logWindow != null) {
+            logWindow.addLog("Game has been reset. Waiting for new players...");
+        }
+        NetworkLogger.getInstance().log("=== GameServer: Game reset ===");
+    }
     
     public static class ClientHandler implements Runnable {
         private Socket socket;
@@ -303,6 +322,9 @@ public class GameServer {
                                     client.sendText(turnUpdate);
                                 }
                             }
+                        } else if ("RESET_GAME".equals(line)) {
+                            NetworkLogger.getInstance().log("=== ClientHandler: RESET_GAME received ===");
+                            server.resetGame();
                         }
                      
                     } catch (IOException e) {

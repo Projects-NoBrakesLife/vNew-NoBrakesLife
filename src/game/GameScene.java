@@ -34,6 +34,7 @@ public class GameScene {
     private long lastTimeDecrease = 0;
     private long lastAmbientUpdateMs = 0;
     private PopupWindow activePopup;
+    private boolean gameEnded = false;
     
     public GameScene() {
         this(false);
@@ -170,7 +171,7 @@ public class GameScene {
         
       
         long currentTime = System.currentTimeMillis();
-        if (isMyTurn() && localPlayerForTurn != null && localPlayerForTurn.hasTimeRemaining()) {
+        if (!gameEnded && isMyTurn() && localPlayerForTurn != null && localPlayerForTurn.hasTimeRemaining()) {
             if (lastTimeDecrease == 0 || (currentTime - lastTimeDecrease) >= GameConfig.TIME_AUTO_DECREASE_INTERVAL_MS) {
                 double oldTime = localPlayerForTurn.getRemainingTime();
                 double newTime = Math.max(0.0, oldTime - GameConfig.TIME_AUTO_DECREASE);
@@ -447,6 +448,25 @@ public class GameScene {
         timer.setRepeats(false);
         timer.start();
     }
+
+    private void showGameEndDisplayAndSummary() {
+        if (gameEnded) return;
+        gameEnded = true;
+        turnDisplayText = "การใช้ชีวิตจบลงแล้ว";
+        turnDisplayStartTime = System.currentTimeMillis();
+        turnDisplayAlpha = 0.0f;
+        try {
+            SoundManager.getInstance().playSFX(GameConfig.LAST_TURN_SOUND);
+        } catch (Exception ignored) {}
+        javax.swing.Timer timer = new javax.swing.Timer((int)(TURN_DISPLAY_DURATION + TURN_DISPLAY_FADE_OUT), _ -> {
+            javax.swing.SwingUtilities.invokeLater(() -> {
+                GameSummaryWindow summary = new GameSummaryWindow(players);
+                summary.setVisible(true);
+            });
+        });
+        timer.setRepeats(false);
+        timer.start();
+    }
     
     public boolean isMyTurn() {
         if (isOnlineMode) {
@@ -472,6 +492,10 @@ public class GameScene {
         remotePlayerHoverIndexes.clear();
         currentTurnPlayerId = turnPlayerId;
         currentTurnNumber = turnNumber;
+        if (currentTurnNumber > GameConfig.MAX_TURNS || gameEnded) {
+            showGameEndDisplayAndSummary();
+            return;
+        }
         
         for (Player player : players) {
             if (player.getPlayerId() == turnPlayerId) {
@@ -482,6 +506,10 @@ public class GameScene {
         if (turnNumber == 1 && turnPlayerId == 1 && turnDisplayStartTime == 0) {
             showGameStartDisplay();
         } else if ("WEEK".equals(updateType)) {
+            if (currentTurnNumber >= GameConfig.MAX_TURNS) {
+                showGameEndDisplayAndSummary();
+                return;
+            }
             showWeekDisplay();
         } else {
             showTurnDisplay();
@@ -510,6 +538,7 @@ public class GameScene {
                 
                 if (currentTurnNumber > GameConfig.MAX_TURNS) {
                     currentTurnNumber = GameConfig.MAX_TURNS;
+                    showGameEndDisplayAndSummary();
                     return;
                 }
                 
@@ -766,6 +795,10 @@ public class GameScene {
     }
     
     public void updateRemotePlayer(int playerId, double x, double y, String direction, boolean isMoving, double remainingTime) {
+        updateRemotePlayer(playerId, x, y, direction, isMoving, remainingTime, x, y);
+    }
+
+    public void updateRemotePlayer(int playerId, double x, double y, String direction, boolean isMoving, double remainingTime, double destX, double destY) {
         int localPlayerId = networkManager.getPlayerId();
         if (playerId == localPlayerId) {
             return;
@@ -787,7 +820,7 @@ public class GameScene {
             
             if (isMoving && !wasMoving && !wasAnimating) {
                 remotePlayer.setDirection(direction);
-                remotePlayer.setDestination(x, y, false);
+                remotePlayer.setDestination(destX, destY, false);
             } else if (!isMoving && wasMoving) {
                 if (remotePlayer.isAnimating()) {
                     remotePlayer.forceUpdateAnimation();
@@ -801,8 +834,7 @@ public class GameScene {
                 remotePlayer.forceUpdateAnimation();
             } else if (isMoving && wasMoving && !remotePlayer.isAnimating()) {
                 remotePlayer.setDirection(direction);
-                remotePlayer.setX(x);
-                remotePlayer.setY(y);
+                remotePlayer.setDestination(destX, destY, false);
             } else if (!isMoving && !wasMoving) {
                 double dx = x - remotePlayer.getX();
                 double dy = y - remotePlayer.getY();

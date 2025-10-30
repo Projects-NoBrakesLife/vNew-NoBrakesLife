@@ -104,9 +104,11 @@ public class NetworkManager {
                         String direction = parts[4];
                         boolean isMoving = "true".equals(parts[5]);
                         double remainingTime = parts.length >= 7 ? Double.parseDouble(parts[6]) : 24.0;
+                        double destX = parts.length >= 8 ? Double.parseDouble(parts[7]) : x;
+                        double destY = parts.length >= 9 ? Double.parseDouble(parts[8]) : y;
                         
                         NetworkLogger.getInstance().log("=== NetworkManager: Received PLAYER_MOVE for player " + remotePlayerId + " (time: " + remainingTime + ") ===");
-                        handlePlayerMove(remotePlayerId, x, y, direction, isMoving, remainingTime);
+                        handlePlayerMove(remotePlayerId, x, y, direction, isMoving, remainingTime, destX, destY);
                     }
                 } else if (line != null && line.startsWith("PLAYER_DISCONNECT:")) {
                     String[] parts = line.split(":");
@@ -118,6 +120,13 @@ public class NetworkManager {
                     SwingUtilities.invokeLater(() -> {
                         if (lobbyMenu != null) {
                             lobbyMenu.showGameStartedMessage();
+                        }
+                    });
+                } else if (line != null && line.equals("GAME_RESET")) {
+                    SwingUtilities.invokeLater(() -> {
+                        players.clear();
+                        if (lobbyMenu != null) {
+                            lobbyMenu.updateLobbyInfo(players);
                         }
                     });
                     } else if (line != null && line.startsWith("TURN_UPDATE:")) {
@@ -174,14 +183,14 @@ public class NetworkManager {
         });
     }
     
-    private void handlePlayerMove(int playerId, double x, double y, String direction, boolean isMoving, double remainingTime) {
+    private void handlePlayerMove(int playerId, double x, double y, String direction, boolean isMoving, double remainingTime, double destX, double destY) {
         NetworkLogger.getInstance().log("=== NetworkManager: Handling move for player " + playerId + " (time: " + remainingTime + ") ===");
         
         SwingUtilities.invokeLater(() -> {
             if (currentGameWindow != null && currentGameWindow.getGamePanel() != null) {
                 game.GameScene scene = currentGameWindow.getGamePanel().getGameScene();
                 if (scene != null) {
-                    scene.updateRemotePlayer(playerId, x, y, direction, isMoving, remainingTime);
+                    scene.updateRemotePlayer(playerId, x, y, direction, isMoving, remainingTime, destX, destY);
                 }
             }
         });
@@ -259,13 +268,15 @@ public class NetworkManager {
     
     public void sendPlayerMove(game.Player player) {
         if (connected && out != null && playerId > 0) {
-            String moveData = String.format("PLAYER_MOVE:%d:%.2f:%.2f:%s:%s:%.2f",
+            String moveData = String.format("PLAYER_MOVE:%d:%.2f:%.2f:%s:%s:%.2f:%.2f:%.2f",
                 playerId,
                 player.getX(),
                 player.getY(),
                 player.getDirection(),
                 player.isMoving() ? "true" : "false",
-                player.getRemainingTime());
+                player.getRemainingTime(),
+                player.getDestinationX(),
+                player.getDestinationY());
             out.println(moveData);
             out.flush();
         }

@@ -203,6 +203,14 @@ public class Player {
         currentAnimFrame = 0;
         lastAnimTime = System.currentTimeMillis();
     }
+
+    public double getDestinationX() {
+        return destinationX;
+    }
+
+    public double getDestinationY() {
+        return destinationY;
+    }
     
     public boolean isAnimatingNow() {
         return isAnimating && currentAnimFrame < frontWalkFrames.size();

@@ -11,6 +11,9 @@ public class GameConfig {
     public static final String LOCATION_OPEN_SOUND = "assets" + java.io.File.separator + "sfx" + java.io.File.separator + "Location Open.wav";
     public static final String LOCATION_CLOSE_SOUND = "assets" + java.io.File.separator + "sfx" + java.io.File.separator + "Location Close.wav";
     public static final String CELEBRATION_MUSIC = "assets" + java.io.File.separator + "sfx" + java.io.File.separator + "CRAPPY_HOME_AMB.wav";
+    public static final String LAST_TURN_SOUND = "assets" + java.io.File.separator + "sfx" + java.io.File.separator + "Last Turn.wav";
+    public static final String SCORE_FILL_SOUND = "assets" + java.io.File.separator + "sfx" + java.io.File.separator + "Score Fill.wav";
+    public static final String SCORE_TYPE_ANNOUNCED_SOUND = "assets" + java.io.File.separator + "sfx" + java.io.File.separator + "Score Type Announced.wav";
     
     public static final long LOADING_SCREEN_DELAY_MS = 5000;
 
@@ -26,7 +29,7 @@ public class GameConfig {
     }
     public static final int MAX_PLAYERS = 4;
     public static final int MIN_PLAYERS_TO_START = 2;
-    public static final int MAX_TURNS = 4;
+    public static final int MAX_TURNS = 1;
     
     public static final double TIME_BASE_COST = 1.0;
     public static final double TIME_DISTANCE_MULTIPLIER = 250.0;
