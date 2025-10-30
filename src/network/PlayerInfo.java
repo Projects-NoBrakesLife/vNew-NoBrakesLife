@@ -9,10 +9,29 @@ public class PlayerInfo implements Serializable {
     public String playerName;
     public boolean isConnected;
     
+    public int skill = 0;
+    public int education = 0;
+    public int health = 100;
+    public int money = 500;
+    
     public PlayerInfo(int playerId, String playerName, boolean isConnected) {
         this.playerId = playerId;
         this.playerName = playerName;
         this.isConnected = isConnected;
+        this.skill = 0;
+        this.education = 0;
+        this.health = 100;
+        this.money = 500;
+    }
+    
+    public PlayerInfo(int playerId, String playerName, boolean isConnected, int skill, int education, int health, int money) {
+        this.playerId = playerId;
+        this.playerName = playerName;
+        this.isConnected = isConnected;
+        this.skill = skill;
+        this.education = education;
+        this.health = health;
+        this.money = money;
     }
     
     @Override

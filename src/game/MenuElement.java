@@ -219,6 +219,13 @@ public class MenuElement {
         return imagePath;
     }
     
+    public void setImagePath(String newImagePath) {
+        if (newImagePath != null && !newImagePath.equals(imagePath)) {
+            this.imagePath = newImagePath;
+            loadImage();
+        }
+    }
+    
     public String getText() {
         return text;
     }

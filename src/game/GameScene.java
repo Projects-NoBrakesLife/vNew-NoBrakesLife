@@ -165,14 +165,14 @@ public class GameScene {
         
 
         if (isMyTurn()) {
-            for (int i = 0; i < hoverObjects.size(); i++) {
-                GameObject obj = hoverObjects.get(i);
-                if (isHovering(obj)) {
-                    obj.render(g2d);
-                    anyHovering = true;
-                    hoverName = objectNames.get(i);
-                    hoverIndex = i;
-                    break;
+        for (int i = 0; i < hoverObjects.size(); i++) {
+            GameObject obj = hoverObjects.get(i);
+            if (isHovering(obj)) {
+                obj.render(g2d);
+                anyHovering = true;
+                hoverName = objectNames.get(i);
+                hoverIndex = i;
+                break;
                 }
             }
         }
@@ -193,11 +193,11 @@ public class GameScene {
       
         for (Player player : players) {
             if (!player.isRemotePlayer()) {
-                player.update();
+        player.update();
             } else {
                 player.forceUpdateAnimation();
             }
-            player.render(g2d);
+        player.render(g2d);
         }
         
         if (waitingForTurnToComplete && localPlayerForTurn != null) {
@@ -592,7 +592,12 @@ public class GameScene {
                         double distance = Math.sqrt((targetX - currentX) * (targetX - currentX) + (targetY - currentY) * (targetY - currentY));
                         
                         if (distance < 10.0) {
-                            System.out.println("=== Player " + localPlayer.getPlayerId() + " clicked same location (distance: " + distance + "), ignoring ===");
+                            System.out.println("=== Player " + localPlayer.getPlayerId() + " clicked same location (distance: " + distance + ") ===");
+                            if (config.name != null && config.name.equals("ร้านขายของชำ")) {
+                                javax.swing.SwingUtilities.invokeLater(() -> {
+                                    openShopPopup();
+                                });
+                            }
                             return;
                         }
                         
@@ -608,35 +613,7 @@ public class GameScene {
 
                         if (config.name != null && config.name.equals("ร้านขายของชำ")) {
                             javax.swing.SwingUtilities.invokeLater(() -> {
-                                game.PopupWindow.PopupWindowConfig cfg = new game.PopupWindow.PopupWindowConfig();
-                                cfg.width = 1632;
-                                cfg.height = 918;
-                                cfg.backgroundColor = new java.awt.Color(102, 102, 102);
-                                cfg.useBackgroundImage = false;
-
-                                java.util.ArrayList<game.MenuElement> popupElements = new java.util.ArrayList<>();
-                                popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "NPC_Fallback.png", 888.0, -20.0, 1024.0, 1024.0));
-                                popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Background-Border-02.png", 869.0, -164.0, 1215.8, 1047.8));
-                                popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "TEMP_Exit_button.png", 22.0, 15.0, 149.0, 95.0));
-                                popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Square.png", 42.0, 152.0, 153.6, 153.6));
-                                popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Price Tag Background.png", 130.0, 287.0, 104.0, 32.0));
-                                popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Square.png", 265.0, 152.0, 153.6, 153.6));
-                                popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Furniture_KnivesWall.png", 273.0, 157.0, 136.8, 136.8));
-                                popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Price Tag Background.png", 359.0, 291.0, 104.0, 32.0));
-                                popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Icon-Attribute-Cash.png", 300.0, 246.0, 107.5, 107.5));
-                                popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Icon-Attribute-Cash.png", 73.0, 242.0, 108.2, 108.2));
-                                popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Furniture_Fridge.png", 41.0, 151.0, 136.8, 136.8));
-
-                                game.MenuElement t1 = new game.MenuElement("120", 396.0, 316.0, 25);
-                                t1.setTextColor(new java.awt.Color(0, 0, 0));
-                                popupElements.add(t1);
-
-                                game.MenuElement t2 = new game.MenuElement("550", 164.0, 313.0, 23);
-                                t2.setTextColor(new java.awt.Color(0, 0, 0));
-                                popupElements.add(t2);
-
-                                game.PopupWindow window = new game.PopupWindow(cfg, popupElements);
-                                window.setVisible(true);
+                                openShopPopup();
                             });
                         }
                         
@@ -777,6 +754,38 @@ public class GameScene {
                 element.setText(newText);
             }
         }
+    }
+
+    private void openShopPopup() {
+        game.PopupWindow.PopupWindowConfig cfg = new game.PopupWindow.PopupWindowConfig();
+        cfg.width = 1632;
+        cfg.height = 918;
+        cfg.backgroundColor = new java.awt.Color(102, 102, 102);
+        cfg.useBackgroundImage = false;
+
+        java.util.ArrayList<game.MenuElement> popupElements = new java.util.ArrayList<>();
+        popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "NPC_Fallback.png", 888.0, -20.0, 1024.0, 1024.0));
+        popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Background-Border-02.png", 869.0, -164.0, 1215.8, 1047.8));
+        popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "TEMP_Exit_button.png", 22.0, 15.0, 149.0, 95.0));
+        popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Square.png", 42.0, 152.0, 153.6, 153.6));
+        popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Price Tag Background.png", 130.0, 287.0, 104.0, 32.0));
+        popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Square.png", 265.0, 152.0, 153.6, 153.6));
+        popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Furniture_KnivesWall.png", 273.0, 157.0, 136.8, 136.8));
+        popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Price Tag Background.png", 359.0, 291.0, 104.0, 32.0));
+        popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Icon-Attribute-Cash.png", 300.0, 246.0, 107.5, 107.5));
+        popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Icon-Attribute-Cash.png", 73.0, 242.0, 108.2, 108.2));
+        popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Furniture_Fridge.png", 41.0, 151.0, 136.8, 136.8));
+
+        game.MenuElement t1 = new game.MenuElement("120", 396.0, 316.0, 25);
+        t1.setTextColor(new java.awt.Color(0, 0, 0));
+        popupElements.add(t1);
+
+        game.MenuElement t2 = new game.MenuElement("550", 164.0, 313.0, 23);
+        t2.setTextColor(new java.awt.Color(0, 0, 0));
+        popupElements.add(t2);
+
+        game.PopupWindow window = new game.PopupWindow(cfg, popupElements);
+        window.setVisible(true);
     }
 }
 

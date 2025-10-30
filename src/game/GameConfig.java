@@ -24,9 +24,11 @@ public class GameConfig {
     public static final int MIN_PLAYERS_TO_START = 2;
     public static final int MAX_TURNS = 4;
     
-    public static final double TIME_BASE_COST = 5.0;
-    public static final double TIME_DISTANCE_MULTIPLIER = 100.0;
-    public static final double TIME_MAX_COST = 7.0;
+    public static final double TIME_BASE_COST = 1.0;
+    public static final double TIME_DISTANCE_MULTIPLIER = 250.0;
+    public static final double TIME_MAX_COST = 3.0;
+    public static final double TIME_AUTO_DECREASE = 0.2;
+    public static final long TIME_AUTO_DECREASE_INTERVAL_MS = 1000;
 
     public static final HoverObject[] HOVER_OBJECTS = {
             new HoverObject("assets" + java.io.File.separator + "obj" + java.io.File.separator + "gym.png", "ยิม", 484.0, 201.0, 279.0, 243.0, 0.0, 697.0, 435.0, "BACK"),
