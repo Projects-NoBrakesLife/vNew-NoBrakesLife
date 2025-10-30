@@ -216,8 +216,16 @@ public class PopupWindowEditor extends JFrame {
             SwingUtilities.invokeLater(() -> {
                 JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
                 if (frame != null) {
-                    frame.setJMenuBar(new JMenuBar());
-                    frame.getJMenuBar().add(toolBar);
+                    JDialog toolDialog = new JDialog(frame, "Dev Tools", false);
+                    toolDialog.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
+                    JPanel content = new JPanel(new BorderLayout());
+                    content.add(toolBar, BorderLayout.CENTER);
+                    toolDialog.setContentPane(content);
+                    toolDialog.pack();
+                    Point frameLoc = frame.getLocationOnScreen();
+                    toolDialog.setLocation(frameLoc.x + frame.getWidth() - toolDialog.getWidth() - 20, frameLoc.y + 40);
+                    toolDialog.setAlwaysOnTop(true);
+                    toolDialog.setVisible(true);
                 }
             });
         }
