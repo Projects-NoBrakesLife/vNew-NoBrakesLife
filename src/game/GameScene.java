@@ -157,6 +157,7 @@ public class GameScene {
     }
     
     public void render(Graphics2D g2d) {
+        boolean canInteract = !isTurnOverlayActive();
         boolean anyHovering = false;
         String hoverName = null;
         int hoverIndex = -1;
@@ -188,7 +189,7 @@ public class GameScene {
         }
         
 
-        if (isMyTurn()) {
+        if (isMyTurn() && canInteract) {
         for (int i = 0; i < hoverObjects.size(); i++) {
             GameObject obj = hoverObjects.get(i);
             if (isHovering(obj)) {
@@ -261,7 +262,7 @@ public class GameScene {
         }
         
 
-        if (isOnlineMode && networkManager.isConnected() && isMyTurn()) {
+        if (isOnlineMode && networkManager.isConnected() && isMyTurn() && canInteract) {
             int localPlayerId = networkManager.getPlayerId();
             if (anyHovering && hoverIndex != -1) {
                 networkManager.sendPlayerHover(localPlayerId, hoverIndex);
@@ -400,6 +401,16 @@ public class GameScene {
             g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
             g2d.setFont(originalFont);
         }
+    }
+    
+    private boolean isTurnOverlayActive() {
+        if (turnDisplayStartTime == 0 || turnDisplayText == null || turnDisplayText.isEmpty()) {
+            return false;
+        }
+        long now = System.currentTimeMillis();
+        long elapsed = now - turnDisplayStartTime;
+        long total = TURN_DISPLAY_DURATION + TURN_DISPLAY_FADE_OUT;
+        return elapsed <= total;
     }
     
     private void showGameStartDisplay() {
@@ -641,6 +652,9 @@ public class GameScene {
     
     public void handleClick(int x, int y) {
         if (!isMyTurn()) {
+            return;
+        }
+        if (isTurnOverlayActive()) {
             return;
         }
         

@@ -265,6 +265,13 @@ public class GameLobbyMenu extends JFrame {
             
             MenuElement img8 = new MenuElement(MenuElement.ElementType.IMAGE, "assets" + File.separator + "ui" + File.separator + "joins" + File.separator + "QuestNotepad_Small.png", 529.1, 66.0, 861.8, 312.4);
             panel.addElement(img8);
+            MenuElement welcomeText = new MenuElement("ยินดีต้อนรับ", 600.0 + (0.1 * 1920), 210.0, 42);
+            welcomeText.setTextColor(new Color(30, 30, 40));
+            panel.addElement(welcomeText);
+            String infoLine = "แข่งขันใช้ชีวิตทั้งหมด " + GameConfig.MAX_TURNS + " สัปดาห์ ";
+            MenuElement infoText = new MenuElement(infoLine, 540.0 + (0.1 * 1920), 270.0, 28);
+            infoText.setTextColor(new Color(30, 30, 40));
+            panel.addElement(infoText);
             
             panel.player1Text = new MenuElement("", 473.9, 530.0, 32);
             panel.player1Text.setVisibility(false);

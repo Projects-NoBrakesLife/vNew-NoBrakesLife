@@ -30,7 +30,7 @@ public class GameConfig {
     }
     public static final int MAX_PLAYERS = 4;
     public static final int MIN_PLAYERS_TO_START = 2;
-    public static final int MAX_TURNS = 1;
+    public static final int MAX_TURNS = 2;
     
     public static final double TIME_BASE_COST = 1.0;
     public static final double TIME_DISTANCE_MULTIPLIER = 250.0;
