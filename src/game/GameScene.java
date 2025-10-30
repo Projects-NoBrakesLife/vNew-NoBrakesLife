@@ -595,7 +595,39 @@ public class GameScene {
                             System.out.println("=== Player " + localPlayer.getPlayerId() + " clicked same location (distance: " + distance + ") ===");
                             if (config.name != null && config.name.equals("ร้านขายของชำ")) {
                                 javax.swing.SwingUtilities.invokeLater(() -> {
-                                    openShopPopup();
+                                    game.PopupWindow.PopupWindowConfig cfg = new game.PopupWindow.PopupWindowConfig();
+                                    cfg.width = 1632;
+                                    cfg.height = 918;
+                                    cfg.backgroundColor = new java.awt.Color(255, 82, 10);
+                                    cfg.useBackgroundImage = false;
+
+                                    java.util.ArrayList<game.MenuElement> popupElements = new java.util.ArrayList<>();
+                                    popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "CluckersClerk.png", 761.0, -16.0, 874.8, 972.0));
+                                    popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "bg_item.png", 419.0, 130.0, 256.0, 256.0));
+                                    popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "bg_item.png", 67.0, 130.0, 256.0, 256.0));
+                                    popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "TEMP_Exit_button.png", 13.0, 8.0, 149.0, 95.0));
+                                    popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "bg_item.png", 70.0, 390.0, 256.0, 256.0));
+                                    popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Icon-Cluckers-Bucket #2969.png", 435.0, 151.0, 176.9, 176.9));
+                                    game.MenuElement t1 = new game.MenuElement("100", 230.0, 342.0, 24);
+                                    t1.setTextColor(new java.awt.Color(255, 255, 255));
+                                    popupElements.add(t1);
+                                    popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "bg_item.png", 421.0, 391.0, 256.0, 256.0));
+                                    popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Icon-Cluckers-Fries #2994.png", 96.0, 418.0, 162.5, 162.5));
+                                    popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Background-Border-02.png", 736.0, -225.0, 1440.1, 1241.1));
+                                    popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Icon-Cluckers-Burger #2907.png", 94.0, 156.0, 177.5, 177.5));
+                                    game.MenuElement t2 = new game.MenuElement("100", 582.0, 343.0, 24);
+                                    t2.setTextColor(new java.awt.Color(255, 255, 255));
+                                    popupElements.add(t2);
+                                    game.MenuElement t3 = new game.MenuElement("100", 233.0, 602.0, 24);
+                                    t3.setTextColor(new java.awt.Color(255, 255, 255));
+                                    popupElements.add(t3);
+                                    game.MenuElement t4 = new game.MenuElement("100", 583.0, 603.0, 24);
+                                    t4.setTextColor(new java.awt.Color(255, 255, 255));
+                                    popupElements.add(t4);
+                                    popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Icon-Cluckers-Shake.png", 451.0, 418.0, 163.8, 163.8));
+
+                                    game.PopupWindow window = new game.PopupWindow(cfg, popupElements);
+                                    window.setVisible(true);
                                 });
                             }
                             return;
@@ -613,7 +645,39 @@ public class GameScene {
 
                         if (config.name != null && config.name.equals("ร้านขายของชำ")) {
                             javax.swing.SwingUtilities.invokeLater(() -> {
-                                openShopPopup();
+                                game.PopupWindow.PopupWindowConfig cfg = new game.PopupWindow.PopupWindowConfig();
+                                cfg.width = 1632;
+                                cfg.height = 918;
+                                cfg.backgroundColor = new java.awt.Color(255, 82, 10);
+                                cfg.useBackgroundImage = false;
+
+                                java.util.ArrayList<game.MenuElement> popupElements = new java.util.ArrayList<>();
+                                popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "CluckersClerk.png", 761.0, -16.0, 874.8, 972.0));
+                                popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "bg_item.png", 419.0, 130.0, 256.0, 256.0));
+                                popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "bg_item.png", 67.0, 130.0, 256.0, 256.0));
+                                popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "TEMP_Exit_button.png", 13.0, 8.0, 149.0, 95.0));
+                                popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "bg_item.png", 70.0, 390.0, 256.0, 256.0));
+                                popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Icon-Cluckers-Bucket #2969.png", 435.0, 151.0, 176.9, 176.9));
+                                game.MenuElement t1 = new game.MenuElement("100", 230.0, 342.0, 24);
+                                t1.setTextColor(new java.awt.Color(255, 255, 255));
+                                popupElements.add(t1);
+                                popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "bg_item.png", 421.0, 391.0, 256.0, 256.0));
+                                popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Icon-Cluckers-Fries #2994.png", 96.0, 418.0, 162.5, 162.5));
+                                popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Background-Border-02.png", 736.0, -225.0, 1440.1, 1241.1));
+                                popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Icon-Cluckers-Burger #2907.png", 94.0, 156.0, 177.5, 177.5));
+                                game.MenuElement t2 = new game.MenuElement("100", 582.0, 343.0, 24);
+                                t2.setTextColor(new java.awt.Color(255, 255, 255));
+                                popupElements.add(t2);
+                                game.MenuElement t3 = new game.MenuElement("100", 233.0, 602.0, 24);
+                                t3.setTextColor(new java.awt.Color(255, 255, 255));
+                                popupElements.add(t3);
+                                game.MenuElement t4 = new game.MenuElement("100", 583.0, 603.0, 24);
+                                t4.setTextColor(new java.awt.Color(255, 255, 255));
+                                popupElements.add(t4);
+                                popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Icon-Cluckers-Shake.png", 451.0, 418.0, 163.8, 163.8));
+
+                                game.PopupWindow window = new game.PopupWindow(cfg, popupElements);
+                                window.setVisible(true);
                             });
                         }
                         
@@ -756,36 +820,6 @@ public class GameScene {
         }
     }
 
-    private void openShopPopup() {
-        game.PopupWindow.PopupWindowConfig cfg = new game.PopupWindow.PopupWindowConfig();
-        cfg.width = 1632;
-        cfg.height = 918;
-        cfg.backgroundColor = new java.awt.Color(102, 102, 102);
-        cfg.useBackgroundImage = false;
-
-        java.util.ArrayList<game.MenuElement> popupElements = new java.util.ArrayList<>();
-        popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "NPC_Fallback.png", 888.0, -20.0, 1024.0, 1024.0));
-        popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Background-Border-02.png", 869.0, -164.0, 1215.8, 1047.8));
-        popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "TEMP_Exit_button.png", 22.0, 15.0, 149.0, 95.0));
-        popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Square.png", 42.0, 152.0, 153.6, 153.6));
-        popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Price Tag Background.png", 130.0, 287.0, 104.0, 32.0));
-        popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Square.png", 265.0, 152.0, 153.6, 153.6));
-        popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Furniture_KnivesWall.png", 273.0, 157.0, 136.8, 136.8));
-        popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Price Tag Background.png", 359.0, 291.0, 104.0, 32.0));
-        popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Icon-Attribute-Cash.png", 300.0, 246.0, 107.5, 107.5));
-        popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Icon-Attribute-Cash.png", 73.0, 242.0, 108.2, 108.2));
-        popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Furniture_Fridge.png", 41.0, 151.0, 136.8, 136.8));
-
-        game.MenuElement t1 = new game.MenuElement("120", 396.0, 316.0, 25);
-        t1.setTextColor(new java.awt.Color(0, 0, 0));
-        popupElements.add(t1);
-
-        game.MenuElement t2 = new game.MenuElement("550", 164.0, 313.0, 23);
-        t2.setTextColor(new java.awt.Color(0, 0, 0));
-        popupElements.add(t2);
-
-        game.PopupWindow window = new game.PopupWindow(cfg, popupElements);
-        window.setVisible(true);
-    }
+    
 }
 
