@@ -256,7 +256,11 @@ public class PopupWindow extends JDialog {
             for (int i = elements.size() - 1; i >= 0; i--) {
                 MenuElement el = elements.get(i);
                 boolean h = el.contains(mx, my);
+                boolean was = el.isHovered();
                 el.setHovered(h);
+                if (h && !was) {
+                    try { SoundManager.getInstance().playSFX(GameConfig.HOVER_SOUND); } catch (Exception ignored) {}
+                }
                 if (h) {
                     anyHover = true;
                     setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -294,6 +298,18 @@ public class PopupWindow extends JDialog {
                             return;
                         } else if (p.endsWith("assets/ui/popup/Icon-Cluckers-Shake.png")) {
                             purchaseHandler.onPurchase("shake");
+                            return;
+                        } else if (p.endsWith("assets/ui/popup/Icon-Deposit-500.png")) {
+                            purchaseHandler.onPurchase("deposit500");
+                            return;
+                        } else if (p.endsWith("assets/ui/popup/Icon-Deposit-All.png")) {
+                            purchaseHandler.onPurchase("depositAll");
+                            return;
+                        } else if (p.endsWith("assets/ui/popup/Icon-Withdraw-500 #42864.png")) {
+                            purchaseHandler.onPurchase("withdraw500");
+                            return;
+                        } else if (p.endsWith("assets/ui/popup/Icon-Withdraw-All #45109.png")) {
+                            purchaseHandler.onPurchase("withdrawAll");
                             return;
                         }
                     }

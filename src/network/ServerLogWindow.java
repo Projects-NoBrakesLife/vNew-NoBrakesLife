@@ -19,7 +19,11 @@ public class ServerLogWindow extends JFrame {
     private GameServer server;
     private java.util.Timer updateTimer;
     private JLabel serverInfoLabel;
+    private java.util.concurrent.ConcurrentLinkedQueue<String> logBuffer = new java.util.concurrent.ConcurrentLinkedQueue<>();
+    private javax.swing.Timer flushTimer;
     
+    private final NetworkLogger.LogListener loggerListener = message -> logBuffer.offer(message);
+
     public ServerLogWindow() {
         initializeWindow();
         createComponents();
@@ -27,6 +31,8 @@ public class ServerLogWindow extends JFrame {
         
         dateFormat = new SimpleDateFormat("HH:mm:ss");
         startPlayerListUpdate();
+        NetworkLogger.getInstance().addListener(loggerListener);
+        startFlushTimer();
     }
     
     public void setServer(GameServer server) {
@@ -121,6 +127,15 @@ public class ServerLogWindow extends JFrame {
         updateServerInfo();
     }
 
+    @Override
+    public void dispose() {
+        try {
+            NetworkLogger.getInstance().removeListener(loggerListener);
+        } catch (Exception ignored) {}
+        if (flushTimer != null) flushTimer.stop();
+        super.dispose();
+    }
+
     private void updateServerInfo() {
         try {
             String ip = detectLocalIPv4();
@@ -149,6 +164,26 @@ public class ServerLogWindow extends JFrame {
         } catch (Exception e) {
             return "127.0.0.1";
         }
+    }
+
+    private void startFlushTimer() {
+        flushTimer = new javax.swing.Timer(5000, _ -> flushBufferedLogs());
+        flushTimer.start();
+    }
+
+    private void flushBufferedLogs() {
+        if (logBuffer.isEmpty()) return;
+        java.util.List<String> drained = new java.util.ArrayList<>();
+        String msg;
+        while ((msg = logBuffer.poll()) != null) {
+            drained.add(msg);
+        }
+        if (drained.isEmpty()) return;
+        SwingUtilities.invokeLater(() -> {
+            for (String line : drained) {
+                addLog(line);
+            }
+        });
     }
     
     private void centerWindow() {
@@ -282,10 +317,10 @@ public class ServerLogWindow extends JFrame {
     private void showPlayerStatsDialog(PlayerInfo player) {
         JDialog dialog = new JDialog(this, "แก้ไข Stats - " + player.playerName, true);
         dialog.setLayout(new BorderLayout());
-        dialog.setSize(450, 550);
+        dialog.setSize(460, 420);
         dialog.setLocationRelativeTo(this);
         dialog.getContentPane().setBackground(new Color(250, 250, 250));
-        
+
         JPanel titlePanel = new JPanel(new BorderLayout());
         titlePanel.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
         titlePanel.setBackground(new Color(240, 240, 240));
@@ -293,38 +328,42 @@ public class ServerLogWindow extends JFrame {
         titleLabel.setFont(FontManager.getThaiFont(Font.BOLD, 16));
         titlePanel.add(titleLabel, BorderLayout.WEST);
         dialog.add(titlePanel, BorderLayout.NORTH);
-        
-        JPanel mainPanel = new JPanel();
-        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(30, 30, 20, 30));
-        mainPanel.setBackground(new Color(250, 250, 250));
-        
-        int[] skillValue = {player.skill};
-        int[] educationValue = {player.education};
-        int[] healthValue = {player.health};
-        int[] moneyValue = {player.money};
-        
-        JPanel skillPanel = createStatPanel("ค่าทักษะ:", skillValue[0], (newValue) -> skillValue[0] = newValue);
-        mainPanel.add(skillPanel);
-        mainPanel.add(Box.createVerticalStrut(20));
-        
-        JPanel educationPanel = createStatPanel("ค่าการเรียน:", educationValue[0], (newValue) -> educationValue[0] = newValue);
-        mainPanel.add(educationPanel);
-        mainPanel.add(Box.createVerticalStrut(20));
-        
-        JPanel healthPanel = createStatPanel("ค่าสุขภาพ:", healthValue[0], (newValue) -> healthValue[0] = newValue);
-        mainPanel.add(healthPanel);
-        mainPanel.add(Box.createVerticalStrut(20));
-        
-        JPanel moneyPanel = createStatPanel("ค่าเงิน:", moneyValue[0], (newValue) -> moneyValue[0] = newValue);
-        mainPanel.add(moneyPanel);
-        
-        dialog.add(mainPanel, BorderLayout.CENTER);
-        
+
+        JPanel form = new JPanel(new GridLayout(4, 2, 12, 12));
+        form.setBorder(BorderFactory.createEmptyBorder(20, 24, 20, 24));
+        form.setBackground(new Color(250, 250, 250));
+
+        JLabel lSkill = new JLabel("ทักษะ:");
+        lSkill.setFont(FontManager.getThaiFont(Font.BOLD, 14));
+        JTextField fSkill = new JTextField(String.valueOf(player.skill));
+        fSkill.setFont(FontManager.getThaiFont(14));
+
+        JLabel lEdu = new JLabel("ความรู้:");
+        lEdu.setFont(FontManager.getThaiFont(Font.BOLD, 14));
+        JTextField fEdu = new JTextField(String.valueOf(player.education));
+        fEdu.setFont(FontManager.getThaiFont(14));
+
+        JLabel lHealth = new JLabel("สุขภาพ:");
+        lHealth.setFont(FontManager.getThaiFont(Font.BOLD, 14));
+        JTextField fHealth = new JTextField(String.valueOf(player.health));
+        fHealth.setFont(FontManager.getThaiFont(14));
+
+        JLabel lMoney = new JLabel("เงิน:");
+        lMoney.setFont(FontManager.getThaiFont(Font.BOLD, 14));
+        JTextField fMoney = new JTextField(String.valueOf(player.money));
+        fMoney.setFont(FontManager.getThaiFont(14));
+
+        form.add(lSkill); form.add(fSkill);
+        form.add(lEdu); form.add(fEdu);
+        form.add(lHealth); form.add(fHealth);
+        form.add(lMoney); form.add(fMoney);
+
+        dialog.add(form, BorderLayout.CENTER);
+
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 0));
-        buttonPanel.setBorder(BorderFactory.createEmptyBorder(15, 20, 20, 20));
+        buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 20, 20, 20));
         buttonPanel.setBackground(new Color(250, 250, 250));
-        
+
         JButton saveButton = new JButton("บันทึก");
         saveButton.setFont(FontManager.getThaiFont(Font.BOLD, 14));
         saveButton.setPreferredSize(new Dimension(120, 35));
@@ -333,25 +372,30 @@ public class ServerLogWindow extends JFrame {
         saveButton.setFocusPainted(false);
         saveButton.setBorderPainted(false);
         saveButton.addActionListener(_ -> {
-            if (server != null) {
-                player.skill = skillValue[0];
-                player.education = educationValue[0];
-                player.health = healthValue[0];
-                player.money = moneyValue[0];
-                
+            try {
+                int newSkill = Integer.parseInt(fSkill.getText().trim());
+                int newEdu = Integer.parseInt(fEdu.getText().trim());
+                int newHealth = Integer.parseInt(fHealth.getText().trim());
+                int newMoney = Integer.parseInt(fMoney.getText().trim());
+
+                player.skill = newSkill;
+                player.education = newEdu;
+                player.health = newHealth;
+                player.money = newMoney;
+
                 PlayerInfo tempPlayer = new PlayerInfo(player.playerId, player.playerName, player.isConnected);
-                tempPlayer.skill = skillValue[0];
-                tempPlayer.education = educationValue[0];
-                tempPlayer.health = healthValue[0];
-                tempPlayer.money = moneyValue[0];
-                
-                new Thread(() -> {
-                    server.broadcastPlayerStatsUpdate(tempPlayer);
-                }).start();
+                tempPlayer.skill = newSkill;
+                tempPlayer.education = newEdu;
+                tempPlayer.health = newHealth;
+                tempPlayer.money = newMoney;
+
+                new Thread(() -> server.broadcastPlayerStatsUpdate(tempPlayer)).start();
+                dialog.dispose();
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(dialog, "กรุณากรอกตัวเลขที่ถูกต้องทุกช่อง", "ข้อผิดพลาด", JOptionPane.ERROR_MESSAGE);
             }
-            dialog.dispose();
         });
-        
+
         JButton cancelButton = new JButton("ยกเลิก");
         cancelButton.setFont(FontManager.getThaiFont(Font.BOLD, 14));
         cancelButton.setPreferredSize(new Dimension(120, 35));
@@ -360,11 +404,11 @@ public class ServerLogWindow extends JFrame {
         cancelButton.setFocusPainted(false);
         cancelButton.setBorderPainted(false);
         cancelButton.addActionListener(_ -> dialog.dispose());
-        
+
         buttonPanel.add(saveButton);
         buttonPanel.add(cancelButton);
         dialog.add(buttonPanel, BorderLayout.SOUTH);
-        
+
         dialog.setVisible(true);
     }
     

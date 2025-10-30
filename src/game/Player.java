@@ -34,6 +34,7 @@ public class Player {
     private int education = 0;
     private int health = 100;
     private int money = 500;
+    private int bankDeposit = 0;
     
     private double remainingTime = 24.0;
     
@@ -390,6 +391,15 @@ public class Player {
     }
     public void setMoney(int money) {
         this.money = money;
+    }
+    public int getBankDeposit() {
+        return bankDeposit;
+    }
+    public void setBankDeposit(int amount) {
+        bankDeposit = Math.max(0, amount);
+    }
+    public void increaseBankDeposit(int amount) {
+        bankDeposit = Math.max(0, bankDeposit + amount);
     }
     
     public double getRemainingTime() {

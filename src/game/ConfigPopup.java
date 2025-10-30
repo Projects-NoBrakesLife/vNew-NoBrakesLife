@@ -29,8 +29,10 @@ public class ConfigPopup {
     static {
         
         registerPreset(PopupType.CLUCKERS, ConfigPopup::createCluckersPreset);
+        registerPreset(PopupType.BANK, ConfigPopup::createBankPreset);
         
         nameToType.put("ร้านไก่ทอดตลาดน้อย", PopupType.CLUCKERS);
+        nameToType.put("ธนาคารไทณิชย์", PopupType.BANK);
     }
 
     public static void registerPreset(PopupType type, Supplier<PopupPreset> factory) {
@@ -148,6 +150,113 @@ public class ConfigPopup {
         PopupPreset preset = new PopupPreset();
         preset.config = createCluckersConfig();
         preset.elements = createCluckersElements();
+        return preset;
+    }
+
+    public static PopupWindow.PopupWindowConfig createBankConfig() {
+        PopupWindow.PopupWindowConfig cfg = new PopupWindow.PopupWindowConfig();
+        cfg.width = 1632;
+        cfg.height = 918;
+        cfg.backgroundColor = new Color(43, 127, 52);
+        cfg.useBackgroundImage = false;
+        return cfg;
+    }
+
+    public static ArrayList<MenuElement> createBankElements() {
+        ArrayList<MenuElement> elements = new ArrayList<>();
+
+        elements.add(new MenuElement(MenuElement.ElementType.IMAGE,
+                "assets" + File.separator + "ui" + File.separator + "popup" + File.separator + "TEMP_Exit_button.png",
+                13.0, 8.0, 149.0, 95.0));
+
+        elements.add(new MenuElement(MenuElement.ElementType.IMAGE,
+                "assets" + File.separator + "ui" + File.separator + "popup" + File.separator + "BankClerk.png",
+                745.0, -132.0, 1122.7, 1247.4));
+
+        elements.add(new MenuElement(MenuElement.ElementType.IMAGE,
+                "assets" + File.separator + "ui" + File.separator + "popup" + File.separator + "Background-Border-02.png",
+                723.0, -76.0, 1198.8, 1033.2));
+
+        elements.add(new MenuElement(MenuElement.ElementType.IMAGE,
+                "assets" + File.separator + "ui" + File.separator + "popup" + File.separator + "bg_item_none.png",
+                390.0, 98.0, 256.0, 256.0));
+
+        elements.add(new MenuElement(MenuElement.ElementType.IMAGE,
+                "assets" + File.separator + "ui" + File.separator + "popup" + File.separator + "bg_item_none.png",
+                35.0, 98.0, 256.0, 256.0));
+
+        elements.add(new MenuElement(MenuElement.ElementType.IMAGE,
+                "assets" + File.separator + "ui" + File.separator + "popup" + File.separator + "bg_item_none.png",
+                34.0, 418.0, 256.0, 256.0));
+
+        elements.add(new MenuElement(MenuElement.ElementType.IMAGE,
+                "assets" + File.separator + "ui" + File.separator + "popup" + File.separator + "bg_item_none.png",
+                383.0, 416.0, 256.0, 256.0));
+
+        MenuElement withdraw500 = new MenuElement(MenuElement.ElementType.IMAGE,
+                "assets" + File.separator + "ui" + File.separator + "popup" + File.separator + "Icon-Withdraw-500 #42864.png",
+                78.0, 464.0, 132.5, 132.5);
+        withdraw500.setTooltip("ถอนเงิน 100 $");
+        withdraw500.setUseScaleEffect(true);
+        elements.add(withdraw500);
+
+        MenuElement withdrawAll = new MenuElement(MenuElement.ElementType.IMAGE,
+                "assets" + File.separator + "ui" + File.separator + "popup" + File.separator + "Icon-Withdraw-All #45109.png",
+                437.0, 465.0, 132.5, 132.5);
+        withdrawAll.setTooltip("ถอนเงิน ทั้งหมด");
+        withdrawAll.setUseScaleEffect(true);
+        elements.add(withdrawAll);
+
+        MenuElement deposit500 = new MenuElement(MenuElement.ElementType.IMAGE,
+                "assets" + File.separator + "ui" + File.separator + "popup" + File.separator + "Icon-Deposit-500.png",
+                79.0, 145.0, 132.5, 132.5);
+        deposit500.setUseScaleEffect(true);
+        deposit500.setTooltip("ฝากเงิน 100 $");
+        elements.add(deposit500);
+
+        MenuElement depositAll = new MenuElement(MenuElement.ElementType.IMAGE,
+                "assets" + File.separator + "ui" + File.separator + "popup" + File.separator + "Icon-Deposit-All.png",
+                437.0, 144.0, 132.5, 132.5);
+        depositAll.setUseScaleEffect(true);
+        depositAll.setTooltip("ฝากเงิน ทั้งหมด");
+        elements.add(depositAll);
+
+
+        elements.add(new MenuElement(MenuElement.ElementType.IMAGE,
+                "assets" + File.separator + "ui" + File.separator + "Input-Field-Small-White_0.png",
+                1027.0, 746.0, 556.7, 92.7));
+
+        MenuElement totalText = new MenuElement("ยอดรวม  ....", 1185.0, 802.0, 32);
+        totalText.setTextColor(new Color(0, 0, 0));
+        elements.add(totalText);
+
+        elements.add(new MenuElement(MenuElement.ElementType.IMAGE,
+                "assets" + File.separator + "ui" + File.separator + "popup" + File.separator + "TutorialSpeechbubble.png",
+                726.0, 187.0, 449.5, 199.8));
+
+        MenuElement t1 = new MenuElement("เก็บเงินไว้กับเฮียเลน", 811.0, 232.0, 32);
+        t1.setTextColor(new Color(0, 0, 0));
+        elements.add(t1);
+
+        MenuElement t2 = new MenuElement("รับไปเลยปันผล", 840.0, 273.0, 32);
+        t2.setTextColor(new Color(0, 0, 0));
+        elements.add(t2);
+
+        MenuElement t3 = new MenuElement("ร้อยละ 10$", 862.0, 316.0, 32);
+        t3.setTextColor(new Color(0, 0, 0));
+        elements.add(t3);
+
+        MenuElement t4 = new MenuElement("ทุกสัปดาห์", 868.0, 353.0, 32);
+        t4.setTextColor(new Color(0, 0, 0));
+        elements.add(t4);
+
+        return elements;
+    }
+
+    public static PopupPreset createBankPreset() {
+        PopupPreset preset = new PopupPreset();
+        preset.config = createBankConfig();
+        preset.elements = createBankElements();
         return preset;
     }
 }

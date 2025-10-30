@@ -35,6 +35,8 @@ public class GameScene {
     private long lastAmbientUpdateMs = 0;
     private PopupWindow activePopup;
     private boolean gameEnded = false;
+    private int totalInterestEarned = 0;
+    private int totalBankWithdrawReturned = 0;
     
     public GameScene() {
         this(false);
@@ -450,9 +452,15 @@ public class GameScene {
     }
 
     private void showGameEndDisplayAndSummary() {
+        closeActivePopup();
         if (gameEnded) return;
+        withdrawAllDepositsAllPlayers();
         gameEnded = true;
-        turnDisplayText = "การใช้ชีวิตจบลงแล้ว";
+        String endMsg = "การใช้ชีวิตจบลงแล้ว";
+        if (totalBankWithdrawReturned > 0 || totalInterestEarned > 0) {
+            endMsg += "คืนเงินฝาก $" + totalBankWithdrawReturned + " + ปันผล $" + totalInterestEarned;
+        }
+        turnDisplayText = endMsg;
         turnDisplayStartTime = System.currentTimeMillis();
         turnDisplayAlpha = 0.0f;
         try {
@@ -543,6 +551,7 @@ public class GameScene {
                 }
                 
                 if (wasLastPlayer && currentTurnNumber <= GameConfig.MAX_TURNS) {
+                    applyWeeklyInterest();
                     showWeekDisplay();
                     return;
                 }
@@ -663,12 +672,12 @@ public class GameScene {
                         
                         if (distance < 10.0) {
                             System.out.println("=== Player " + localPlayer.getPlayerId() + " clicked same location (distance: " + distance + ") ===");
-                            game.ConfigPopup.PopupType popupType = game.ConfigPopup.resolveTypeByName(config.name);
+                        game.ConfigPopup.PopupType popupType = game.ConfigPopup.resolveTypeByName(config.name);
                             if (popupType != null) {
                                 javax.swing.SwingUtilities.invokeLater(() -> {
                                     game.PopupWindow.PopupWindowConfig cfg = game.ConfigPopup.createConfig(popupType);
                                     java.util.ArrayList<game.MenuElement> popupElements = game.ConfigPopup.createElements(popupType);
-                                    activePopup = new game.PopupWindow(cfg, popupElements, productId -> {
+                                activePopup = new game.PopupWindow(cfg, popupElements, productId -> {
                                         Player p = null;
                                         if (isOnlineMode) {
                                             if (currentTurnPlayerId > 0 && currentTurnPlayerId <= players.size()) {
@@ -678,31 +687,73 @@ public class GameScene {
                                             p = players.get(0);
                                         }
                                         if (p == null) return;
-                                    int price = 0;
-                                    int healthAdd = 0;
-                                    if ("fries".equals(productId)) { price = 30; healthAdd = 40; }
-                                    else if ("burger".equals(productId)) { price = 30; healthAdd = 50; }
-                                    else if ("shake".equals(productId)) { price = 20; healthAdd = 30; }
-                                    else if ("bucket".equals(productId)) { price = 20; healthAdd = 40; }
-                                    if (price <= 0 || healthAdd == 0) return;
-                                    if (p.getMoney() < price) {
+                                    if ("fries".equals(productId) || "burger".equals(productId) || "shake".equals(productId) || "bucket".equals(productId)) {
+                                        int price = 0;
+                                        int healthAdd = 0;
+                                        if ("fries".equals(productId)) { price = 30; healthAdd = 40; }
+                                        else if ("burger".equals(productId)) { price = 30; healthAdd = 50; }
+                                        else if ("shake".equals(productId)) { price = 20; healthAdd = 30; }
+                                        else if ("bucket".equals(productId)) { price = 20; healthAdd = 40; }
+                                        if (price <= 0 || healthAdd == 0) return;
+                                        if (p.getMoney() < price) {
+                                            if (activePopup != null) {
+                                                String msg = "เงินไม่เพียงพอ ต้องการ $" + price + " (มี $" + p.getMoney() + ")";
+                                                PopupWindow ap = activePopup;
+                                                SwingUtilities.invokeLater(() -> ap.showNotification(msg));
+                                            }
+                                            return;
+                                        }
+                                        p.setMoney(p.getMoney() - price);
+                                        p.setHealth(p.getHealth() + healthAdd);
                                         if (activePopup != null) {
-                                            String msg = "เงินไม่เพียงพอ ต้องการ $" + price + " (มี $" + p.getMoney() + ")";
+                                            int nowH = p.getHealth();
+                                            String msg = "จ่าย $" + price + " ได้รับสุขภาพ +" + healthAdd + " ตอนนี้มี " + nowH;
                                             PopupWindow ap = activePopup;
                                             SwingUtilities.invokeLater(() -> ap.showNotification(msg));
                                         }
-                                        return;
-                                    }
-                                    p.setMoney(p.getMoney() - price);
-                                    p.setHealth(p.getHealth() + healthAdd);
-                                    if (activePopup != null) {
-                                        int nowH = p.getHealth();
-                                        String msg = "จ่าย $" + price + " ได้รับสุขภาพ +" + healthAdd + " ตอนนี้มี " + nowH;
-                                        PopupWindow ap = activePopup;
-                                        SwingUtilities.invokeLater(() -> ap.showNotification(msg));
-                                    }
                                         SoundManager.getInstance().playSFX(GameConfig.FOOD_EATEN_SOUND);
                                         SwingUtilities.invokeLater(this::updateHUDStats);
+                                    } else if ("deposit500".equals(productId) || "depositAll".equals(productId) || "withdraw500".equals(productId) || "withdrawAll".equals(productId)) {
+                                        int amount = 0;
+                                        if ("deposit500".equals(productId)) amount = 100;
+                                        if ("withdraw500".equals(productId)) amount = 100;
+                                        if ("depositAll".equals(productId)) amount = p.getMoney();
+                                        if ("withdrawAll".equals(productId)) amount = p.getBankDeposit();
+                                        if (productId.startsWith("deposit")) {
+                                            if (amount <= 0 || p.getMoney() < amount) {
+                                                if (activePopup != null) {
+                                                    String msg = "เงินไม่เพียงพอ ฝาก $" + amount + " (มี $" + p.getMoney() + ")";
+                                                    PopupWindow ap = activePopup;
+                                                    SwingUtilities.invokeLater(() -> ap.showNotification(msg));
+                                                }
+                                                return;
+                                            }
+                                            p.setMoney(p.getMoney() - amount);
+                                            p.increaseBankDeposit(amount);
+                                            if (activePopup != null) {
+                                                String msg = "ฝากเงิน $" + amount + " สำเร็จ ฝากสะสม $" + p.getBankDeposit();
+                                                PopupWindow ap = activePopup;
+                                                SwingUtilities.invokeLater(() -> ap.showNotification(msg));
+                                            }
+                                        } else if (productId.startsWith("withdraw")) {
+                                            if (amount <= 0 || p.getBankDeposit() < amount) {
+                                                if (activePopup != null) {
+                                                    String msg = "ยอดฝากไม่พอ ถอน $" + amount + " (ฝาก $" + p.getBankDeposit() + ")";
+                                                    PopupWindow ap = activePopup;
+                                                    SwingUtilities.invokeLater(() -> ap.showNotification(msg));
+                                                }
+                                                return;
+                                            }
+                                            p.increaseBankDeposit(-amount);
+                                            p.setMoney(p.getMoney() + amount);
+                                            if (activePopup != null) {
+                                                String msg = "ถอนเงิน $" + amount + " สำเร็จ คงเหลือฝาก $" + p.getBankDeposit();
+                                                PopupWindow ap = activePopup;
+                                                SwingUtilities.invokeLater(() -> ap.showNotification(msg));
+                                            }
+                                        }
+                                        SwingUtilities.invokeLater(this::updateHUDStats);
+                                    }
                                     });
                                     activePopup.setVisible(true);
                                 });
@@ -725,6 +776,19 @@ public class GameScene {
                             javax.swing.SwingUtilities.invokeLater(() -> {
                                 game.PopupWindow.PopupWindowConfig cfg = game.ConfigPopup.createConfig(popupType);
                                 java.util.ArrayList<game.MenuElement> popupElements = game.ConfigPopup.createElements(popupType);
+                                final game.MenuElement[] totalMoneyTextHolder = new game.MenuElement[1];
+                                if (popupType == game.ConfigPopup.PopupType.BANK) {
+                                    Player curr = (isOnlineMode && currentTurnPlayerId > 0 && currentTurnPlayerId <= players.size()) ? players.get(currentTurnPlayerId - 1) : (!players.isEmpty() ? players.get(0) : null);
+                                    if (curr != null) {
+                                        for (game.MenuElement me : popupElements) {
+                                            if (me.getType() == game.MenuElement.ElementType.TEXT && me.getText() != null && me.getText().startsWith("ยอดรวม")) {
+                                                me.setText("ยอดรวม " + curr.getBankDeposit() + " $");
+                                                totalMoneyTextHolder[0] = me;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
                                 activePopup = new game.PopupWindow(cfg, popupElements, productId -> {
                                     Player p = null;
                                     if (isOnlineMode) {
@@ -735,31 +799,81 @@ public class GameScene {
                                         p = players.get(0);
                                     }
                                     if (p == null) return;
-                                    int price = 0;
-                                    int healthAdd = 0;
-                                    if ("fries".equals(productId)) { price = 30; healthAdd = 40; }
-                                    else if ("burger".equals(productId)) { price = 30; healthAdd = 50; }
-                                    else if ("shake".equals(productId)) { price = 20; healthAdd = 30; }
-                                    else if ("bucket".equals(productId)) { price = 20; healthAdd = 40; }
-                                    if (price <= 0 || healthAdd == 0) return;
-                                    if (p.getMoney() < price) {
+                                    if ("fries".equals(productId) || "burger".equals(productId) || "shake".equals(productId) || "bucket".equals(productId)) {
+                                        int price = 0;
+                                        int healthAdd = 0;
+                                        if ("fries".equals(productId)) { price = 30; healthAdd = 40; }
+                                        else if ("burger".equals(productId)) { price = 30; healthAdd = 50; }
+                                        else if ("shake".equals(productId)) { price = 20; healthAdd = 30; }
+                                        else if ("bucket".equals(productId)) { price = 20; healthAdd = 40; }
+                                        if (price <= 0 || healthAdd == 0) return;
+                                        if (p.getMoney() < price) {
+                                            if (activePopup != null) {
+                                                String msg = "เงินไม่เพียงพอ ต้องการ $" + price + " (มี $" + p.getMoney() + ")";
+                                                PopupWindow ap = activePopup;
+                                                SwingUtilities.invokeLater(() -> ap.showNotification(msg));
+                                            }
+                                            return;
+                                        }
+                                        p.setMoney(p.getMoney() - price);
+                                        p.setHealth(p.getHealth() + healthAdd);
                                         if (activePopup != null) {
-                                            String msg = "เงินไม่เพียงพอ ต้องการ $" + price + " (มี $" + p.getMoney() + ")";
+                                            int nowH = p.getHealth();
+                                            String msg = "จ่าย $" + price + " ได้รับสุขภาพ +" + healthAdd + " ตอนนี้มี " + nowH;
                                             PopupWindow ap = activePopup;
                                             SwingUtilities.invokeLater(() -> ap.showNotification(msg));
                                         }
-                                        return;
+                                        SoundManager.getInstance().playSFX(GameConfig.FOOD_EATEN_SOUND);
+                                        SwingUtilities.invokeLater(this::updateHUDStats);
+                                    } else if ("deposit500".equals(productId) || "depositAll".equals(productId) || "withdraw500".equals(productId) || "withdrawAll".equals(productId)) {
+                                        int amount = 0;
+                                        if ("deposit500".equals(productId)) amount = 100;
+                                        if ("withdraw500".equals(productId)) amount = 100;
+                                        if ("depositAll".equals(productId)) amount = p.getMoney();
+                                        if ("withdrawAll".equals(productId)) amount = p.getBankDeposit();
+                                        if (productId.startsWith("deposit")) {
+                                            if (amount <= 0 || p.getMoney() < amount) {
+                                                if (activePopup != null) {
+                                                    String msg = "เงินไม่เพียงพอ ฝาก $" + amount + " (มี $" + p.getMoney() + ")";
+                                                    PopupWindow ap = activePopup;
+                                                    SwingUtilities.invokeLater(() -> ap.showNotification(msg));
+                                                }
+                                                return;
+                                            }
+                                            p.setMoney(p.getMoney() - amount);
+                                            p.increaseBankDeposit(amount);
+                                            if (activePopup != null) {
+                                                String msg = "ฝากเงิน $" + amount + " สำเร็จ ฝากสะสม $" + p.getBankDeposit();
+                                                PopupWindow ap = activePopup;
+                                                SwingUtilities.invokeLater(() -> ap.showNotification(msg));
+                                            }
+                                            if (totalMoneyTextHolder[0] != null) {
+                                                totalMoneyTextHolder[0].setText("ยอดรวม " + p.getBankDeposit() + " $");
+                                            }
+                                            SoundManager.getInstance().playSFX(GameConfig.SCORE_TYPE_ANNOUNCED_SOUND);
+                                        } else if (productId.startsWith("withdraw")) {
+                                            if (amount <= 0 || p.getBankDeposit() < amount) {
+                                                if (activePopup != null) {
+                                                    String msg = "ยอดฝากไม่พอ ถอน $" + amount + " (ฝาก $" + p.getBankDeposit() + ")";
+                                                    PopupWindow ap = activePopup;
+                                                    SwingUtilities.invokeLater(() -> ap.showNotification(msg));
+                                                }
+                                                return;
+                                            }
+                                            p.increaseBankDeposit(-amount);
+                                            p.setMoney(p.getMoney() + amount);
+                                            if (activePopup != null) {
+                                                String msg = "ถอนเงิน $" + amount + " สำเร็จ คงเหลือฝาก $" + p.getBankDeposit();
+                                                PopupWindow ap = activePopup;
+                                                SwingUtilities.invokeLater(() -> ap.showNotification(msg));
+                                            }
+                                            if (totalMoneyTextHolder[0] != null) {
+                                                totalMoneyTextHolder[0].setText("ยอดรวม " + p.getBankDeposit() + " $");
+                                            }
+                                            SoundManager.getInstance().playSFX(GameConfig.SCORE_TYPE_ANNOUNCED_SOUND);
+                                        }
+                                        SwingUtilities.invokeLater(this::updateHUDStats);
                                     }
-                                    p.setMoney(p.getMoney() - price);
-                                    p.setHealth(p.getHealth() + healthAdd);
-                                    if (activePopup != null) {
-                                        int nowH = p.getHealth();
-                                        String msg = "จ่าย $" + price + " ได้รับสุขภาพ +" + healthAdd + " ตอนนี้มี " + nowH;
-                                        PopupWindow ap = activePopup;
-                                        SwingUtilities.invokeLater(() -> ap.showNotification(msg));
-                                    }
-                                    SoundManager.getInstance().playSFX(GameConfig.FOOD_EATEN_SOUND);
-                                    SwingUtilities.invokeLater(this::updateHUDStats);
                                 });
                                 activePopup.setVisible(true);
                             });
@@ -916,6 +1030,30 @@ public class GameScene {
         } finally {
             activePopup = null;
         }
+    }
+
+    private void applyWeeklyInterest() {
+        for (Player p : players) {
+            int deposit = p.getBankDeposit();
+            if (deposit > 0) {
+                int bonus = (int)Math.floor(deposit * 0.10);
+                p.setMoney(p.getMoney() + bonus);
+                totalInterestEarned += bonus;
+            }
+        }
+    }
+
+    private void withdrawAllDepositsAllPlayers() {
+        int returned = 0;
+        for (Player p : players) {
+            int deposit = p.getBankDeposit();
+            if (deposit > 0) {
+                p.setMoney(p.getMoney() + deposit);
+                p.setBankDeposit(0);
+                returned += deposit;
+            }
+        }
+        totalBankWithdrawReturned += returned;
     }
 
     

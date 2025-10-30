@@ -1,6 +1,7 @@
 package game;
 
 public class GameConfig {
+    public static final boolean DEBUG_MODE = true;
     public static final int WINDOW_WIDTH = 1920;
     public static final int WINDOW_HEIGHT = 1080;
     
@@ -34,7 +35,7 @@ public class GameConfig {
     public static final double TIME_BASE_COST = 1.0;
     public static final double TIME_DISTANCE_MULTIPLIER = 250.0;
     public static final double TIME_MAX_COST = 3.0;
-    public static final double TIME_AUTO_DECREASE = 0.2;
+    public static final double TIME_AUTO_DECREASE = 0.01;
     public static final long TIME_AUTO_DECREASE_INTERVAL_MS = 1000;
 
     public static final HoverObject[] HOVER_OBJECTS = {
@@ -44,7 +45,6 @@ public class GameConfig {
             new HoverObject("assets" + java.io.File.separator + "obj" + java.io.File.separator + "bank.png", "ธนาคารไทณิชย์", 1464.0, 287.0, 269.0, 323.0, 0.0, 1508.0, 585.0, "BACK"),
             new HoverObject("assets" + java.io.File.separator + "obj" + java.io.File.separator + "garden.png", "สวนจก", 605.0, 431.0, 525.0, 283.0, 0.0, 874.0, 567.0, "FRONT"),
             new HoverObject("assets" + java.io.File.separator + "obj" + java.io.File.separator + "university.png", "มหาวิทยาลัย NSU", 967.0, 626.0, 266.0, 302.0, 0.0, 1026.0, 899.01, "FRONT"),
-            new HoverObject("assets" + java.io.File.separator + "obj" + java.io.File.separator + "job.png", "ศูนย์จัดหางาน", 671.0, 600.0, 240.0, 314.0, 0.0, 720.0, 899.0, "FRONT"),
 
 
     };

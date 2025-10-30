@@ -22,7 +22,7 @@ public class DebugLogger {
     }
     
     private void startLogger() {
-        running = true;
+        running = GameConfig.DEBUG_MODE;
         loggerThread = new Thread(() -> {
             while (running) {
                 try {
