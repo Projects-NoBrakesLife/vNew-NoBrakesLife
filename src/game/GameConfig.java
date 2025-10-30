@@ -7,6 +7,10 @@ public class GameConfig {
     public static final String BACKGROUND_IMAGE = "assets" + java.io.File.separator + "background" + java.io.File.separator + "NewTimesMapMock4a.png";
     public static final String HOVER_SOUND = "assets" + java.io.File.separator + "sfx" + java.io.File.separator + "Button Select.wav";
     public static final String TURN_SOUND = "assets" + java.io.File.separator + "sfx" + java.io.File.separator + "Bubble Pop.wav";
+    public static final String FOOD_EATEN_SOUND = "assets" + java.io.File.separator + "sfx" + java.io.File.separator + "Food Eaten.wav";
+    public static final String LOCATION_OPEN_SOUND = "assets" + java.io.File.separator + "sfx" + java.io.File.separator + "Location Open.wav";
+    public static final String LOCATION_CLOSE_SOUND = "assets" + java.io.File.separator + "sfx" + java.io.File.separator + "Location Close.wav";
+    public static final String CELEBRATION_MUSIC = "assets" + java.io.File.separator + "sfx" + java.io.File.separator + "CRAPPY_HOME_AMB.wav";
     
     public static final long LOADING_SCREEN_DELAY_MS = 5000;
 

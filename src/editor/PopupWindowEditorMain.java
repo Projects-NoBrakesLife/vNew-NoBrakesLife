@@ -17,7 +17,7 @@ public class PopupWindowEditorMain {
                         return;
                     }
                 }
-                // ถ้าไม่ระบุพาธ ให้เปิดหน้าต่าง Import โค้ดอัตโนมัติ
+
                 editor.openImportDialog();
             } catch (Exception ignored) {}
         });

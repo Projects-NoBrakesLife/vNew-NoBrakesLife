@@ -51,18 +51,7 @@ public class GameWindow extends JFrame {
 
 
         addDragSupport();
-        JMenuBar menuBar = new JMenuBar();
-        Font thaiFont = FontManager.getThaiFont(12);
-        FontUIResource fontResource = new FontUIResource(thaiFont);
-        UIManager.put("OptionPane.font", fontResource);
-        UIManager.put("FileChooser.font", fontResource);
-        UIManager.put("Label.font", fontResource);
-        UIManager.put("Button.font", fontResource);
-        UIManager.put("Menu.font", fontResource);
-        UIManager.put("MenuItem.font", fontResource);
-        UIManager.put("TextField.font", fontResource);
-        UIManager.put("TextArea.font", fontResource);
-        setJMenuBar(menuBar);
+
         setupToolbar();
     }
 

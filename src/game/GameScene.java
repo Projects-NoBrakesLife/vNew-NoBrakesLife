@@ -18,6 +18,7 @@ public class GameScene {
     private boolean isOnlineMode;
     private NetworkManager networkManager;
     private ArrayList<MenuElement> hudElements;
+    private ArrayList<MenuElement> ambientElements;
     private java.util.HashMap<Integer, Integer> remotePlayerHoverIndexes;
     private MenuElement playerIconElement;
     
@@ -31,6 +32,8 @@ public class GameScene {
     private static final long TURN_DISPLAY_FADE_OUT = 500;
     private boolean waitingForTurnToComplete = false;
     private long lastTimeDecrease = 0;
+    private long lastAmbientUpdateMs = 0;
+    private PopupWindow activePopup;
     
     public GameScene() {
         this(false);
@@ -45,8 +48,10 @@ public class GameScene {
         players = new ArrayList<>();
         networkManager = NetworkManager.getInstance();
         hudElements = new ArrayList<>();
+        ambientElements = new ArrayList<>();
         remotePlayerHoverIndexes = new java.util.HashMap<>();
         loadGameHUD();
+        loadAmbientObjects();
         
         if (isOnlineMode) {
             int localPlayerId = networkManager.getPlayerId();
@@ -92,19 +97,19 @@ public class GameScene {
         
         Player localPlayer = getLocalPlayer();
         
-        MenuElement text1 = new MenuElement("ค่าทักษะ: " + (localPlayer != null ? localPlayer.getSkill() : 0), 230.0, 853.0, 15); // Y + 20
+        MenuElement text1 = new MenuElement("ทักษะ: " + (localPlayer != null ? localPlayer.getSkill() : 0), 230.0, 853.0, 15); // Y + 20
         text1.setTextColor(new Color(30, 30, 40));
         hudElements.add(text1);
         
-        MenuElement text2 = new MenuElement("ค่าสุขภาพ: " + (localPlayer != null ? localPlayer.getHealth() : 100), 230.0, 907.0, 15); // Y + 20
+        MenuElement text2 = new MenuElement("สุขภาพ: " + (localPlayer != null ? localPlayer.getHealth() : 100), 230.0, 907.0, 15); // Y + 20
         text2.setTextColor(new Color(30, 30, 40));
         hudElements.add(text2);
         
-        MenuElement text3 = new MenuElement("ค่าการเรียน: " + (localPlayer != null ? localPlayer.getEducation() : 0), 230.0, 961.0, 15); // Y + 20
+        MenuElement text3 = new MenuElement("ความรู้: " + (localPlayer != null ? localPlayer.getEducation() : 0), 230.0, 961.0, 15); // Y + 20
         text3.setTextColor(new Color(30, 30, 40));
         hudElements.add(text3);
         
-        MenuElement text4 = new MenuElement("ค่าเงิน: " + (localPlayer != null ? localPlayer.getMoney() : 500), 203.0, 1020.0, 15); // Y + 20
+        MenuElement text4 = new MenuElement("เงิน: " + (localPlayer != null ? localPlayer.getMoney() : 500), 203.0, 1020.0, 15); // Y + 20
         text4.setTextColor(new Color(30, 30, 40));
         hudElements.add(text4);
         
@@ -113,6 +118,22 @@ public class GameScene {
         MenuElement texttimer = new MenuElement("P1 เหลือเวลา 10/24 ชม", 794.5, 31.0, 32);
         texttimer.setTextColor(new Color(30, 30, 40));
         hudElements.add(texttimer);
+    }
+
+    private void loadAmbientObjects() {
+        try {
+     
+            MenuElement policeCar = new MenuElement(MenuElement.ElementType.IMAGE,
+                "assets" + java.io.File.separator + "ui" + java.io.File.separator + "Car-Police-Back.png",
+                1592.0, 620.0, 85.2, 75.2);
+            double pStartX = 1592.0;
+            double pStartY = 620.0;
+            double pEndX = 1277.0;
+            double pEndY = 468.0;
+            double pSpeed = 90.0;
+            policeCar.enablePatrol(pStartX, pStartY, pEndX, pEndY, pSpeed);
+            ambientElements.add(policeCar);
+        } catch (Exception ignored) {}
     }
     
     private Player getLocalPlayer() {
@@ -157,7 +178,7 @@ public class GameScene {
                 lastTimeDecrease = currentTime;
                 
                 if (oldTime > 0.0 && newTime <= 0.0) {
-                
+                    closeActivePopup();
                     nextTurn();
                 }
             }
@@ -276,16 +297,16 @@ public class GameScene {
                 
                 switch (i) {
                     case 2:
-                        newText = "ค่าทักษะ: " + (currentTurnPlayer != null ? currentTurnPlayer.getSkill() : 0);
+                        newText = "ทักษะ: " + (currentTurnPlayer != null ? currentTurnPlayer.getSkill() : "...");
                         break;
                     case 3:
-                        newText = "ค่าสุขภาพ: " + (currentTurnPlayer != null ? currentTurnPlayer.getHealth() : 100);
+                        newText = "สุขภาพ: " + (currentTurnPlayer != null ? currentTurnPlayer.getHealth() : "...");
                         break;
                     case 4:
-                        newText = "ค่าการเรียน: " + (currentTurnPlayer != null ? currentTurnPlayer.getEducation() : 0);
+                        newText = "ความรู้: " + (currentTurnPlayer != null ? currentTurnPlayer.getEducation() : "...");
                         break;
                     case 5:
-                        newText = "ค่าเงิน: " + (currentTurnPlayer != null ? currentTurnPlayer.getMoney() : 500);
+                        newText = "เงิน: " + (currentTurnPlayer != null ? currentTurnPlayer.getMoney() : "...");
                         break;
                 }
                 
@@ -310,11 +331,27 @@ public class GameScene {
         if (turnDisplayText == null || turnDisplayText.isEmpty() || turnDisplayStartTime == 0) {
             return;
         }
-        
+    
+        long nowMs = System.currentTimeMillis();
+        if (ambientElements != null && !ambientElements.isEmpty()) {
+            if (lastAmbientUpdateMs == 0) {
+                lastAmbientUpdateMs = nowMs;
+            }
+            long delta = Math.max(0, nowMs - lastAmbientUpdateMs);
+            for (MenuElement el : ambientElements) {
+                el.update(delta);
+            }
+            lastAmbientUpdateMs = nowMs;
+        }
+
         long currentTime = System.currentTimeMillis();
         long elapsed = currentTime - turnDisplayStartTime;
         long totalDuration = TURN_DISPLAY_DURATION + TURN_DISPLAY_FADE_OUT;
-        
+      
+        for (MenuElement el : ambientElements) {
+            el.render(g2d);
+        }
+
         if (elapsed > totalDuration) {
             turnDisplayAlpha = 0.0f;
             return;
@@ -429,6 +466,10 @@ public class GameScene {
     }
     
     public void setTurn(int turnPlayerId, int turnNumber, String updateType) {
+        closeActivePopup();
+    
+        currentHoverIndex = -1;
+        remotePlayerHoverIndexes.clear();
         currentTurnPlayerId = turnPlayerId;
         currentTurnNumber = turnNumber;
         
@@ -593,41 +634,48 @@ public class GameScene {
                         
                         if (distance < 10.0) {
                             System.out.println("=== Player " + localPlayer.getPlayerId() + " clicked same location (distance: " + distance + ") ===");
-                            if (config.name != null && config.name.equals("ร้านขายของชำ")) {
+                            game.ConfigPopup.PopupType popupType = game.ConfigPopup.resolveTypeByName(config.name);
+                            if (popupType != null) {
                                 javax.swing.SwingUtilities.invokeLater(() -> {
-                                    game.PopupWindow.PopupWindowConfig cfg = new game.PopupWindow.PopupWindowConfig();
-                                    cfg.width = 1632;
-                                    cfg.height = 918;
-                                    cfg.backgroundColor = new java.awt.Color(255, 82, 10);
-                                    cfg.useBackgroundImage = false;
-
-                                    java.util.ArrayList<game.MenuElement> popupElements = new java.util.ArrayList<>();
-                                    popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "CluckersClerk.png", 761.0, -16.0, 874.8, 972.0));
-                                    popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "bg_item.png", 419.0, 130.0, 256.0, 256.0));
-                                    popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "bg_item.png", 67.0, 130.0, 256.0, 256.0));
-                                    popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "TEMP_Exit_button.png", 13.0, 8.0, 149.0, 95.0));
-                                    popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "bg_item.png", 70.0, 390.0, 256.0, 256.0));
-                                    popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Icon-Cluckers-Bucket #2969.png", 435.0, 151.0, 176.9, 176.9));
-                                    game.MenuElement t1 = new game.MenuElement("100", 230.0, 342.0, 24);
-                                    t1.setTextColor(new java.awt.Color(255, 255, 255));
-                                    popupElements.add(t1);
-                                    popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "bg_item.png", 421.0, 391.0, 256.0, 256.0));
-                                    popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Icon-Cluckers-Fries #2994.png", 96.0, 418.0, 162.5, 162.5));
-                                    popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Background-Border-02.png", 736.0, -225.0, 1440.1, 1241.1));
-                                    popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Icon-Cluckers-Burger #2907.png", 94.0, 156.0, 177.5, 177.5));
-                                    game.MenuElement t2 = new game.MenuElement("100", 582.0, 343.0, 24);
-                                    t2.setTextColor(new java.awt.Color(255, 255, 255));
-                                    popupElements.add(t2);
-                                    game.MenuElement t3 = new game.MenuElement("100", 233.0, 602.0, 24);
-                                    t3.setTextColor(new java.awt.Color(255, 255, 255));
-                                    popupElements.add(t3);
-                                    game.MenuElement t4 = new game.MenuElement("100", 583.0, 603.0, 24);
-                                    t4.setTextColor(new java.awt.Color(255, 255, 255));
-                                    popupElements.add(t4);
-                                    popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Icon-Cluckers-Shake.png", 451.0, 418.0, 163.8, 163.8));
-
-                                    game.PopupWindow window = new game.PopupWindow(cfg, popupElements);
-                                    window.setVisible(true);
+                                    game.PopupWindow.PopupWindowConfig cfg = game.ConfigPopup.createConfig(popupType);
+                                    java.util.ArrayList<game.MenuElement> popupElements = game.ConfigPopup.createElements(popupType);
+                                    activePopup = new game.PopupWindow(cfg, popupElements, productId -> {
+                                        Player p = null;
+                                        if (isOnlineMode) {
+                                            if (currentTurnPlayerId > 0 && currentTurnPlayerId <= players.size()) {
+            p = players.get(currentTurnPlayerId - 1);
+        }
+                                        } else if (!players.isEmpty()) {
+                                            p = players.get(0);
+                                        }
+                                        if (p == null) return;
+                                    int price = 0;
+                                    int healthAdd = 0;
+                                    if ("fries".equals(productId)) { price = 30; healthAdd = 40; }
+                                    else if ("burger".equals(productId)) { price = 30; healthAdd = 50; }
+                                    else if ("shake".equals(productId)) { price = 20; healthAdd = 30; }
+                                    else if ("bucket".equals(productId)) { price = 20; healthAdd = 40; }
+                                    if (price <= 0 || healthAdd == 0) return;
+                                    if (p.getMoney() < price) {
+                                        if (activePopup != null) {
+                                            String msg = "เงินไม่เพียงพอ ต้องการ $" + price + " (มี $" + p.getMoney() + ")";
+                                            PopupWindow ap = activePopup;
+                                            SwingUtilities.invokeLater(() -> ap.showNotification(msg));
+                                        }
+                                        return;
+                                    }
+                                    p.setMoney(p.getMoney() - price);
+                                    p.setHealth(p.getHealth() + healthAdd);
+                                    if (activePopup != null) {
+                                        int nowH = p.getHealth();
+                                        String msg = "จ่าย $" + price + " ได้รับสุขภาพ +" + healthAdd + " ตอนนี้มี " + nowH;
+                                        PopupWindow ap = activePopup;
+                                        SwingUtilities.invokeLater(() -> ap.showNotification(msg));
+                                    }
+                                        SoundManager.getInstance().playSFX(GameConfig.FOOD_EATEN_SOUND);
+                                        SwingUtilities.invokeLater(this::updateHUDStats);
+                                    });
+                                    activePopup.setVisible(true);
                                 });
                             }
                             return;
@@ -643,41 +691,48 @@ public class GameScene {
                         
                         waitingForTurnToComplete = true;
 
-                        if (config.name != null && config.name.equals("ร้านขายของชำ")) {
+                        game.ConfigPopup.PopupType popupType = game.ConfigPopup.resolveTypeByName(config.name);
+                        if (popupType != null) {
                             javax.swing.SwingUtilities.invokeLater(() -> {
-                                game.PopupWindow.PopupWindowConfig cfg = new game.PopupWindow.PopupWindowConfig();
-                                cfg.width = 1632;
-                                cfg.height = 918;
-                                cfg.backgroundColor = new java.awt.Color(255, 82, 10);
-                                cfg.useBackgroundImage = false;
-
-                                java.util.ArrayList<game.MenuElement> popupElements = new java.util.ArrayList<>();
-                                popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "CluckersClerk.png", 761.0, -16.0, 874.8, 972.0));
-                                popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "bg_item.png", 419.0, 130.0, 256.0, 256.0));
-                                popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "bg_item.png", 67.0, 130.0, 256.0, 256.0));
-                                popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "TEMP_Exit_button.png", 13.0, 8.0, 149.0, 95.0));
-                                popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "bg_item.png", 70.0, 390.0, 256.0, 256.0));
-                                popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Icon-Cluckers-Bucket #2969.png", 435.0, 151.0, 176.9, 176.9));
-                                game.MenuElement t1 = new game.MenuElement("100", 230.0, 342.0, 24);
-                                t1.setTextColor(new java.awt.Color(255, 255, 255));
-                                popupElements.add(t1);
-                                popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "bg_item.png", 421.0, 391.0, 256.0, 256.0));
-                                popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Icon-Cluckers-Fries #2994.png", 96.0, 418.0, 162.5, 162.5));
-                                popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Background-Border-02.png", 736.0, -225.0, 1440.1, 1241.1));
-                                popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Icon-Cluckers-Burger #2907.png", 94.0, 156.0, 177.5, 177.5));
-                                game.MenuElement t2 = new game.MenuElement("100", 582.0, 343.0, 24);
-                                t2.setTextColor(new java.awt.Color(255, 255, 255));
-                                popupElements.add(t2);
-                                game.MenuElement t3 = new game.MenuElement("100", 233.0, 602.0, 24);
-                                t3.setTextColor(new java.awt.Color(255, 255, 255));
-                                popupElements.add(t3);
-                                game.MenuElement t4 = new game.MenuElement("100", 583.0, 603.0, 24);
-                                t4.setTextColor(new java.awt.Color(255, 255, 255));
-                                popupElements.add(t4);
-                                popupElements.add(new game.MenuElement(game.MenuElement.ElementType.IMAGE, "assets" + java.io.File.separator + "ui" + java.io.File.separator + "popup" + java.io.File.separator + "Icon-Cluckers-Shake.png", 451.0, 418.0, 163.8, 163.8));
-
-                                game.PopupWindow window = new game.PopupWindow(cfg, popupElements);
-                                window.setVisible(true);
+                                game.PopupWindow.PopupWindowConfig cfg = game.ConfigPopup.createConfig(popupType);
+                                java.util.ArrayList<game.MenuElement> popupElements = game.ConfigPopup.createElements(popupType);
+                                activePopup = new game.PopupWindow(cfg, popupElements, productId -> {
+                                    Player p = null;
+                                    if (isOnlineMode) {
+                                        if (currentTurnPlayerId > 0 && currentTurnPlayerId <= players.size()) {
+                                            p = players.get(currentTurnPlayerId - 1);
+                                        }
+                                    } else if (!players.isEmpty()) {
+                                        p = players.get(0);
+                                    }
+                                    if (p == null) return;
+                                    int price = 0;
+                                    int healthAdd = 0;
+                                    if ("fries".equals(productId)) { price = 30; healthAdd = 40; }
+                                    else if ("burger".equals(productId)) { price = 30; healthAdd = 50; }
+                                    else if ("shake".equals(productId)) { price = 20; healthAdd = 30; }
+                                    else if ("bucket".equals(productId)) { price = 20; healthAdd = 40; }
+                                    if (price <= 0 || healthAdd == 0) return;
+                                    if (p.getMoney() < price) {
+                                        if (activePopup != null) {
+                                            String msg = "เงินไม่เพียงพอ ต้องการ $" + price + " (มี $" + p.getMoney() + ")";
+                                            PopupWindow ap = activePopup;
+                                            SwingUtilities.invokeLater(() -> ap.showNotification(msg));
+                                        }
+                                        return;
+                                    }
+                                    p.setMoney(p.getMoney() - price);
+                                    p.setHealth(p.getHealth() + healthAdd);
+                                    if (activePopup != null) {
+                                        int nowH = p.getHealth();
+                                        String msg = "จ่าย $" + price + " ได้รับสุขภาพ +" + healthAdd + " ตอนนี้มี " + nowH;
+                                        PopupWindow ap = activePopup;
+                                        SwingUtilities.invokeLater(() -> ap.showNotification(msg));
+                                    }
+                                    SoundManager.getInstance().playSFX(GameConfig.FOOD_EATEN_SOUND);
+                                    SwingUtilities.invokeLater(this::updateHUDStats);
+                                });
+                                activePopup.setVisible(true);
                             });
                         }
                         
@@ -802,21 +857,32 @@ public class GameScene {
                 
                 switch (i) {
                     case 2:
-                        newText = "ค่าทักษะ: " + (currentTurnPlayer != null ? currentTurnPlayer.getSkill() : 0);
+                        newText = "ทักษะ: " + (currentTurnPlayer != null ? currentTurnPlayer.getSkill() : 0);
                         break;
                     case 3:
-                        newText = "ค่าสุขภาพ: " + (currentTurnPlayer != null ? currentTurnPlayer.getHealth() : 100);
+                        newText = "สุขภาพ: " + (currentTurnPlayer != null ? currentTurnPlayer.getHealth() : 100);
                         break;
                     case 4:
-                        newText = "ค่าการเรียน: " + (currentTurnPlayer != null ? currentTurnPlayer.getEducation() : 0);
+                        newText = "ความรู้: " + (currentTurnPlayer != null ? currentTurnPlayer.getEducation() : 0);
                         break;
                     case 5:
-                        newText = "ค่าเงิน: " + (currentTurnPlayer != null ? currentTurnPlayer.getMoney() : 500);
+                        newText = "เงิน: " + (currentTurnPlayer != null ? currentTurnPlayer.getMoney() : 500);
                         break;
                 }
                 
                 element.setText(newText);
             }
+        }
+    }
+
+    private void closeActivePopup() {
+        try {
+            if (activePopup != null && activePopup.isShowing()) {
+                activePopup.dispose();
+            }
+        } catch (Exception ignored) {
+        } finally {
+            activePopup = null;
         }
     }
 

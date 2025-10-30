@@ -24,14 +24,14 @@ public class PopupWindowEditor extends JFrame {
         centerWindow();
     }
 
-    // เปิด dialog import โค้ดจาก main หรือภายนอก
+    
     public void openImportDialog() {
         if (editorPanel != null) {
             editorPanel.openImportDialog();
         }
     }
 
-    // นำเข้าโค้ดจากไฟล์โดยตรง
+ 
     public void importCodeFromFile(java.io.File file) {
         if (file == null || !file.exists()) return;
         try {
@@ -84,7 +84,7 @@ public class PopupWindowEditor extends JFrame {
         private int gridSize = 32;
 
         public PopupEditorPanel() {
-            // ใช้ขนาดใกล้เคียงกับเกมจริง แต่ไม่เต็มจอ
+
             int editorWidth = (int)(GameConfig.WINDOW_WIDTH * 0.85);
             int editorHeight = (int)(GameConfig.WINDOW_HEIGHT * 0.85);
             if (config.width < editorWidth) config.width = editorWidth;
@@ -805,14 +805,14 @@ public class PopupWindowEditor extends JFrame {
 
             if (showGuides) {
                 g2d.setColor(new Color(255, 0, 0, 100));
-                // center lines
+              
                 int cx = config.width / 2;
                 int cy = config.height / 2;
                 g2d.drawLine(cx, 0, cx, config.height);
                 g2d.drawLine(0, cy, config.width, cy);
 
                 g2d.setColor(new Color(0, 128, 255, 80));
-                // thirds
+            
                 int tx1 = config.width / 3;
                 int tx2 = (config.width * 2) / 3;
                 int ty1 = config.height / 3;

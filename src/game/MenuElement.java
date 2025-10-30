@@ -39,6 +39,15 @@ public class MenuElement {
     private double currentAngle = 0;
     private double forcedAngle = Double.NaN;
     private boolean useRotationEffect = false;
+    private String tooltipText;
+
+    private boolean patrolEnabled = false;
+    private double patrolStartX;
+    private double patrolStartY;
+    private double patrolEndX;
+    private double patrolEndY;
+    private double patrolSpeedPxPerSec = 0.0;
+    private boolean patrolForward = true;
     
     public MenuElement(ElementType type, String imagePath, double x, double y, double width, double height) {
         this.type = type;
@@ -363,6 +372,58 @@ public class MenuElement {
     public void executeAction() {
         if (buttonAction != null) {
             buttonAction.execute();
+        }
+    }
+
+    public void setTooltip(String tooltip) {
+        this.tooltipText = tooltip;
+    }
+
+    public String getTooltip() {
+        return tooltipText;
+    }
+
+  
+    public void enablePatrol(double startX, double startY, double endX, double endY, double speedPxPerSec) {
+        this.patrolEnabled = true;
+        this.patrolStartX = startX;
+        this.patrolStartY = startY;
+        this.patrolEndX = endX;
+        this.patrolEndY = endY;
+        this.patrolSpeedPxPerSec = Math.max(0.0, speedPxPerSec);
+        this.patrolForward = true;
+        this.x = startX;
+        this.y = startY;
+    }
+
+    public boolean isPatrolEnabled() {
+        return patrolEnabled;
+    }
+
+
+    public void update(long deltaMs) {
+        if (!patrolEnabled || patrolSpeedPxPerSec <= 0.0) {
+            return;
+        }
+        double targetX = patrolForward ? patrolEndX : patrolStartX;
+        double targetY = patrolForward ? patrolEndY : patrolStartY;
+        double dx = targetX - x;
+        double dy = targetY - y;
+        double dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 1e-6) {
+            patrolForward = !patrolForward;
+            return;
+        }
+        double step = patrolSpeedPxPerSec * (deltaMs / 1000.0);
+        if (step >= dist) {
+            x = targetX;
+            y = targetY;
+            patrolForward = !patrolForward;
+        } else {
+            double nx = dx / dist;
+            double ny = dy / dist;
+            x += nx * step;
+            y += ny * step;
         }
     }
 }

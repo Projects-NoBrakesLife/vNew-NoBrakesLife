@@ -1,6 +1,7 @@
 package network;
 
 import game.FontManager;
+import game.GameConfig;
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
@@ -17,6 +18,7 @@ public class ServerLogWindow extends JFrame {
     private JPanel playerListPanel;
     private GameServer server;
     private java.util.Timer updateTimer;
+    private JLabel serverInfoLabel;
     
     public ServerLogWindow() {
         initializeWindow();
@@ -56,6 +58,15 @@ public class ServerLogWindow extends JFrame {
     
     private void createComponents() {
         setLayout(new BorderLayout());
+   
+        JPanel headerPanel = new JPanel(new BorderLayout());
+        headerPanel.setBorder(BorderFactory.createEmptyBorder(6, 10, 6, 10));
+        headerPanel.setBackground(new Color(245, 245, 245));
+        serverInfoLabel = new JLabel("กำลังตรวจสอบ IP/Port...");
+        serverInfoLabel.setFont(FontManager.getThaiFont(Font.BOLD, 13));
+        serverInfoLabel.setForeground(new Color(60, 60, 60));
+        headerPanel.add(serverInfoLabel, BorderLayout.WEST);
+        add(headerPanel, BorderLayout.NORTH);
    
         playerListPanel = new JPanel();
         playerListPanel.setLayout(new BoxLayout(playerListPanel, BoxLayout.Y_AXIS));
@@ -107,6 +118,37 @@ public class ServerLogWindow extends JFrame {
         add(buttonPanel, BorderLayout.SOUTH);
         
         updatePlayerList();
+        updateServerInfo();
+    }
+
+    private void updateServerInfo() {
+        try {
+            String ip = detectLocalIPv4();
+            int port = GameConfig.SERVER_PORT;
+            serverInfoLabel.setText("IP: " + ip + "    Port: " + port);
+        } catch (Exception e) {
+            serverInfoLabel.setText("IP/Port: ไม่สามารถตรวจสอบได้");
+        }
+    }
+
+    private String detectLocalIPv4() {
+        try {
+            java.util.Enumeration<java.net.NetworkInterface> ifaces = java.net.NetworkInterface.getNetworkInterfaces();
+            while (ifaces.hasMoreElements()) {
+                java.net.NetworkInterface ni = ifaces.nextElement();
+                if (!ni.isUp() || ni.isLoopback() || ni.isVirtual()) continue;
+                java.util.Enumeration<java.net.InetAddress> addrs = ni.getInetAddresses();
+                while (addrs.hasMoreElements()) {
+                    java.net.InetAddress addr = addrs.nextElement();
+                    if (addr instanceof java.net.Inet4Address && !addr.isLoopbackAddress()) {
+                        return addr.getHostAddress();
+                    }
+                }
+            }
+            return java.net.InetAddress.getLocalHost().getHostAddress();
+        } catch (Exception e) {
+            return "127.0.0.1";
+        }
     }
     
     private void centerWindow() {
