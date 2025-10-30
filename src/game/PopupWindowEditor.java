@@ -24,6 +24,24 @@ public class PopupWindowEditor extends JFrame {
         centerWindow();
     }
 
+    // เปิด dialog import โค้ดจาก main หรือภายนอก
+    public void openImportDialog() {
+        if (editorPanel != null) {
+            editorPanel.openImportDialog();
+        }
+    }
+
+    // นำเข้าโค้ดจากไฟล์โดยตรง
+    public void importCodeFromFile(java.io.File file) {
+        if (file == null || !file.exists()) return;
+        try {
+            String content = new String(java.nio.file.Files.readAllBytes(file.toPath()), java.nio.charset.StandardCharsets.UTF_8);
+            if (editorPanel != null) {
+                editorPanel.parseAndLoadCode(content);
+            }
+        } catch (Exception ignored) {}
+    }
+
     private void initializeWindow() {
         setTitle("Popup Window Editor - No Brakes Life");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -61,6 +79,9 @@ public class PopupWindowEditor extends JFrame {
         private Color currentTextColor = Color.BLACK;
         private double originalWidth;
         private double originalHeight;
+        private boolean showGuides = true;
+        private boolean showGrid = false;
+        private int gridSize = 32;
 
         public PopupEditorPanel() {
             // ใช้ขนาดใกล้เคียงกับเกมจริง แต่ไม่เต็มจอ
@@ -145,7 +166,7 @@ public class PopupWindowEditor extends JFrame {
 
             JButton importBtn = new JButton("Import โค้ด");
             importBtn.setFont(buttonFont);
-            importBtn.addActionListener(_ -> handleImportCode());
+            importBtn.addActionListener(_ -> openImportDialog());
 
             JButton clearBtn = new JButton("ล้างทั้งหมด");
             clearBtn.setFont(buttonFont);
@@ -212,6 +233,17 @@ public class PopupWindowEditor extends JFrame {
             toolBar.add(importBtn);
             toolBar.addSeparator();
             toolBar.add(clearBtn);
+
+            toolBar.addSeparator();
+            JCheckBox guidesCheckbox = new JCheckBox("แสดงเส้นไกด์", showGuides);
+            guidesCheckbox.setFont(labelFont);
+            guidesCheckbox.addActionListener(_ -> { showGuides = guidesCheckbox.isSelected(); repaint(); });
+            toolBar.add(guidesCheckbox);
+
+            JCheckBox gridCheckbox = new JCheckBox("แสดงกริด", showGrid);
+            gridCheckbox.setFont(labelFont);
+            gridCheckbox.addActionListener(_ -> { showGrid = gridCheckbox.isSelected(); repaint(); });
+            toolBar.add(gridCheckbox);
 
             SwingUtilities.invokeLater(() -> {
                 JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
@@ -603,7 +635,7 @@ public class PopupWindowEditor extends JFrame {
             }
         }
 
-        private void handleImportCode() {
+        public void openImportDialog() {
             JDialog dialog = new JDialog((JFrame) SwingUtilities.getWindowAncestor(this), "Import โค้ด", true);
             JPanel panel = new JPanel(new BorderLayout(10, 10));
             panel.setBorder(javax.swing.BorderFactory.createEmptyBorder(20, 20, 20, 20));
@@ -646,7 +678,7 @@ public class PopupWindowEditor extends JFrame {
             dialog.setVisible(true);
         }
 
-        private void parseAndLoadCode(String code) {
+        public void parseAndLoadCode(String code) {
             elements.clear();
 
             String[] lines = code.split("\n");
@@ -759,6 +791,36 @@ public class PopupWindowEditor extends JFrame {
 
             for (MenuElement element : elements) {
                 element.render(g2d);
+            }
+
+            if (showGrid) {
+                g2d.setColor(new Color(0, 0, 0, 25));
+                for (int x = 0; x <= config.width; x += gridSize) {
+                    g2d.drawLine(x, 0, x, config.height);
+                }
+                for (int y = 0; y <= config.height; y += gridSize) {
+                    g2d.drawLine(0, y, config.width, y);
+                }
+            }
+
+            if (showGuides) {
+                g2d.setColor(new Color(255, 0, 0, 100));
+                // center lines
+                int cx = config.width / 2;
+                int cy = config.height / 2;
+                g2d.drawLine(cx, 0, cx, config.height);
+                g2d.drawLine(0, cy, config.width, cy);
+
+                g2d.setColor(new Color(0, 128, 255, 80));
+                // thirds
+                int tx1 = config.width / 3;
+                int tx2 = (config.width * 2) / 3;
+                int ty1 = config.height / 3;
+                int ty2 = (config.height * 2) / 3;
+                g2d.drawLine(tx1, 0, tx1, config.height);
+                g2d.drawLine(tx2, 0, tx2, config.height);
+                g2d.drawLine(0, ty1, config.width, ty1);
+                g2d.drawLine(0, ty2, config.width, ty2);
             }
         }
 
