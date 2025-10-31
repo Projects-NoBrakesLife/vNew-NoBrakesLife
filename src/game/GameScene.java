@@ -522,7 +522,32 @@ public class GameScene {
         
         for (Player player : players) {
             if (player.getPlayerId() == turnPlayerId) {
-                player.setRemainingTime(24.0);
+                double startTime = 24.0;
+                
+               
+                player.setHealth(player.getHealth() - GameConfig.TURN_HEALTH_PENALTY);
+                
+               
+                if (isOnlineMode && networkManager != null && player.getPlayerId() == networkManager.getPlayerId()) {
+                    networkManager.sendPlayerStats(
+                        player.getPlayerId(),
+                        player.getSkill(),
+                        player.getEducation(),
+                        player.getHealth(),
+                        player.getMoney(),
+                        player.getBankDeposit()
+                    );
+                }
+           
+                if (player.getHealth() < GameConfig.LOW_HEALTH_THRESHOLD * 100) {
+                    startTime = 24.0 - GameConfig.LOW_HEALTH_TIME_PENALTY;
+                    turnDisplayText = "สุขภาพต่ำ! เวลาเริ่มต้น " + (int)startTime + " ชม.";
+                    turnDisplayStartTime = System.currentTimeMillis();
+                }
+                
+                player.setRemainingTime(startTime);
+                
+                updateHUDStats();
             }
         }
         
@@ -785,6 +810,10 @@ public class GameScene {
                                         handleFishing(p);
                                     } else if ("sleep".equals(productId)) {
                                         handleSleep(p);
+                                    } else if ("gym_tophand".equals(productId)) {
+                                        handleGym(p, "tophand");
+                                    } else if ("gym_icon".equals(productId)) {
+                                        handleGym(p, "icon");
                                     } else if ("deposit500".equals(productId) || "depositAll".equals(productId) || "withdraw500".equals(productId) || "withdrawAll".equals(productId)) {
                                         int amount = 0;
                                         if ("deposit500".equals(productId)) amount = 100;
@@ -1225,6 +1254,10 @@ public class GameScene {
                 p.setHealth(p.getHealth() - caughtFish.healthBonus);
                 p.setMoney(p.getMoney() + caughtFish.moneyBonus);
                 
+              
+                int skillGain = GameConfig.FISHING_SKILL_MIN + (int)(Math.random() * (GameConfig.FISHING_SKILL_MAX - GameConfig.FISHING_SKILL_MIN + 1));
+                p.setSkill(p.getSkill() + skillGain);
+                
                 StringBuilder msgBuilder = new StringBuilder("ตกได้ " + caughtFish.name);
                 if (caughtFish.moneyBonus > 0) {
                     msgBuilder.append(" ได้เงิน $").append(caughtFish.moneyBonus);
@@ -1232,6 +1265,7 @@ public class GameScene {
                 if (caughtFish.healthBonus > 0) {
                     msgBuilder.append(" สุขภาพ -").append(caughtFish.healthBonus);
                 }
+                msgBuilder.append(" ทักษะ +").append(skillGain);
                 final String msg = msgBuilder.toString();
                 final String fishImagePath = caughtFish.imagePath;
                 
@@ -1271,6 +1305,51 @@ public class GameScene {
         p.setHealth(p.getHealth() + GameConfig.SLEEP_HEALTH_BONUS);
         
         String msg = "นอนพักผ่อน สุขภาพ +" + GameConfig.SLEEP_HEALTH_BONUS;
+        PopupWindow ap = activePopup;
+        SwingUtilities.invokeLater(() -> {
+            ap.clearNotifications();
+            ap.showNotification(msg);
+            updateHUDStats();
+        });
+        
+        try {
+            SoundManager.getInstance().playSFX(GameConfig.ZZZ_SOUND);
+        } catch (Exception ignored) {}
+    }
+    
+    private void handleGym(Player p, String gymType) {
+        if (p == null || activePopup == null) return;
+        
+        int healthBonus;
+        double timeCost;
+        String workoutName;
+        
+        if ("tophand".equals(gymType)) {
+            healthBonus = GameConfig.GYM_HEALTH_BONUS_TOPHAND;
+            timeCost = GameConfig.GYM_TIME_COST_TOPHAND;
+            workoutName = "ออกกำลังกายเต็มที่";
+        } else {
+            healthBonus = GameConfig.GYM_HEALTH_BONUS_ICON;
+            timeCost = GameConfig.GYM_TIME_COST_ICON;
+            workoutName = "ออกกำลังกายเบาๆ";
+        }
+        
+        double remainingTime = p.getRemainingTime();
+        if (remainingTime < timeCost) {
+            String msg = "เวลาไม่พอ ต้องการ " + (int)timeCost + " ชั่วโมง (เหลือ " + String.format("%.1f", remainingTime) + " ชั่วโมง)";
+            PopupWindow ap = activePopup;
+            SwingUtilities.invokeLater(() -> ap.showNotification(msg));
+            return;
+        }
+        
+        p.setRemainingTime(remainingTime - timeCost);
+        p.setHealth(p.getHealth() + healthBonus);
+        
+
+        int skillGain = GameConfig.GYM_SKILL_MIN + (int)(Math.random() * (GameConfig.GYM_SKILL_MAX - GameConfig.GYM_SKILL_MIN + 1));
+        p.setSkill(p.getSkill() + skillGain);
+        
+        String msg = workoutName + " สุขภาพ +" + healthBonus + " ทักษะ +" + skillGain;
         PopupWindow ap = activePopup;
         SwingUtilities.invokeLater(() -> {
             ap.clearNotifications();
@@ -1333,10 +1412,13 @@ public class GameScene {
         
         p.setRemainingTime(remainingTime - GameConfig.STUDY_TIME_COST);
         
+     
+        p.setSkill(p.getSkill() + GameConfig.STUDY_SKILL_BONUS);
+        
         if (trimmedAnswer.equalsIgnoreCase(correctAnswer)) {
             p.setEducation(p.getEducation() + GameConfig.STUDY_EDUCATION_BONUS);
             
-            String msg = "ถูกต้อง! การศึกษา +" + GameConfig.STUDY_EDUCATION_BONUS + " (ใช้เวลา " + GameConfig.STUDY_TIME_COST + " ชม.)";
+            String msg = "ถูกต้อง! การศึกษา +" + GameConfig.STUDY_EDUCATION_BONUS + " ทักษะ +" + GameConfig.STUDY_SKILL_BONUS + " (ใช้เวลา " + GameConfig.STUDY_TIME_COST + " ชม.)";
             PopupWindow ap = activePopup;
             SwingUtilities.invokeLater(() -> {
                 ap.clearNotifications();
@@ -1344,7 +1426,7 @@ public class GameScene {
                 updateHUDStats();
             });
         } else {
-            String msg = "ตอบผิด! (ใช้เวลา " + GameConfig.STUDY_TIME_COST + " ชม.)";
+            String msg = "ตอบผิด! ทักษะ +" + GameConfig.STUDY_SKILL_BONUS + " (ใช้เวลา " + GameConfig.STUDY_TIME_COST + " ชม.)";
             PopupWindow ap = activePopup;
             SwingUtilities.invokeLater(() -> {
                 ap.clearNotifications();

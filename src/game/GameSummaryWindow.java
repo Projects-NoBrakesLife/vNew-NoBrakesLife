@@ -128,7 +128,7 @@ public class GameSummaryWindow extends JDialog {
             targetScores[2] = getScoreByMetric("money", winnerMoneyId);
             displayedScores[0] = 0; displayedScores[1] = 0; displayedScores[2] = 0;
             scoreTexts[0] = new MenuElement("", 606.5, 749.0, 32);
-            // setco
+         
             scoreTexts[0].setTextColor(new Color(30, 30, 40));
             scoreTexts[0].setVisibility(false);
             elements.add(scoreTexts[0]);

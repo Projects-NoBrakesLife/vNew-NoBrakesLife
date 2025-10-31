@@ -290,6 +290,14 @@ public class NetworkManager {
         }
     }
     
+    public void sendPlayerStats(int playerId, int skill, int education, int health, int money, int bankDeposit) {
+        if (connected && out != null && playerId > 0) {
+            String statsData = String.format("UPDATE_STATS:%d:%d:%d:%d:%d:%d", playerId, skill, education, health, money, bankDeposit);
+            out.println(statsData);
+            out.flush();
+        }
+    }
+    
     public void disconnect() {
         connected = false;
         try {

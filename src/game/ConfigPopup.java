@@ -18,6 +18,7 @@ public class ConfigPopup {
         GARDEN,
         DORMITORY,
         UNIVERSITY,
+        GYM,
         CUSTOM
     }
 
@@ -36,12 +37,14 @@ public class ConfigPopup {
         registerPreset(PopupType.GARDEN, ConfigPopup::createGardenPreset);
         registerPreset(PopupType.DORMITORY, ConfigPopup::createDormitoryPreset);
         registerPreset(PopupType.UNIVERSITY, ConfigPopup::createUniversityPreset);
+        registerPreset(PopupType.GYM, ConfigPopup::createGymPreset);
         
         nameToType.put("ร้านไก่ทอดตลาดน้อย", PopupType.CLUCKERS);
         nameToType.put("ธนาคารไทณิชย์", PopupType.BANK);
         nameToType.put("สวนจก", PopupType.GARDEN);
         nameToType.put("หอพัก", PopupType.DORMITORY);
         nameToType.put("มหาวิทยาลัย NSU", PopupType.UNIVERSITY);
+        nameToType.put("ยิมหน้ามอ", PopupType.GYM);
     }
 
     public static void registerPreset(PopupType type, Supplier<PopupPreset> factory) {
@@ -439,6 +442,85 @@ public class ConfigPopup {
         PopupPreset preset = new PopupPreset();
         preset.config = createUniversityConfig();
         preset.elements = createUniversityElements();
+        return preset;
+    }
+    
+    
+    private static PopupWindow.PopupWindowConfig createGymConfig() {
+        PopupWindow.PopupWindowConfig config = new PopupWindow.PopupWindowConfig();
+        config.width = 1632;
+        config.height = 918;
+        config.backgroundColor = new Color(255, 153, 0);
+        config.useBackgroundImage = false;
+        return config;
+    }
+    
+    private static ArrayList<MenuElement> createGymElements() {
+        ArrayList<MenuElement> elements = new ArrayList<>();
+        
+        elements.add(new MenuElement(MenuElement.ElementType.IMAGE, 
+                "assets" + File.separator + "ui" + File.separator + "popup" + File.separator + "Gym.png", 
+                657.0, -105.0, 1071.1, 1190.2));
+        
+        elements.add(new MenuElement(MenuElement.ElementType.IMAGE, 
+                "assets" + File.separator + "ui" + File.separator + "popup" + File.separator + "bg_item_none.png", 
+                354.0, 322.0, 256.0, 256.0));
+        
+        MenuElement tophand = new MenuElement(MenuElement.ElementType.IMAGE, 
+                "assets" + File.separator + "ui" + File.separator + "popup" + File.separator + "LOC-Gym tophand #33276.png", 
+                374.0, 380.0, 190.3, 95.5);
+        tophand.setUseScaleEffect(true);
+        tophand.setTooltip("ออกกำลังกายเต็มที่ สุขภาพ +" + GameConfig.GYM_HEALTH_BONUS_TOPHAND + " (ใช้เวลา " + (int)GameConfig.GYM_TIME_COST_TOPHAND + " ชม.)");
+        elements.add(tophand);
+        
+        elements.add(new MenuElement(MenuElement.ElementType.IMAGE, 
+                "assets" + File.separator + "ui" + File.separator + "popup" + File.separator + "bg_item_none.png", 
+                37.0, 326.0, 256.0, 256.0));
+        
+        MenuElement icon = new MenuElement(MenuElement.ElementType.IMAGE, 
+                "assets" + File.separator + "ui" + File.separator + "popup" + File.separator + "Icon-Location-Gym #41606.png", 
+                64.0, 359.0, 177.5, 177.5);
+        icon.setUseScaleEffect(true);
+        icon.setTooltip("ออกกำลังกายเบาๆ สุขภาพ +" + GameConfig.GYM_HEALTH_BONUS_ICON + " (ใช้เวลา " + (int)GameConfig.GYM_TIME_COST_ICON + " ชม.)");
+        elements.add(icon);
+        
+        elements.add(new MenuElement(MenuElement.ElementType.IMAGE, 
+                "assets" + File.separator + "ui" + File.separator + "popup" + File.separator + "Background-Border-02.png", 
+                639.0, -37.0, 1368.4, 1179.4));
+        
+        elements.add(new MenuElement(MenuElement.ElementType.IMAGE, 
+                "assets" + File.separator + "ui" + File.separator + "popup" + File.separator + "TutorialSpeechbubble.png", 
+                519.0, 27.0, 534.6, 237.6));
+        
+        MenuElement text1 = new MenuElement("หวัดดีไอ้น้อง", 688.0, 76.0, 32);
+        text1.setTextColor(new Color(0, 0, 0));
+        elements.add(text1);
+        
+        MenuElement text2 = new MenuElement("ออกกำลังกายกับอาจารย์", 605.0, 119.0, 32);
+        text2.setTextColor(new Color(0, 0, 0));
+        elements.add(text2);
+        
+        MenuElement text3 = new MenuElement("เลน กล้ามโต", 686.0, 166.0, 32);
+        text3.setTextColor(new Color(0, 0, 0));
+        elements.add(text3);
+        
+        MenuElement text4 = new MenuElement("เพื่อสุขภาพ", 696.0, 219.0, 32);
+        text4.setTextColor(new Color(0, 0, 0));
+        elements.add(text4);
+        
+        MenuElement exitButton = new MenuElement(MenuElement.ElementType.IMAGE, 
+                "assets" + File.separator + "ui" + File.separator + "popup" + File.separator + "TEMP_Exit_button.png", 
+                13.0, 8.0, 149.0, 95.0);
+        exitButton.setHoverImage("assets" + File.separator + "ui" + File.separator + "popup" + File.separator + "TEMP_exit_button_hover.png");
+        elements.add(exitButton);
+        
+        return elements;
+    }
+    
+    public static PopupPreset createGymPreset() {
+        PopupPreset preset = new PopupPreset();
+        preset.config = createGymConfig();
+        preset.elements = createGymElements();
         return preset;
     }
 }

@@ -1,30 +1,47 @@
 package game;
 
 public class GameConfig {
+    // ===== ตั้งค่าหน้าต่างและโหมด Debug =====
     public static final boolean DEBUG_MODE = true;
     public static final int WINDOW_WIDTH = 1920;
     public static final int WINDOW_HEIGHT = 1080;
     
+    // ===== เสียงเอฟเฟค =====
     public static final String BACKGROUND_IMAGE = "assets" + java.io.File.separator + "background" + java.io.File.separator + "NewTimesMapMock4a.png";
-    public static final String HOVER_SOUND = "assets" + java.io.File.separator + "sfx" + java.io.File.separator + "Button Select.wav";
-    public static final String TURN_SOUND = "assets" + java.io.File.separator + "sfx" + java.io.File.separator + "Bubble Pop.wav";
-    public static final String FOOD_EATEN_SOUND = "assets" + java.io.File.separator + "sfx" + java.io.File.separator + "Food Eaten.wav";
-    public static final String LOCATION_OPEN_SOUND = "assets" + java.io.File.separator + "sfx" + java.io.File.separator + "Location Open.wav";
-    public static final String LOCATION_CLOSE_SOUND = "assets" + java.io.File.separator + "sfx" + java.io.File.separator + "Location Close.wav";
+    public static final String HOVER_SOUND = "assets" + java.io.File.separator + "sfx" + java.io.File.separator + "Button Select.wav"; // เสียงเวลา hover ปุ่ม
+    public static final String TURN_SOUND = "assets" + java.io.File.separator + "sfx" + java.io.File.separator + "Bubble Pop.wav"; // เสียงเปลี่ยนเทิร์น
+    public static final String FOOD_EATEN_SOUND = "assets" + java.io.File.separator + "sfx" + java.io.File.separator + "Food Eaten.wav"; // เสียงกินอาหาร
+    public static final String LOCATION_OPEN_SOUND = "assets" + java.io.File.separator + "sfx" + java.io.File.separator + "Location Open.wav"; // เสียงเปิด popup
+    public static final String LOCATION_CLOSE_SOUND = "assets" + java.io.File.separator + "sfx" + java.io.File.separator + "Location Close.wav"; // เสียงปิด popup
     public static final String CELEBRATION_MUSIC = "assets" + java.io.File.separator + "sfx" + java.io.File.separator + "CRAPPY_HOME_AMB.wav";
-    public static final String LAST_TURN_SOUND = "assets" + java.io.File.separator + "sfx" + java.io.File.separator + "Last Turn.wav";
-    public static final String SCORE_FILL_SOUND = "assets" + java.io.File.separator + "sfx" + java.io.File.separator + "Score Fill.wav";
-    public static final String SCORE_TYPE_ANNOUNCED_SOUND = "assets" + java.io.File.separator + "sfx" + java.io.File.separator + "Score Type Announced.wav";
-    public static final String BUTTON_CLICK_2_SOUND = "assets" + java.io.File.separator + "sfx" + java.io.File.separator + "Button Click 2.wav";
-    public static final String HOOK_SOUND = "assets" + java.io.File.separator + "sfx" + java.io.File.separator + "hook.wav";
-    public static final String STAMP_SOUND = "assets" + java.io.File.separator + "sfx" + java.io.File.separator + "Stamp.wav";
+    public static final String LAST_TURN_SOUND = "assets" + java.io.File.separator + "sfx" + java.io.File.separator + "Last Turn.wav"; // เสียงเทิร์นสุดท้าย
+    public static final String SCORE_FILL_SOUND = "assets" + java.io.File.separator + "sfx" + java.io.File.separator + "Score Fill.wav"; // เสียงนับคะแนน
+    public static final String SCORE_TYPE_ANNOUNCED_SOUND = "assets" + java.io.File.separator + "sfx" + java.io.File.separator + "Score Type Announced.wav"; // เสียงประกาศผู้ชนะ
+    public static final String BUTTON_CLICK_2_SOUND = "assets" + java.io.File.separator + "sfx" + java.io.File.separator + "Button Click 2.wav"; // เสียงคลิกปุ่ม
+    public static final String HOOK_SOUND = "assets" + java.io.File.separator + "sfx" + java.io.File.separator + "hook.wav"; // เสียงตกปลา
+    public static final String STAMP_SOUND = "assets" + java.io.File.separator + "sfx" + java.io.File.separator + "Stamp.wav"; // เสียงส่งคำตอบ
+    public static final String ZZZ_SOUND = "assets" + java.io.File.separator + "sfx" + java.io.File.separator + "zzz.wav"; // เสียงนอน
     
-    public static final int SLEEP_HEALTH_BONUS = 30;
-    public static final double SLEEP_TIME_COST = 1.5;
+    // ===== หอพัก - นอนพัก =====
+    public static final int SLEEP_HEALTH_BONUS = 30; // สุขภาพที่ได้รับจากการนอน
+    public static final double SLEEP_TIME_COST = 2; // เวลาที่ใช้ในการนอน (ชั่วโมง)
     
-    public static final int STUDY_EDUCATION_BONUS = 15;
-    public static final double STUDY_TIME_COST = 2.0;
+    // ===== มหาวิทยาลัย - เรียนตอบคำถาม =====
+    public static final int STUDY_EDUCATION_BONUS = 15; // คะแนนการศึกษาที่ได้รับจากการตอบถูก
+    public static final double STUDY_TIME_COST = 2.0; // เวลาที่ใช้ในการตอบคำถาม (ชั่วโมง)
+    public static final int STUDY_SKILL_BONUS = 3; // ทักษะที่ได้รับจากการตอบคำถาม (ไม่ว่าถูกผิด)
     
+    // ===== ยิม - ออกกำลังกาย =====
+    public static final int GYM_HEALTH_BONUS_TOPHAND = 100; // สุขภาพจากการออกกำลังกายเต็มที่ (Tophand)
+    public static final double GYM_TIME_COST_TOPHAND = 10.0; // เวลาที่ใช้ออกกำลังกายเต็มที่ (ชั่วโมง)
+    public static final int GYM_HEALTH_BONUS_ICON = 50; // สุขภาพจากการออกกำลังกายเบาๆ (Icon)
+    public static final double GYM_TIME_COST_ICON = 5.0; // เวลาที่ใช้ออกกำลังกายเบาๆ (ชั่วโมง)
+    public static final int GYM_SKILL_MIN = 9; // ทักษะขั้นต่ำจากการออกกำลังกาย
+    public static final int GYM_SKILL_MAX = 12; // ทักษะสูงสุดจากการออกกำลังกาย
+    public static final double LOW_HEALTH_THRESHOLD = 0.20; // สุขภาพต่ำกว่า 20% จะได้เวลาน้อยลง
+    public static final double LOW_HEALTH_TIME_PENALTY = 8.0; // ลดเวลาเริ่มต้น 8 ชม. (24 → 16)
+    
+    // ===== คำถามมหาวิทยาลัย =====
     public static class Question {
         public String question;
         public String answer;
@@ -123,8 +140,10 @@ public class GameConfig {
 
     };
     
-    public static final long LOADING_SCREEN_DELAY_MS = 5000;
+    // ===== หน้าจอโหลด =====
+    public static final long LOADING_SCREEN_DELAY_MS = 5000; // เวลาแสดงหน้าโหลด (มิลลิวินาที)
 
+    // ===== การเชื่อมต่อเซิร์ฟเวอร์ =====
     private static String SERVER_HOST = "127.0.0.1";
     public static final int SERVER_PORT = 8888;
     
@@ -135,18 +154,26 @@ public class GameConfig {
     public static void setServerHost(String host) {
         SERVER_HOST = host;
     }
-    public static final int MAX_PLAYERS = 4;
-    public static final int MIN_PLAYERS_TO_START = 2;
-    public static final int MAX_TURNS = 2;
     
-    public static final double TIME_BASE_COST = 1.0;
-    public static final double TIME_DISTANCE_MULTIPLIER = 250.0;
-    public static final double TIME_MAX_COST = 3.0;
-    public static final double TIME_AUTO_DECREASE = 0.01;
-    public static final long TIME_AUTO_DECREASE_INTERVAL_MS = 1000;
+    // ===== ตั้งค่าเกม =====
+    public static final int MAX_PLAYERS = 4; // จำนวนผู้เล่นสูงสุด
+    public static final int MIN_PLAYERS_TO_START = 2; // จำนวนผู้เล่นขั้นต่ำในการเริ่มเกม
+    public static final int MAX_TURNS = 2; // จำนวนเทิร์นทั้งหมด (สัปดาห์)
+    public static final int TURN_HEALTH_PENALTY = 55; // สุขภาพที่ลดลงทุกเทิร์น
     
-    public static final double FISHING_TIME_COST = 1;
+    // ===== ระบบเวลาและการเดิน =====
+    public static final double TIME_BASE_COST = 1.0; // เวลาพื้นฐานในการเดิน
+    public static final double TIME_DISTANCE_MULTIPLIER = 250.0; // ตัวคูณระยะทาง
+    public static final double TIME_MAX_COST = 3.0; // เวลาสูงสุดในการเดิน
+    public static final double TIME_AUTO_DECREASE = 0.01; // เวลาลดอัตโนมัติต่อวินาที (AFK prevention)
+    public static final long TIME_AUTO_DECREASE_INTERVAL_MS = 1000; // ช่วงเวลาการลดอัตโนมัติ (มิลลิวินาที)
     
+    // ===== สวน - ตกปลา =====
+    public static final double FISHING_TIME_COST = 1; // เวลาที่ใช้ในการตกปลา (ชั่วโมง)
+    public static final int FISHING_SKILL_MIN = 8; // ทักษะขั้นต่ำจากการตกปลา
+    public static final int FISHING_SKILL_MAX = 10; // ทักษะสูงสุดจากการตกปลา
+    
+    // ===== รายการปลา (ชื่อ, ภาพ, สุขภาพ, เงิน, โอกาส) =====
     public static final Fish[] FISHES = {
         new Fish("ปลาธรรมดา", "assets" + java.io.File.separator + "ui" + java.io.File.separator + "fishs" + java.io.File.separator + "Icon-Fishing-Fish-Basic.png", 2, 20, 30.0),
         new Fish("ปลาสวยงาม", "assets" + java.io.File.separator + "ui" + java.io.File.separator + "fishs" + java.io.File.separator + "Icon-Fishing-Fish-Nice.png", 3, 40, 25.0),
@@ -162,6 +189,7 @@ public class GameConfig {
         new Fish("ถุงขยะ", "assets" + java.io.File.separator + "ui" + java.io.File.separator + "fishs" + java.io.File.separator + "Icon-Fishing-Trash-Bag.png", 2, 0, 30.0),
     };
 
+    // ===== สถานที่ในเกม (ภาพ, ชื่อ, ตำแหน่ง, ตำแหน่งผู้เล่น) =====
     public static final HoverObject[] HOVER_OBJECTS = {
             new HoverObject("assets" + java.io.File.separator + "obj" + java.io.File.separator + "gym.png", "ยิมหน้ามอ", 484.0, 201.0, 279.0, 243.0, 0.0, 697.0, 435.0, "BACK"),
             new HoverObject("assets" + java.io.File.separator + "obj" + java.io.File.separator + "kfb.png", "ร้านไก่ทอดตลาดน้อย", 202.0, 298.0, 234.0, 234.0, 0.0,366.0, 576.0, "BACK"),
@@ -173,6 +201,7 @@ public class GameConfig {
 
     };
     
+    // ===== คลาส HoverObject สำหรับสถานที่ =====
     public static class HoverObject {
         public String imagePath;
         public String name;
@@ -199,6 +228,7 @@ public class GameConfig {
         }
     }
     
+    // ===== คลาส Fish สำหรับปลา =====
     public static class Fish {
         public String name;
         public String imagePath;

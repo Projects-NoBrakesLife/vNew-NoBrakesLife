@@ -162,6 +162,20 @@ public class PopupWindow extends JDialog {
         setSize(config.width, config.height);
         try { SoundManager.getInstance().playSFX(GameConfig.LOCATION_OPEN_SOUND); } catch (Exception ignored) {}
         
+
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowOpened(java.awt.event.WindowEvent e) {
+                SwingUtilities.invokeLater(() -> {
+                    requestFocus();
+                    toFront();
+                    getContentPane().requestFocusInWindow();
+                    getContentPane().revalidate();
+                    getContentPane().repaint();
+                    System.out.println("DEBUG: Window opened, purchaseHandler = " + purchaseHandler);
+                });
+            }
+        });
      
         getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
             KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "close");
@@ -221,12 +235,12 @@ public class PopupWindow extends JDialog {
                     answerField.addFocusListener(new java.awt.event.FocusAdapter() {
                         @Override
                         public void focusGained(java.awt.event.FocusEvent e) {
-                            // Clear on focus
+                         
                         }
                         
                         @Override
                         public void focusLost(java.awt.event.FocusEvent e) {
-                            // Keep text
+                       
                         }
                     });
                     
@@ -451,8 +465,11 @@ public class PopupWindow extends JDialog {
                         SwingUtilities.getWindowAncestor(this).dispose();
                         return;
                     }
+                    System.out.println("DEBUG: purchaseHandler = " + purchaseHandler + ", path = " + path);
                     if (purchaseHandler != null && path != null) {
                         String p = path.replace('\\','/');
+                        System.out.println("DEBUG: Clicked path = " + p);
+                        System.out.println("DEBUG: Starting if-else chain...");
                         if (p.endsWith("assets/ui/popup/Icon-Cluckers-Bucket #2969.png")) {
                             purchaseHandler.onPurchase("bucket");
                             return;
@@ -477,13 +494,25 @@ public class PopupWindow extends JDialog {
                         } else if (p.endsWith("assets/ui/popup/Icon-Withdraw-All #45109.png")) {
                             purchaseHandler.onPurchase("withdrawAll");
                             return;
-                        } else if (p.contains("Icon-Fishing-Pole")) {
+                        } else if (p.contains("Icon-Fishing-Pole") && !p.contains("Max")) {
                             try { SoundManager.getInstance().playSFX(GameConfig.BUTTON_CLICK_2_SOUND); } catch (Exception ignored) {}
                             purchaseHandler.onPurchase("fishing");
                             return;
                         } else if (p.contains("Icon-Furniture-Bed_Mattress")) {
                             try { SoundManager.getInstance().playSFX(GameConfig.BUTTON_CLICK_2_SOUND); } catch (Exception ignored) {}
                             purchaseHandler.onPurchase("sleep");
+                            return;
+                        } else if (p.contains("LOC-Gym tophand")) {
+                            System.out.println("DEBUG: Matched LOC-Gym tophand!");
+                            try { SoundManager.getInstance().playSFX(GameConfig.BUTTON_CLICK_2_SOUND); } catch (Exception ignored) {}
+                            purchaseHandler.onPurchase("gym_tophand");
+                            return;
+                        } else if (p.contains("Icon-Location-Gym")) {
+                            System.out.println("DEBUG: Matched Icon-Location-Gym!");
+                            try { SoundManager.getInstance().playSFX(GameConfig.BUTTON_CLICK_2_SOUND); } catch (Exception ignored) {}
+                            System.out.println("DEBUG: Calling purchaseHandler.onPurchase(\"gym_icon\")");
+                            purchaseHandler.onPurchase("gym_icon");
+                            System.out.println("DEBUG: Called purchaseHandler.onPurchase(\"gym_icon\")");
                             return;
                         } else if (p.contains("Icon-Chamber-Study-Old")) {
                             try { SoundManager.getInstance().playSFX(GameConfig.STAMP_SOUND); } catch (Exception ignored) {}
@@ -494,6 +523,8 @@ public class PopupWindow extends JDialog {
                                 }
                             }
                             return;
+                        } else {
+                            System.out.println("DEBUG: No match found for path: " + p);
                         }
                     }
                 }
