@@ -13,11 +13,29 @@ public class PopupWindow extends JDialog {
     private ArrayList<MenuElement> elements;
     private BufferedImage backgroundImage;
     public static interface PurchaseHandler { void onPurchase(String productId); }
+    public static interface QuestionHandler { void onAnswerSubmit(String answer); }
     private PurchaseHandler purchaseHandler;
-    private java.util.ArrayDeque<String> notifyQueue = new java.util.ArrayDeque<>();
-    private String currentNotify;
+    private QuestionHandler questionHandler;
+    private java.util.ArrayDeque<NotificationData> notifyQueue = new java.util.ArrayDeque<>();
+    private NotificationData currentNotify;
     private long notifyStartMs = 0L;
-    private final int notifyDurationMs = 2500;
+    private final int notifyDurationMs = 2000;
+    private JTextField answerField;
+    private MenuElement questionTextElement;
+    
+    private boolean isFishingAnimation = false;
+    private String currentFishingFishImage = null;
+    private final long fishingImageChangeInterval = 200L;
+    private javax.swing.Timer fishingAnimationTimer;
+    
+    private static class NotificationData {
+        String message;
+        String imagePath;
+        NotificationData(String msg, String img) {
+            message = msg;
+            imagePath = img;
+        }
+    }
 
     public PopupWindow(JFrame parent, PopupWindowConfig config, ArrayList<MenuElement> elements) {
         super(parent, true); 
@@ -45,10 +63,15 @@ public class PopupWindow extends JDialog {
     }
 
     public PopupWindow(PopupWindowConfig config, ArrayList<MenuElement> elements, PurchaseHandler handler) {
+        this(config, elements, handler, null);
+    }
+    
+    public PopupWindow(PopupWindowConfig config, ArrayList<MenuElement> elements, PurchaseHandler handler, QuestionHandler qHandler) {
         super((Frame) null, true);
         this.config = config;
         this.elements = new ArrayList<>(elements);
         this.purchaseHandler = handler;
+        this.questionHandler = qHandler;
         initializeWindow();
         loadBackgroundImage();
         createContentPanel();
@@ -57,11 +80,74 @@ public class PopupWindow extends JDialog {
     }
 
     public void showNotification(String msg) {
+        showNotification(msg, null);
+    }
+    
+    public void showNotification(String msg, String imagePath) {
         if (msg == null || msg.trim().isEmpty()) return;
-        notifyQueue.offer(msg);
+        notifyQueue.offer(new NotificationData(msg, imagePath));
         if (currentNotify == null) {
             currentNotify = notifyQueue.poll();
             notifyStartMs = System.currentTimeMillis();
+        }
+        if (getContentPane() != null) {
+            getContentPane().repaint();
+        }
+    }
+
+    public void clearNotifications() {
+        currentNotify = null;
+        notifyQueue.clear();
+        if (getContentPane() != null) {
+            getContentPane().repaint();
+        }
+    }
+    
+    public void setQuestion(String questionText) {
+        if (questionTextElement != null) {
+            questionTextElement.setText(questionText);
+        }
+        if (answerField != null) {
+            answerField.setText("");
+        }
+        if (getContentPane() != null) {
+            getContentPane().repaint();
+        }
+    }
+    
+    public void startFishingAnimation() {
+        isFishingAnimation = true;
+        if (GameConfig.FISHES != null && GameConfig.FISHES.length > 0) {
+            int randomIndex = (int)(Math.random() * GameConfig.FISHES.length);
+            currentFishingFishImage = GameConfig.FISHES[randomIndex].imagePath;
+        }
+        
+        if (fishingAnimationTimer != null) {
+            fishingAnimationTimer.stop();
+        }
+        
+        fishingAnimationTimer = new javax.swing.Timer((int)fishingImageChangeInterval, _ -> {
+            if (isFishingAnimation && GameConfig.FISHES != null && GameConfig.FISHES.length > 0) {
+                int randomIndex = (int)(Math.random() * GameConfig.FISHES.length);
+                currentFishingFishImage = GameConfig.FISHES[randomIndex].imagePath;
+                if (getContentPane() != null) {
+                    getContentPane().repaint();
+                }
+            }
+        });
+        fishingAnimationTimer.start();
+        
+        if (getContentPane() != null) {
+            getContentPane().repaint();
+        }
+    }
+    
+    public void stopFishingAnimation() {
+        isFishingAnimation = false;
+        currentFishingFishImage = null;
+        if (fishingAnimationTimer != null) {
+            fishingAnimationTimer.stop();
+            fishingAnimationTimer = null;
         }
         if (getContentPane() != null) {
             getContentPane().repaint();
@@ -82,6 +168,7 @@ public class PopupWindow extends JDialog {
         getRootPane().getActionMap().put("close", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                stopFishingAnimation();
                 try { SoundManager.getInstance().playSFX(GameConfig.LOCATION_CLOSE_SOUND); } catch (Exception ignored) {}
                 dispose();
             }
@@ -121,6 +208,47 @@ public class PopupWindow extends JDialog {
         public ContentPanel() {
             setPreferredSize(new Dimension(config.width, config.height));
             setLayout(null);
+            
+            for (MenuElement el : elements) {
+                if (el.getText() != null && (el.getText().equals(".......") || el.getText().equals("   "))) {
+                    answerField = new JTextField("");
+                    answerField.setBounds((int)el.getX() - 10, (int)el.getY() - 10, 250, 35);
+                    answerField.setFont(FontManager.getThaiFont(Font.PLAIN, 24));
+                    answerField.setOpaque(false);
+                    answerField.setBorder(null);
+                    answerField.setForeground(new Color(0, 0, 0));
+                    
+                    answerField.addFocusListener(new java.awt.event.FocusAdapter() {
+                        @Override
+                        public void focusGained(java.awt.event.FocusEvent e) {
+                            // Clear on focus
+                        }
+                        
+                        @Override
+                        public void focusLost(java.awt.event.FocusEvent e) {
+                            // Keep text
+                        }
+                    });
+                    
+                    answerField.addActionListener(_ -> {
+                        try { SoundManager.getInstance().playSFX(GameConfig.STAMP_SOUND); } catch (Exception ignored) {}
+                        if (questionHandler != null) {
+                            String text = answerField.getText();
+                            if (!text.trim().isEmpty()) {
+                                questionHandler.onAnswerSubmit(text);
+                            }
+                        }
+                    });
+                    
+                    add(answerField);
+                    
+                    javax.swing.SwingUtilities.invokeLater(() -> {
+                        answerField.requestFocusInWindow();
+                    });
+                } else if (el.getText() != null && el.getText().equals("คำถาม")) {
+                    questionTextElement = el;
+                }
+            }
 
             addMouseListener(new java.awt.event.MouseAdapter() {
                 @Override
@@ -224,27 +352,64 @@ public class PopupWindow extends JDialog {
             }
 
             long now = System.currentTimeMillis();
+            
             if (currentNotify != null) {
                 if (now - notifyStartMs >= notifyDurationMs) {
                     currentNotify = notifyQueue.poll();
                     notifyStartMs = System.currentTimeMillis();
                 }
             }
-            if (currentNotify != null) {
+            if (currentNotify != null && currentNotify.message != null) {
                 Font old = g2d.getFont();
                 g2d.setFont(FontManager.getThaiFont(Font.BOLD, 32));
+                
+                int imageSize = 64;
                 int x = (int)91.0;
                 int y = (int)836.0;
-                String text = currentNotify;
+                int textX = x;
+                
+                if (currentNotify.imagePath != null) {
+                    try {
+                        String imgPath = currentNotify.imagePath;
+                        File imgFile = new File(imgPath);
+                        if (!imgFile.exists()) {
+                            imgFile = new File(System.getProperty("user.dir") + File.separator + imgPath);
+                        }
+                        if (imgFile.exists()) {
+                            BufferedImage fishImg = ImageIO.read(imgFile);
+                            if (fishImg != null) {
+                                g2d.drawImage(fishImg, x, y - imageSize - 5, imageSize, imageSize, null);
+                                textX = x + imageSize + 10;
+                            }
+                        }
+                    } catch (Exception ignored) {}
+                } else if (isFishingAnimation && currentFishingFishImage != null && currentNotify.message.contains("กำลังตกปลา")) {
+                    try {
+                        String imgPath = currentFishingFishImage;
+                        File imgFile = new File(imgPath);
+                        if (!imgFile.exists()) {
+                            imgFile = new File(System.getProperty("user.dir") + File.separator + imgPath);
+                        }
+                        if (imgFile.exists()) {
+                            BufferedImage fishImg = ImageIO.read(imgFile);
+                            if (fishImg != null) {
+                                g2d.drawImage(fishImg, x, y - imageSize - 5, imageSize, imageSize, null);
+                                textX = x + imageSize + 10;
+                            }
+                        }
+                    } catch (Exception ignored) {}
+                }
+                
+                String text = currentNotify.message;
                 g2d.setColor(new Color(0, 0, 0, 160));
                 for (int dx = -2; dx <= 2; dx++) {
                     for (int dy = -2; dy <= 2; dy++) {
                         if (dx == 0 && dy == 0) continue;
-                        g2d.drawString(text, x + dx, y + dy);
+                        g2d.drawString(text, textX + dx, y + dy);
                     }
                 }
                 g2d.setColor(new Color(255, 255, 255));
-                g2d.drawString(text, x, y);
+                g2d.drawString(text, textX, y);
                 g2d.setFont(old);
             }
         }
@@ -281,6 +446,7 @@ public class PopupWindow extends JDialog {
                     boolean isExit = (el.getButtonId() != null && el.getButtonId().equals("popup_exit"))
                             || (path != null && path.replace('\\','/').endsWith("assets/ui/popup/TEMP_Exit_button.png"));
                     if (isExit) {
+                        stopFishingAnimation();
                         try { SoundManager.getInstance().playSFX(GameConfig.LOCATION_CLOSE_SOUND); } catch (Exception ignored) {}
                         SwingUtilities.getWindowAncestor(this).dispose();
                         return;
@@ -310,6 +476,23 @@ public class PopupWindow extends JDialog {
                             return;
                         } else if (p.endsWith("assets/ui/popup/Icon-Withdraw-All #45109.png")) {
                             purchaseHandler.onPurchase("withdrawAll");
+                            return;
+                        } else if (p.contains("Icon-Fishing-Pole")) {
+                            try { SoundManager.getInstance().playSFX(GameConfig.BUTTON_CLICK_2_SOUND); } catch (Exception ignored) {}
+                            purchaseHandler.onPurchase("fishing");
+                            return;
+                        } else if (p.contains("Icon-Furniture-Bed_Mattress")) {
+                            try { SoundManager.getInstance().playSFX(GameConfig.BUTTON_CLICK_2_SOUND); } catch (Exception ignored) {}
+                            purchaseHandler.onPurchase("sleep");
+                            return;
+                        } else if (p.contains("Icon-Chamber-Study-Old")) {
+                            try { SoundManager.getInstance().playSFX(GameConfig.STAMP_SOUND); } catch (Exception ignored) {}
+                            if (questionHandler != null && answerField != null) {
+                                String text = answerField.getText();
+                                if (!text.trim().isEmpty()) {
+                                    questionHandler.onAnswerSubmit(text);
+                                }
+                            }
                             return;
                         }
                     }

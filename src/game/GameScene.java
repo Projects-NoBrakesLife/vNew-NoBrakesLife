@@ -37,6 +37,10 @@ public class GameScene {
     private boolean gameEnded = false;
     private int totalInterestEarned = 0;
     private int totalBankWithdrawReturned = 0;
+    private boolean isFishing = false;
+    
+    private java.util.ArrayList<Integer> askedQuestions = new java.util.ArrayList<>();
+    private GameConfig.Question currentQuestion;
     
     public GameScene() {
         this(false);
@@ -414,7 +418,7 @@ public class GameScene {
     }
     
     private void showGameStartDisplay() {
-        turnDisplayText = "เริ่มต้นการใช้ชีวิตวันที่ หนึ่ง";
+        turnDisplayText = "เริ่มต้นการใช้ชีวิต";
         turnDisplayStartTime = System.currentTimeMillis();
         turnDisplayAlpha = 0.0f;
         
@@ -536,6 +540,7 @@ public class GameScene {
     }
     
     public void nextTurn() {
+        warpCurrentTurnPlayerToDorm();
         if (isOnlineMode && networkManager.isConnected()) {
             networkManager.sendMessage("TURN_COMPLETE:" + currentTurnPlayerId + ":" + currentTurnNumber);
         } else {
@@ -575,6 +580,33 @@ public class GameScene {
             }
             
             showTurnDisplay();
+        }
+    }
+    
+    private void warpCurrentTurnPlayerToDorm() {
+        Player p = null;
+        if (isOnlineMode) {
+            if (currentTurnPlayerId > 0 && currentTurnPlayerId <= players.size()) {
+                p = players.get(currentTurnPlayerId - 1);
+            }
+        } else if (!players.isEmpty()) {
+            p = players.get(0);
+        }
+        if (p == null) return;
+        int dormIndex = -1;
+        for (int i = 0; i < GameConfig.HOVER_OBJECTS.length; i++) {
+            if ("หอพัก".equals(GameConfig.HOVER_OBJECTS[i].name)) { dormIndex = i; break; }
+        }
+        if (dormIndex >= 0) {
+            GameConfig.HoverObject dorm = GameConfig.HOVER_OBJECTS[dormIndex];
+            p.setDirection(dorm.direction);
+            p.setX(dorm.playerX);
+            p.setY(dorm.playerY);
+            p.setMoving(false);
+            if (isOnlineMode && networkManager.isConnected()) {
+                networkManager.sendPlayerMove(p);
+                networkManager.setLastUpdateTime(System.currentTimeMillis());
+            }
         }
     }
     
@@ -688,9 +720,31 @@ public class GameScene {
                             System.out.println("=== Player " + localPlayer.getPlayerId() + " clicked same location (distance: " + distance + ") ===");
                         game.ConfigPopup.PopupType popupType = game.ConfigPopup.resolveTypeByName(config.name);
                             if (popupType != null) {
+                                closeActivePopup();
+                                if (popupType == game.ConfigPopup.PopupType.GARDEN) {
+                                    isFishing = false;
+                                }
+                                if (popupType == game.ConfigPopup.PopupType.UNIVERSITY && currentQuestion == null) {
+                                    currentQuestion = getRandomQuestion();
+                                }
                                 javax.swing.SwingUtilities.invokeLater(() -> {
                                     game.PopupWindow.PopupWindowConfig cfg = game.ConfigPopup.createConfig(popupType);
                                     java.util.ArrayList<game.MenuElement> popupElements = game.ConfigPopup.createElements(popupType);
+                                    
+                                    game.PopupWindow.QuestionHandler qHandler = (popupType == game.ConfigPopup.PopupType.UNIVERSITY) ? answer -> {
+                                        Player p = null;
+                                        if (isOnlineMode) {
+                                            if (currentTurnPlayerId > 0 && currentTurnPlayerId <= players.size()) {
+                                                p = players.get(currentTurnPlayerId - 1);
+                                            }
+                                        } else if (!players.isEmpty()) {
+                                            p = players.get(0);
+                                        }
+                                        if (p != null) {
+                                            handleStudyAnswer(answer, p);
+                                        }
+                                    } : null;
+                                    
                                 activePopup = new game.PopupWindow(cfg, popupElements, productId -> {
                                         Player p = null;
                                         if (isOnlineMode) {
@@ -727,6 +781,10 @@ public class GameScene {
                                         }
                                         SoundManager.getInstance().playSFX(GameConfig.FOOD_EATEN_SOUND);
                                         SwingUtilities.invokeLater(this::updateHUDStats);
+                                    } else if ("fishing".equals(productId)) {
+                                        handleFishing(p);
+                                    } else if ("sleep".equals(productId)) {
+                                        handleSleep(p);
                                     } else if ("deposit500".equals(productId) || "depositAll".equals(productId) || "withdraw500".equals(productId) || "withdrawAll".equals(productId)) {
                                         int amount = 0;
                                         if ("deposit500".equals(productId)) amount = 100;
@@ -768,7 +826,12 @@ public class GameScene {
                                         }
                                         SwingUtilities.invokeLater(this::updateHUDStats);
                                     }
-                                    });
+                                    }, qHandler);
+                                    
+                                    if (popupType == game.ConfigPopup.PopupType.UNIVERSITY && currentQuestion != null) {
+                                        activePopup.setQuestion(currentQuestion.question);
+                                    }
+                                    
                                     activePopup.setVisible(true);
                                 });
                             }
@@ -785,12 +848,34 @@ public class GameScene {
                         
                         waitingForTurnToComplete = true;
 
-                        game.ConfigPopup.PopupType popupType = game.ConfigPopup.resolveTypeByName(config.name);
+                                game.ConfigPopup.PopupType popupType = game.ConfigPopup.resolveTypeByName(config.name);
                         if (popupType != null) {
+                            closeActivePopup();
+                            if (popupType == game.ConfigPopup.PopupType.GARDEN) {
+                                isFishing = false;
+                            }
+                            if (popupType == game.ConfigPopup.PopupType.UNIVERSITY && currentQuestion == null) {
+                                currentQuestion = getRandomQuestion();
+                            }
                             javax.swing.SwingUtilities.invokeLater(() -> {
                                 game.PopupWindow.PopupWindowConfig cfg = game.ConfigPopup.createConfig(popupType);
                                 java.util.ArrayList<game.MenuElement> popupElements = game.ConfigPopup.createElements(popupType);
                                 final game.MenuElement[] totalMoneyTextHolder = new game.MenuElement[1];
+                                
+                                game.PopupWindow.QuestionHandler qHandler = (popupType == game.ConfigPopup.PopupType.UNIVERSITY) ? answer -> {
+                                    Player p = null;
+                                    if (isOnlineMode) {
+                                        if (currentTurnPlayerId > 0 && currentTurnPlayerId <= players.size()) {
+                                            p = players.get(currentTurnPlayerId - 1);
+                                        }
+                                    } else if (!players.isEmpty()) {
+                                        p = players.get(0);
+                                    }
+                                    if (p != null) {
+                                        handleStudyAnswer(answer, p);
+                                    }
+                                } : null;
+                                
                                 if (popupType == game.ConfigPopup.PopupType.BANK) {
                                     Player curr = (isOnlineMode && currentTurnPlayerId > 0 && currentTurnPlayerId <= players.size()) ? players.get(currentTurnPlayerId - 1) : (!players.isEmpty() ? players.get(0) : null);
                                     if (curr != null) {
@@ -888,7 +973,12 @@ public class GameScene {
                                         }
                                         SwingUtilities.invokeLater(this::updateHUDStats);
                                     }
-                                });
+                                }, qHandler);
+                                
+                                if (popupType == game.ConfigPopup.PopupType.UNIVERSITY && currentQuestion != null) {
+                                    activePopup.setQuestion(currentQuestion.question);
+                                }
+                                
                                 activePopup.setVisible(true);
                             });
                         }
@@ -1035,14 +1125,22 @@ public class GameScene {
         }
     }
 
+    public boolean hasActivePopup() {
+        return activePopup != null && activePopup.isShowing();
+    }
+    
     private void closeActivePopup() {
         try {
             if (activePopup != null && activePopup.isShowing()) {
+                if (activePopup instanceof PopupWindow) {
+                    ((PopupWindow)activePopup).stopFishingAnimation();
+                }
                 activePopup.dispose();
             }
         } catch (Exception ignored) {
         } finally {
             activePopup = null;
+            isFishing = false;
         }
     }
 
@@ -1070,6 +1168,217 @@ public class GameScene {
         totalBankWithdrawReturned += returned;
     }
 
+    private void handleFishing(Player p) {
+        if (p == null || activePopup == null) return;
+        
+        if (isFishing) {
+            PopupWindow ap = activePopup;
+            SwingUtilities.invokeLater(() -> ap.showNotification("ลองอีกครั้ง..."));
+            return;
+        }
+        
+        double remainingTime = p.getRemainingTime();
+        if (remainingTime < GameConfig.FISHING_TIME_COST) {
+            String msg = "เวลาไม่พอ ต้องการ " + GameConfig.FISHING_TIME_COST + " ชั่วโมง (เหลือ " + String.format("%.1f", remainingTime) + " ชั่วโมง)";
+            PopupWindow ap = activePopup;
+            SwingUtilities.invokeLater(() -> ap.showNotification(msg));
+            return;
+        }
+        
+        isFishing = true;
+        p.setRemainingTime(remainingTime - GameConfig.FISHING_TIME_COST);
+        SwingUtilities.invokeLater(this::updateHUDStats);
+        
+        PopupWindow ap = activePopup;
+        SwingUtilities.invokeLater(() -> {
+            ap.clearNotifications();
+            ap.startFishingAnimation();
+            ap.showNotification("กำลังตกปลา...");
+        });
+        
+        final int[] hookSoundCount = {0};
+        final int maxHookSounds = 3;
+        javax.swing.Timer[] hookTimer = new javax.swing.Timer[1];
+        
+        javax.swing.Timer playHookSoundTimer = new javax.swing.Timer(600, _ -> {
+            try {
+                SoundManager.getInstance().playSFX(GameConfig.HOOK_SOUND);
+            } catch (Exception ignored) {}
+            
+            hookSoundCount[0]++;
+            if (hookSoundCount[0] >= maxHookSounds) {
+                if (hookTimer[0] != null) {
+                    hookTimer[0].stop();
+                }
+                
+                GameConfig.Fish caughtFish = randomFish();
+                if (caughtFish == null) {
+                    isFishing = false;
+                    SwingUtilities.invokeLater(() -> {
+                        if (activePopup != null) {
+                            activePopup.stopFishingAnimation();
+                        }
+                    });
+                    return;
+                }
+                
+                p.setHealth(p.getHealth() - caughtFish.healthBonus);
+                p.setMoney(p.getMoney() + caughtFish.moneyBonus);
+                
+                StringBuilder msgBuilder = new StringBuilder("ตกได้ " + caughtFish.name);
+                if (caughtFish.moneyBonus > 0) {
+                    msgBuilder.append(" ได้เงิน $").append(caughtFish.moneyBonus);
+                }
+                if (caughtFish.healthBonus > 0) {
+                    msgBuilder.append(" สุขภาพ -").append(caughtFish.healthBonus);
+                }
+                final String msg = msgBuilder.toString();
+                final String fishImagePath = caughtFish.imagePath;
+                
+                SwingUtilities.invokeLater(() -> {
+                    if (activePopup != null) {
+                        activePopup.stopFishingAnimation();
+                        activePopup.clearNotifications();
+                        activePopup.showNotification(msg, fishImagePath);
+                    }
+                    updateHUDStats();
+                });
+                
+                javax.swing.Timer resetTimer = new javax.swing.Timer(3000, _ -> {
+                    isFishing = false;
+                });
+                resetTimer.setRepeats(false);
+                resetTimer.start();
+            }
+        });
+        playHookSoundTimer.setRepeats(true);
+        playHookSoundTimer.start();
+        hookTimer[0] = playHookSoundTimer;
+    }
+    
+    private void handleSleep(Player p) {
+        if (p == null || activePopup == null) return;
+        
+        double remainingTime = p.getRemainingTime();
+        if (remainingTime < GameConfig.SLEEP_TIME_COST) {
+            String msg = "เวลาไม่พอ ต้องการ " + GameConfig.SLEEP_TIME_COST + " ชั่วโมง (เหลือ " + String.format("%.1f", remainingTime) + " ชั่วโมง)";
+            PopupWindow ap = activePopup;
+            SwingUtilities.invokeLater(() -> ap.showNotification(msg));
+            return;
+        }
+        
+        p.setRemainingTime(remainingTime - GameConfig.SLEEP_TIME_COST);
+        p.setHealth(p.getHealth() + GameConfig.SLEEP_HEALTH_BONUS);
+        
+        String msg = "นอนพักผ่อน สุขภาพ +" + GameConfig.SLEEP_HEALTH_BONUS;
+        PopupWindow ap = activePopup;
+        SwingUtilities.invokeLater(() -> {
+            ap.clearNotifications();
+            ap.showNotification(msg);
+            updateHUDStats();
+        });
+        
+        try {
+            SoundManager.getInstance().playSFX(GameConfig.FOOD_EATEN_SOUND);
+        } catch (Exception ignored) {}
+    }
+    
+    private GameConfig.Question getRandomQuestion() {
+        if (GameConfig.QUESTIONS == null || GameConfig.QUESTIONS.length == 0) return null;
+        
+        if (askedQuestions.size() >= Math.min(10, GameConfig.QUESTIONS.length)) {
+            askedQuestions.clear();
+        }
+        
+        java.util.ArrayList<Integer> availableIndexes = new java.util.ArrayList<>();
+        for (int i = 0; i < GameConfig.QUESTIONS.length; i++) {
+            if (!askedQuestions.contains(i)) {
+                availableIndexes.add(i);
+            }
+        }
+        
+        if (availableIndexes.isEmpty()) {
+            askedQuestions.clear();
+            for (int i = 0; i < GameConfig.QUESTIONS.length; i++) {
+                availableIndexes.add(i);
+            }
+        }
+        
+        int randomIndex = availableIndexes.get((int)(Math.random() * availableIndexes.size()));
+        askedQuestions.add(randomIndex);
+        return GameConfig.QUESTIONS[randomIndex];
+    }
+    
+    private void handleStudyAnswer(String answer, Player p) {
+        if (answer == null || answer.trim().isEmpty()) {
+            PopupWindow ap = activePopup;
+            SwingUtilities.invokeLater(() -> ap.showNotification("กรุณาใส่คำตอบ"));
+            return;
+        }
+        
+        if (currentQuestion == null) {
+            return;
+        }
+        
+        String trimmedAnswer = answer.trim();
+        String correctAnswer = currentQuestion.answer.trim();
+        
+        double remainingTime = p.getRemainingTime();
+        if (remainingTime < GameConfig.STUDY_TIME_COST) {
+            String msg = "เวลาไม่พอ ต้องการ " + GameConfig.STUDY_TIME_COST + " ชั่วโมง (เหลือ " + String.format("%.1f", remainingTime) + " ชั่วโมง)";
+            PopupWindow ap = activePopup;
+            SwingUtilities.invokeLater(() -> ap.showNotification(msg));
+            return;
+        }
+        
+        p.setRemainingTime(remainingTime - GameConfig.STUDY_TIME_COST);
+        
+        if (trimmedAnswer.equalsIgnoreCase(correctAnswer)) {
+            p.setEducation(p.getEducation() + GameConfig.STUDY_EDUCATION_BONUS);
+            
+            String msg = "ถูกต้อง! การศึกษา +" + GameConfig.STUDY_EDUCATION_BONUS + " (ใช้เวลา " + GameConfig.STUDY_TIME_COST + " ชม.)";
+            PopupWindow ap = activePopup;
+            SwingUtilities.invokeLater(() -> {
+                ap.clearNotifications();
+                ap.showNotification(msg);
+                updateHUDStats();
+            });
+        } else {
+            String msg = "ตอบผิด! (ใช้เวลา " + GameConfig.STUDY_TIME_COST + " ชม.)";
+            PopupWindow ap = activePopup;
+            SwingUtilities.invokeLater(() -> {
+                ap.clearNotifications();
+                ap.showNotification(msg);
+                updateHUDStats();
+            });
+        }
+        
+        currentQuestion = getRandomQuestion();
+        if (activePopup != null && currentQuestion != null) {
+            activePopup.setQuestion(currentQuestion.question);
+        }
+    }
+    
+    private GameConfig.Fish randomFish() {
+        if (GameConfig.FISHES == null || GameConfig.FISHES.length == 0) return null;
+        
+        double totalWeight = 0.0;
+        for (GameConfig.Fish fish : GameConfig.FISHES) {
+            totalWeight += fish.weight;
+        }
+        
+        double random = Math.random() * totalWeight;
+        double currentWeight = 0.0;
+        
+        for (GameConfig.Fish fish : GameConfig.FISHES) {
+            currentWeight += fish.weight;
+            if (random <= currentWeight) {
+                return fish;
+            }
+        }
+        
+        return GameConfig.FISHES[GameConfig.FISHES.length - 1];
+    }
     
 }
 

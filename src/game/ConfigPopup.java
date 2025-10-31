@@ -15,6 +15,9 @@ public class ConfigPopup {
         JOB_CENTER,
         BANK,
         SHOP_GROCERY,
+        GARDEN,
+        DORMITORY,
+        UNIVERSITY,
         CUSTOM
     }
 
@@ -30,9 +33,15 @@ public class ConfigPopup {
         
         registerPreset(PopupType.CLUCKERS, ConfigPopup::createCluckersPreset);
         registerPreset(PopupType.BANK, ConfigPopup::createBankPreset);
+        registerPreset(PopupType.GARDEN, ConfigPopup::createGardenPreset);
+        registerPreset(PopupType.DORMITORY, ConfigPopup::createDormitoryPreset);
+        registerPreset(PopupType.UNIVERSITY, ConfigPopup::createUniversityPreset);
         
         nameToType.put("ร้านไก่ทอดตลาดน้อย", PopupType.CLUCKERS);
         nameToType.put("ธนาคารไทณิชย์", PopupType.BANK);
+        nameToType.put("สวนจก", PopupType.GARDEN);
+        nameToType.put("หอพัก", PopupType.DORMITORY);
+        nameToType.put("มหาวิทยาลัย NSU", PopupType.UNIVERSITY);
     }
 
     public static void registerPreset(PopupType type, Supplier<PopupPreset> factory) {
@@ -234,7 +243,7 @@ public class ConfigPopup {
                 "assets" + File.separator + "ui" + File.separator + "popup" + File.separator + "TutorialSpeechbubble.png",
                 726.0, 187.0, 449.5, 199.8));
 
-        MenuElement t1 = new MenuElement("เก็บเงินไว้กับเฮียเลน", 811.0, 232.0, 32);
+        MenuElement t1 = new MenuElement("เก็บเงินไว้กับเฮียไนท์", 811.0, 232.0, 32);
         t1.setTextColor(new Color(0, 0, 0));
         elements.add(t1);
 
@@ -257,6 +266,179 @@ public class ConfigPopup {
         PopupPreset preset = new PopupPreset();
         preset.config = createBankConfig();
         preset.elements = createBankElements();
+        return preset;
+    }
+
+    public static PopupWindow.PopupWindowConfig createGardenConfig() {
+        PopupWindow.PopupWindowConfig cfg = new PopupWindow.PopupWindowConfig();
+        cfg.width = 1632;
+        cfg.height = 918;
+        cfg.backgroundColor = new Color(0, 153, 153);
+        cfg.useBackgroundImage = false;
+        return cfg;
+    }
+
+    public static ArrayList<MenuElement> createGardenElements() {
+        ArrayList<MenuElement> elements = new ArrayList<>();
+
+        elements.add(new MenuElement(MenuElement.ElementType.IMAGE,
+                "assets" + File.separator + "ui" + File.separator + "popup" + File.separator + "ParkFish.png",
+                703.0, -10.0, 958.8, 960.8));
+
+        elements.add(new MenuElement(MenuElement.ElementType.IMAGE,
+                "assets" + File.separator + "ui" + File.separator + "popup" + File.separator + "Background-Border-02.png",
+                679.0, -68.0, 1345.0, 1159.2));
+
+        elements.add(new MenuElement(MenuElement.ElementType.IMAGE,
+                "assets" + File.separator + "ui" + File.separator + "popup" + File.separator + "TEMP_Exit_button.png",
+                13.0, 8.0, 149.0, 95.0));
+
+        elements.add(new MenuElement(MenuElement.ElementType.IMAGE,
+                "assets" + File.separator + "ui" + File.separator + "popup" + File.separator + "bg_item_none.png",
+                39.0, 101.0, 256.0, 256.0));
+
+        MenuElement fishingPole = new MenuElement(MenuElement.ElementType.IMAGE,
+                "assets" + File.separator + "ui" + File.separator + "popup" + File.separator + "Icon-Fishing-Pole #44610.png",
+                63.0, 128.0, 165.0, 165.0);
+        fishingPole.setUseScaleEffect(true);
+        fishingPole.setTooltip("เบ็ดทั่วไป มีโอกาสตกได้ปลาราคาสูง");
+
+        MenuElement bg_item_none = new MenuElement(MenuElement.ElementType.IMAGE, "assets" + File.separator + "ui" + File.separator + "popup" + File.separator + "bg_item_none.png", 383.0, 97.0, 256.0, 256.0);
+        elements.add(bg_item_none);
+        MenuElement Icon_Fishing_Pole_Max = new MenuElement(MenuElement.ElementType.IMAGE, "assets" + File.separator + "ui" + File.separator + "popup" + File.separator + "Icon-Fishing-Pole Max.png", 413.0, 128.0, 171.6, 171.6);
+        Icon_Fishing_Pole_Max.setUseScaleEffect(true);
+        Icon_Fishing_Pole_Max.setTooltip("เบ็ดทองคำ [ยังไม่ปลดล็อค]");
+        elements.add(Icon_Fishing_Pole_Max);
+
+
+        elements.add(fishingPole);
+
+
+        return elements;
+    }
+
+    public static PopupPreset createGardenPreset() {
+        PopupPreset preset = new PopupPreset();
+        preset.config = createGardenConfig();
+        preset.elements = createGardenElements();
+        return preset;
+    }
+
+    private static PopupWindow.PopupWindowConfig createDormitoryConfig() {
+        PopupWindow.PopupWindowConfig config = new PopupWindow.PopupWindowConfig();
+        config.width = 1632;
+        config.height = 918;
+        config.backgroundColor = new Color(102, 102, 102);
+        config.useBackgroundImage = false;
+        return config;
+    }
+
+    private static ArrayList<MenuElement> createDormitoryElements() {
+        ArrayList<MenuElement> elements = new ArrayList<>();
+
+        MenuElement bg_item_none = new MenuElement(MenuElement.ElementType.IMAGE, 
+                "assets" + File.separator + "ui" + File.separator + "popup" + File.separator + "bg_item_none.png", 
+                86.0, 151.0, 386.6, 386.6);
+        elements.add(bg_item_none);
+
+        MenuElement crappyApartmentBg = new MenuElement(MenuElement.ElementType.IMAGE, 
+                "assets" + File.separator + "ui" + File.separator + "popup" + File.separator + "Crappy Apartment Background.png", 
+                543.0, -71.0, 1826.2, 1031.0);
+        elements.add(crappyApartmentBg);
+
+        MenuElement borderBg = new MenuElement(MenuElement.ElementType.IMAGE, 
+                "assets" + File.separator + "ui" + File.separator + "popup" + File.separator + "Background-Border-02.png", 
+                524.0, -13.0, 1498.6, 1291.5);
+        elements.add(borderBg);
+
+        MenuElement bed = new MenuElement(MenuElement.ElementType.IMAGE, 
+                "assets" + File.separator + "ui" + File.separator + "popup" + File.separator + "Icon-Furniture-Bed_Mattress.png", 
+                137.0, 199.0, 237.4, 237.4);
+        bed.setUseScaleEffect(true);
+        bed.setTooltip("นอนพักผ่อน +สุขภาพ " + GameConfig.SLEEP_HEALTH_BONUS);
+        elements.add(bed);
+
+        MenuElement exitButton = new MenuElement(MenuElement.ElementType.IMAGE, 
+                "assets" + File.separator + "ui" + File.separator + "popup" + File.separator + "TEMP_Exit_button.png", 
+                13.0, 8.0, 149.0, 95.0);
+        elements.add(exitButton);
+
+        return elements;
+    }
+
+    public static PopupPreset createDormitoryPreset() {
+        PopupPreset preset = new PopupPreset();
+        preset.config = createDormitoryConfig();
+        preset.elements = createDormitoryElements();
+        return preset;
+    }
+
+    private static PopupWindow.PopupWindowConfig createUniversityConfig() {
+        PopupWindow.PopupWindowConfig config = new PopupWindow.PopupWindowConfig();
+        config.width = 1632;
+        config.height = 918;
+        config.backgroundColor = new Color(0, 102, 51);
+        config.useBackgroundImage = false;
+        return config;
+    }
+
+    private static ArrayList<MenuElement> createUniversityElements() {
+        ArrayList<MenuElement> elements = new ArrayList<>();
+
+        MenuElement universityClerk = new MenuElement(MenuElement.ElementType.IMAGE, 
+                "assets" + File.separator + "ui" + File.separator + "popup" + File.separator + "UniversityClerk.png", 
+                696.0, -76.0, 1030.3, 1144.8);
+        elements.add(universityClerk);
+
+        MenuElement borderBg = new MenuElement(MenuElement.ElementType.IMAGE, 
+                "assets" + File.separator + "ui" + File.separator + "popup" + File.separator + "Background-Border-02.png", 
+                674.0, -114.0, 1425.5, 1228.5);
+        elements.add(borderBg);
+
+        MenuElement inputFieldWhite = new MenuElement(MenuElement.ElementType.IMAGE, 
+                "assets" + File.separator + "ui" + File.separator + "Input-Field-Small-White_0.png", 
+                103.0, 383.0, 442.0, 73.6);
+        elements.add(inputFieldWhite);
+
+        MenuElement buttonGray = new MenuElement(MenuElement.ElementType.IMAGE, 
+                "assets" + File.separator + "ui" + File.separator + "button" + File.separator + "Button-Small-Gray.png", 
+                201.0, 469.0, 199.6, 106.6);
+        elements.add(buttonGray);
+
+        MenuElement studyIcon = new MenuElement(MenuElement.ElementType.IMAGE, 
+                "assets" + File.separator + "ui" + File.separator + "popup" + File.separator + "Icon-Chamber-Study-Old.png", 
+                255.0, 479.0, 89.6, 80.1);
+        studyIcon.setUseScaleEffect(true);
+        studyIcon.setTooltip("เรียนหนังสือ +การศึกษา");
+        elements.add(studyIcon);
+
+        MenuElement answerPlaceholder = new MenuElement("   ", 283.0, 423.0, 24);
+        answerPlaceholder.setTextColor(new Color(0, 0, 0));
+        elements.add(answerPlaceholder);
+
+        MenuElement questionText = new MenuElement("คำถาม", 120.0, 255.0, 18);
+        questionText.setTextColor(new Color(0, 0, 0));
+        elements.add(questionText);
+
+        MenuElement exitButton = new MenuElement(MenuElement.ElementType.IMAGE, 
+                "assets" + File.separator + "ui" + File.separator + "popup" + File.separator + "TEMP_Exit_button.png", 
+                13.0, 8.0, 149.0, 95.0);
+        elements.add(exitButton);
+
+
+        MenuElement img = new MenuElement(MenuElement.ElementType.IMAGE, "assets" + File.separator + "ui" + File.separator + "popup" + File.separator + "TutorialSpeechbubble.png", 637.0, 215.0, 457.4, 203.3);
+        elements.add(img);
+        MenuElement text = new MenuElement("This is the concept", 730.0, 328.0, 32);
+        text.setTextColor(new Color(0, 0, 0));
+        elements.add(text);
+
+        return elements;
+    }
+
+    public static PopupPreset createUniversityPreset() {
+        PopupPreset preset = new PopupPreset();
+        preset.config = createUniversityConfig();
+        preset.elements = createUniversityElements();
         return preset;
     }
 }

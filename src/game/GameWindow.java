@@ -2,7 +2,6 @@
 package game;
 
 import javax.swing.*;
-import javax.swing.plaf.FontUIResource;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseListener;
@@ -69,13 +68,39 @@ public class GameWindow extends JFrame {
     }
     
     private void addDragSupport() {
+        final GameWindow self = this;
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(e -> {
             if (e.getID() == KeyEvent.KEY_PRESSED && e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-                dispose();
-                System.exit(0);
-                return true;
+                if (gamePanel != null && gamePanel.getGameScene() != null) {
+                    if (gamePanel.getGameScene().hasActivePopup()) {
+                        return false;
+                    }
+                }
+                
+                if (self.isVisible()) {
+                    backToMainMenu();
+                    return true;
+                }
             }
             return false;
+        });
+    }
+    
+    private void backToMainMenu() {
+        if (isOnlineMode) {
+            network.NetworkManager.getInstance().disconnect();
+        }
+        SoundManager.getInstance().stopBackgroundMusic();
+        
+        SwingUtilities.invokeLater(() -> {
+            MainMenu mainMenu = new MainMenu();
+            mainMenu.setVisible(true);
+            
+            javax.swing.Timer timer = new javax.swing.Timer(100, _ -> {
+                this.dispose();
+            });
+            timer.setRepeats(false);
+            timer.start();
         });
     }
     
