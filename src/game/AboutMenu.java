@@ -151,7 +151,11 @@ public class AboutMenu extends JFrame {
                     if (element.getType() == MenuElement.ElementType.IMAGE) {
                         boolean isHovering = element.contains(mousePosition.x, mousePosition.y);
 
-                        if (element.getImagePath() != null && element.getImagePath().contains("1.png")) {
+                        if (element.getImagePath() != null && 
+                            (element.getImagePath().contains("1.png") || 
+                             element.getImagePath().contains("2.png") ||
+                             element.getImagePath().contains("3.png") ||
+                             element.getImagePath().contains("4.png"))) {
                             element.setHovered(isHovering);
                             if (isHovering) {
                                 isHoveringButton = true;
@@ -201,17 +205,17 @@ public class AboutMenu extends JFrame {
             img2.setUseScaleEffect(true);
             panel.addElement(img2);
             MenuElement img3 = new MenuElement(MenuElement.ElementType.IMAGE,
-                    "assets" + File.separator + "ui" + File.separator + "teams" + File.separator + "1.png", 766.0,
+                    "assets" + File.separator + "ui" + File.separator + "teams" + File.separator + "2.png", 766.0,
                     271.2, 175.9, 262.9);
             img3.setUseScaleEffect(true);
             panel.addElement(img3);
             MenuElement img4 = new MenuElement(MenuElement.ElementType.IMAGE,
-                    "assets" + File.separator + "ui" + File.separator + "teams" + File.separator + "1.png", 999.0,
+                    "assets" + File.separator + "ui" + File.separator + "teams" + File.separator + "3.png", 999.0,
                     272.2, 174.6, 260.9);
             img4.setUseScaleEffect(true);
             panel.addElement(img4);
             MenuElement img5 = new MenuElement(MenuElement.ElementType.IMAGE,
-                    "assets" + File.separator + "ui" + File.separator + "teams" + File.separator + "1.png", 1250.0,
+                    "assets" + File.separator + "ui" + File.separator + "teams" + File.separator + "4.png", 1250.0,
                     272.4, 174.3, 260.6);
             img5.setUseScaleEffect(true);
             panel.addElement(img5);
