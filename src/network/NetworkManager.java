@@ -33,46 +33,36 @@ public class NetworkManager {
 
     public boolean connect(String host, int port) {
         try {
-            NetworkLogger.getInstance().log("=== NetworkManager: Connecting to " + host + ":" + port + " ===");
             socket = new Socket(host, port);
-            NetworkLogger.getInstance().log("=== NetworkManager: Socket connected ===");
 
             out = new PrintWriter(socket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            NetworkLogger.getInstance().log("=== NetworkManager: Streams created ===");
 
             connected = true;
             listenerThread = new Thread(() -> listenToServer());
             listenerThread.start();
 
-            NetworkLogger.getInstance().log("=== NetworkManager: Connection ready ===");
             return true;
         } catch (IOException e) {
-            NetworkLogger.getInstance().log("=== NetworkManager: Connection failed: " + e.getMessage() + " ===");
             connected = false;
             return false;
         } catch (Exception e) {
-            NetworkLogger.getInstance().log("=== NetworkManager: Unexpected error: " + e.getMessage() + " ===");
             connected = false;
             return false;
         }
     }
 
     private void listenToServer() {
-        NetworkLogger.getInstance().log("=== NetworkManager: listenToServer started ===");
         while (connected) {
             try {
                 String line = in.readLine();
                 if (line == null)
                     break;
-                NetworkLogger.getInstance().log("=== NetworkManager: Received: " + line + " ===");
 
                 if (line.equals("LOBBY_UPDATE")) {
-
                     String countLine = in.readLine();
                     if (countLine != null && countLine.startsWith("PLAYER_COUNT:")) {
                         int count = Integer.parseInt(countLine.split(":")[1]);
-                        NetworkLogger.getInstance().log("=== NetworkManager: Player count: " + count + " ===");
                         List<PlayerInfo> newPlayers = new ArrayList<>();
                         for (int i = 1; i <= count; i++) {
                             newPlayers.add(new PlayerInfo(i, "Player_" + i, true));
@@ -80,23 +70,18 @@ public class NetworkManager {
                         handleLobbyUpdate(newPlayers);
                     }
                 } else if (line.equals("START_GAME")) {
-                    NetworkLogger.getInstance().log("=== NetworkManager: Received START_GAME ===");
                     SwingUtilities.invokeLater(() -> {
                         if (lobbyMenu != null) {
-                            NetworkLogger.getInstance().log("=== NetworkManager: Starting game ===");
                             lobbyMenu.startGame();
                         }
                     });
                 } else if (line != null && line.startsWith("PLAYER_ID:")) {
-
                     String[] parts = line.split(":");
                     if (parts.length >= 2) {
                         int assignedPlayerId = Integer.parseInt(parts[1]);
                         playerId = assignedPlayerId;
-                        NetworkLogger.getInstance().log("=== NetworkManager: Assigned player ID: " + playerId + " ===");
                     }
                 } else if (line != null && line.startsWith("PLAYER_MOVE:")) {
-
                     String[] parts = line.split(":");
                     if (parts.length >= 6) {
                         int remotePlayerId = Integer.parseInt(parts[1]);
@@ -107,9 +92,6 @@ public class NetworkManager {
                         double remainingTime = parts.length >= 7 ? Double.parseDouble(parts[6]) : 24.0;
                         double destX = parts.length >= 8 ? Double.parseDouble(parts[7]) : x;
                         double destY = parts.length >= 9 ? Double.parseDouble(parts[8]) : y;
-
-                        NetworkLogger.getInstance().log("=== NetworkManager: Received PLAYER_MOVE for player "
-                                + remotePlayerId + " (time: " + remainingTime + ") ===");
                         handlePlayerMove(remotePlayerId, x, y, direction, isMoving, remainingTime, destX, destY);
                     }
                 } else if (line != null && line.startsWith("PLAYER_DISCONNECT:")) {
@@ -148,28 +130,29 @@ public class NetworkManager {
                     }
                 } else if (line != null && line.startsWith("UPDATE_STATS:")) {
                     String[] parts = line.split(":");
-                    if (parts.length >= 6) {
+                    if (parts.length >= 7) {
                         int targetPlayerId = Integer.parseInt(parts[1]);
                         int skill = Integer.parseInt(parts[2]);
                         int education = Integer.parseInt(parts[3]);
                         int health = Integer.parseInt(parts[4]);
                         int money = Integer.parseInt(parts[5]);
-                        handlePlayerStatsUpdate(targetPlayerId, skill, education, health, money);
+                        int bankDeposit = Integer.parseInt(parts[6]);
+                        handlePlayerStatsUpdate(targetPlayerId, skill, education, health, money, bankDeposit);
                     }
                 } else if (line != null && line.startsWith("SYNC_PLAYER:")) {
                     String[] parts = line.split(":");
-                    if (parts.length >= 6) {
+                    if (parts.length >= 7) {
                         int targetPlayerId = Integer.parseInt(parts[1]);
                         int skill = Integer.parseInt(parts[2]);
                         int education = Integer.parseInt(parts[3]);
                         int health = Integer.parseInt(parts[4]);
                         int money = Integer.parseInt(parts[5]);
-                        handlePlayerStatsUpdate(targetPlayerId, skill, education, health, money);
+                        int bankDeposit = Integer.parseInt(parts[6]);
+                        handlePlayerStatsUpdate(targetPlayerId, skill, education, health, money, bankDeposit);
                     }
                 }
             } catch (IOException e) {
                 if (connected) {
-                    NetworkLogger.getInstance().log("=== NetworkManager: Error receiving: " + e.getMessage() + " ===");
                 }
                 connected = false;
 
@@ -182,12 +165,10 @@ public class NetworkManager {
                 break;
             }
         }
-        NetworkLogger.getInstance().log("=== NetworkManager: Stopped listening ===");
     }
 
     private void handleLobbyUpdate(List<PlayerInfo> newPlayers) {
         players = newPlayers;
-        NetworkLogger.getInstance().log("=== NetworkManager: Updated players list ===");
         SwingUtilities.invokeLater(() -> {
             if (lobbyMenu != null) {
                 lobbyMenu.updateLobbyInfo(players);
@@ -197,9 +178,6 @@ public class NetworkManager {
 
     private void handlePlayerMove(int playerId, double x, double y, String direction, boolean isMoving,
             double remainingTime, double destX, double destY) {
-        NetworkLogger.getInstance()
-                .log("=== NetworkManager: Handling move for player " + playerId + " (time: " + remainingTime + ") ===");
-
         SwingUtilities.invokeLater(() -> {
             if (currentGameWindow != null && currentGameWindow.getGamePanel() != null) {
                 game.GameScene scene = currentGameWindow.getGamePanel().getGameScene();
@@ -211,9 +189,6 @@ public class NetworkManager {
     }
 
     private void handlePlayerDisconnect(int disconnectedPlayerId) {
-        NetworkLogger.getInstance()
-                .log("=== NetworkManager: Handling disconnect for player " + disconnectedPlayerId + " ===");
-
         SwingUtilities.invokeLater(() -> {
             if (currentGameWindow != null && currentGameWindow.getGamePanel() != null) {
                 game.GameScene scene = currentGameWindow.getGamePanel().getGameScene();
@@ -233,9 +208,6 @@ public class NetworkManager {
     }
 
     private void handleTurnUpdate(int turnPlayerId, int turnNumber, String updateType) {
-        NetworkLogger.getInstance().log("=== NetworkManager: Handling turn update - Player " + turnPlayerId + ", Turn "
-                + turnNumber + ", Type: " + updateType + " ===");
-
         SwingUtilities.invokeLater(() -> {
             if (currentGameWindow != null && currentGameWindow.getGamePanel() != null) {
                 game.GameScene scene = currentGameWindow.getGamePanel().getGameScene();
@@ -247,9 +219,6 @@ public class NetworkManager {
     }
 
     private void handlePlayerHover(int playerId, int hoverIndex) {
-        NetworkLogger.getInstance()
-                .log("=== NetworkManager: Player " + playerId + " hover index: " + hoverIndex + " ===");
-
         SwingUtilities.invokeLater(() -> {
             if (currentGameWindow != null && currentGameWindow.getGamePanel() != null) {
                 game.GameScene scene = currentGameWindow.getGamePanel().getGameScene();
@@ -260,21 +229,17 @@ public class NetworkManager {
         });
     }
 
-    private void handlePlayerStatsUpdate(int playerId, int skill, int education, int health, int money) {
-        NetworkLogger.getInstance().log("=== NetworkManager: Updating stats for player " + playerId + " - Skill:"
-                + skill + " Education:" + education + " Health:" + health + " Money:" + money + " ===");
-
-        new Thread(() -> {
-            SwingUtilities.invokeLater(() -> {
-                if (currentGameWindow != null && currentGameWindow.getGamePanel() != null) {
-                    game.GameScene scene = currentGameWindow.getGamePanel().getGameScene();
-                    if (scene != null) {
-                        scene.updatePlayerStats(playerId, skill, education, health, money);
-                        currentGameWindow.getGamePanel().repaint();
-                    }
+    private void handlePlayerStatsUpdate(int playerId, int skill, int education, int health, int money,
+            int bankDeposit) {
+        SwingUtilities.invokeLater(() -> {
+            if (currentGameWindow != null && currentGameWindow.getGamePanel() != null) {
+                game.GameScene scene = currentGameWindow.getGamePanel().getGameScene();
+                if (scene != null) {
+                    scene.updatePlayerStats(playerId, skill, education, health, money, bankDeposit);
+                    currentGameWindow.getGamePanel().repaint();
                 }
-            });
-        }).start();
+            }
+        });
     }
 
     public void sendMessage(String message) {
@@ -323,8 +288,7 @@ public class NetworkManager {
             if (socket != null && !socket.isClosed()) {
                 socket.close();
             }
-        } catch (IOException e) {
-            NetworkLogger.getInstance().log("Error closing socket: " + e.getMessage());
+        } catch (IOException ignored) {
         }
     }
 

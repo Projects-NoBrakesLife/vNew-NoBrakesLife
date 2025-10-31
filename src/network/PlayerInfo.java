@@ -13,6 +13,7 @@ public class PlayerInfo implements Serializable {
     public int education = 0;
     public int health = 100;
     public int money = 500;
+    public int bankDeposit = 0;
     
     public PlayerInfo(int playerId, String playerName, boolean isConnected) {
         this.playerId = playerId;
@@ -22,6 +23,7 @@ public class PlayerInfo implements Serializable {
         this.education = 0;
         this.health = 100;
         this.money = 500;
+        this.bankDeposit = 0;
     }
     
     public PlayerInfo(int playerId, String playerName, boolean isConnected, int skill, int education, int health, int money) {
@@ -32,6 +34,7 @@ public class PlayerInfo implements Serializable {
         this.education = education;
         this.health = health;
         this.money = money;
+        this.bankDeposit = 0;
     }
     
     @Override

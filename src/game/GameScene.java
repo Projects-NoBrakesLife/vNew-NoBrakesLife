@@ -592,7 +592,6 @@ public class GameScene {
     }
 
     public void nextTurn() {
-        warpCurrentTurnPlayerToDorm();
         if (isOnlineMode && networkManager.isConnected()) {
             networkManager.sendMessage("TURN_COMPLETE:" + currentTurnPlayerId + ":" + currentTurnNumber);
         } else {
@@ -633,37 +632,6 @@ public class GameScene {
             }
 
             showTurnDisplay();
-        }
-    }
-
-    private void warpCurrentTurnPlayerToDorm() {
-        Player p = null;
-        if (isOnlineMode) {
-            if (currentTurnPlayerId > 0 && currentTurnPlayerId <= players.size()) {
-                p = players.get(currentTurnPlayerId - 1);
-            }
-        } else if (!players.isEmpty()) {
-            p = players.get(0);
-        }
-        if (p == null)
-            return;
-        int dormIndex = -1;
-        for (int i = 0; i < GameConfig.HOVER_OBJECTS.length; i++) {
-            if ("หอพัก".equals(GameConfig.HOVER_OBJECTS[i].name)) {
-                dormIndex = i;
-                break;
-            }
-        }
-        if (dormIndex >= 0) {
-            GameConfig.HoverObject dorm = GameConfig.HOVER_OBJECTS[dormIndex];
-            p.setDirection(dorm.direction);
-            p.setX(dorm.playerX);
-            p.setY(dorm.playerY);
-            p.setMoving(false);
-            if (isOnlineMode && networkManager.isConnected()) {
-                networkManager.sendPlayerMove(p);
-                networkManager.setLastUpdateTime(System.currentTimeMillis());
-            }
         }
     }
 
@@ -1051,7 +1019,8 @@ public class GameScene {
         }
     }
 
-    public synchronized void updatePlayerStats(int playerId, int skill, int education, int health, int money) {
+    public synchronized void updatePlayerStats(int playerId, int skill, int education, int health, int money,
+            int bankDeposit) {
         int playerIndex = playerId - 1;
         if (playerIndex >= 0 && playerIndex < players.size()) {
             Player player = players.get(playerIndex);
@@ -1059,8 +1028,7 @@ public class GameScene {
             player.setEducation(education);
             player.setHealth(health);
             player.setMoney(money);
-            System.out.println("=== GameScene: Updated stats for Player " + playerId + " - Skill:" + skill
-                    + " Education:" + education + " Health:" + health + " Money:" + money + " ===");
+            player.setBankDeposit(bankDeposit);
 
             SwingUtilities.invokeLater(() -> {
                 updateHUDStats();
