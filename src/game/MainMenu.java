@@ -74,6 +74,7 @@ public class MainMenu extends JFrame {
         private boolean wasHoveringButton = false;
         private long lastClickTime = 0;
         private static final long CLICK_COOLDOWN = 500;
+        private boolean isTransitioning = false;
 
         public MenuPanel() {
             uiElements = new ArrayList<>();
@@ -408,65 +409,65 @@ public class MainMenu extends JFrame {
         }
 
         public void startGame() {
+            if (isTransitioning) {
+                return;
+            }
             long currentTime = System.currentTimeMillis();
             if (currentTime - lastClickTime < CLICK_COOLDOWN) {
                 return;
             }
             lastClickTime = currentTime;
+            isTransitioning = true;
 
             JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+            parentFrame.setEnabled(false);
 
             SwingUtilities.invokeLater(() -> {
                 GameModeMenu gameModeMenu = new GameModeMenu();
                 gameModeMenu.setVisible(true);
-
-                javax.swing.Timer timer = new javax.swing.Timer(100, _ -> {
-                    parentFrame.dispose();
-                });
-                timer.setRepeats(false);
-                timer.start();
+                parentFrame.dispose();
             });
         }
 
         public void openSettings() {
+            if (isTransitioning) {
+                return;
+            }
             long currentTime = System.currentTimeMillis();
             if (currentTime - lastClickTime < CLICK_COOLDOWN) {
                 return;
             }
             lastClickTime = currentTime;
+            isTransitioning = true;
 
             JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+            parentFrame.setEnabled(false);
 
             SwingUtilities.invokeLater(() -> {
                 SettingsMenu settingsMenu = new SettingsMenu();
                 settingsMenu.setVisible(true);
-
-                javax.swing.Timer timer = new javax.swing.Timer(50, _ -> {
-                    parentFrame.setVisible(false);
-                });
-                timer.setRepeats(false);
-                timer.start();
+                parentFrame.dispose();
             });
         }
 
         public void openAbout() {
+            if (isTransitioning) {
+                return;
+            }
             long currentTime = System.currentTimeMillis();
             if (currentTime - lastClickTime < CLICK_COOLDOWN) {
                 return;
             }
             lastClickTime = currentTime;
+            isTransitioning = true;
 
             JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+            parentFrame.setEnabled(false);
 
             SwingUtilities.invokeLater(() -> {
                 AboutMenu aboutMenu = new AboutMenu();
                 aboutMenu.setVisible(true);
-
-                javax.swing.Timer timer = new javax.swing.Timer(50, _ -> {
-                    parentFrame.setVisible(false);
-                });
-                timer.setRepeats(false);
-                timer.start();
+                parentFrame.dispose();
             });
         }
     }

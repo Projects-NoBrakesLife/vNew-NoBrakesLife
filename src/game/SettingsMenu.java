@@ -15,6 +15,7 @@ public class SettingsMenu extends JFrame {
     private SettingsPanel settingsPanel;
     private long lastBackClickTime = 0;
     private static final long CLICK_COOLDOWN = 500;
+    private boolean isTransitioning = false;
 
     public SettingsMenu() {
         initializeWindow();
@@ -92,6 +93,7 @@ public class SettingsMenu extends JFrame {
         private boolean wasHoveringButton = false;
         private long lastClickTime = 0;
         private static final long CLICK_COOLDOWN = 500;
+        private boolean isTransitioning = false;
 
         public SettingsPanel() {
             uiElements = new ArrayList<>();
@@ -405,41 +407,43 @@ public class SettingsMenu extends JFrame {
         }
 
         public void backToMainMenu() {
+            if (isTransitioning) {
+                return;
+            }
             long currentTime = System.currentTimeMillis();
             if (currentTime - lastClickTime < CLICK_COOLDOWN) {
                 return;
             }
             lastClickTime = currentTime;
+            isTransitioning = true;
+
+            SettingsMenu.this.setEnabled(false);
 
             SwingUtilities.invokeLater(() -> {
                 MainMenu mainMenu = new MainMenu();
                 mainMenu.setVisible(true);
-
-                javax.swing.Timer timer = new javax.swing.Timer(50, e -> {
-                    SettingsMenu.this.setVisible(false);
-                });
-                timer.setRepeats(false);
-                timer.start();
+                SettingsMenu.this.dispose();
             });
         }
     }
 
     public void backToMainMenuStatic() {
+        if (isTransitioning) {
+            return;
+        }
         long currentTime = System.currentTimeMillis();
         if (currentTime - lastBackClickTime < CLICK_COOLDOWN) {
             return;
         }
         lastBackClickTime = currentTime;
+        isTransitioning = true;
+
+        this.setEnabled(false);
 
         SwingUtilities.invokeLater(() -> {
             MainMenu mainMenu = new MainMenu();
             mainMenu.setVisible(true);
-
-            javax.swing.Timer timer = new javax.swing.Timer(50, e -> {
-                this.setVisible(false);
-            });
-            timer.setRepeats(false);
-            timer.start();
+            this.dispose();
         });
     }
 }

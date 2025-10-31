@@ -76,6 +76,7 @@ public class GameLobbyMenu extends JFrame {
         private boolean wasHoveringButton = false;
         private long lastClickTime = 0;
         private static final long CLICK_COOLDOWN = 500;
+        private boolean isTransitioning = false;
 
         private MenuElement player1Text, player2Text, player3Text, player4Text, playerCountText;
         private MenuElement player1Img, player2Img, player3Img, player4Img;
@@ -542,52 +543,51 @@ public class GameLobbyMenu extends JFrame {
         }
 
         public void startGame() {
+            if (isTransitioning) {
+                return;
+            }
             long currentTime = System.currentTimeMillis();
             if (currentTime - lastClickTime < CLICK_COOLDOWN) {
                 return;
             }
             lastClickTime = currentTime;
+            isTransitioning = true;
 
             JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+            parentFrame.setEnabled(false);
 
             SoundManager.getInstance().stopBackgroundMusic();
 
             SwingUtilities.invokeLater(() -> {
-
                 boolean isOnlineMode = NetworkManager.getInstance().isConnected();
                 System.out.println("=== GameLobbyMenu: Starting game in online mode: " + isOnlineMode + " ===");
 
                 GameWindow gameWindow = new GameWindow(isOnlineMode);
                 gameWindow.setVisible(true);
-
-                javax.swing.Timer timer = new javax.swing.Timer(100, _ -> {
-                    parentFrame.dispose();
-                });
-                timer.setRepeats(false);
-                timer.start();
+                parentFrame.dispose();
             });
         }
 
         public void backToGameMode() {
+            if (isTransitioning) {
+                return;
+            }
             long currentTime = System.currentTimeMillis();
             if (currentTime - lastClickTime < CLICK_COOLDOWN) {
                 return;
             }
             lastClickTime = currentTime;
+            isTransitioning = true;
 
             JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+            parentFrame.setEnabled(false);
 
             NetworkManager.getInstance().disconnect();
 
             SwingUtilities.invokeLater(() -> {
                 GameModeMenu gameModeMenu = new GameModeMenu();
                 gameModeMenu.setVisible(true);
-
-                javax.swing.Timer timer = new javax.swing.Timer(100, _ -> {
-                    parentFrame.dispose();
-                });
-                timer.setRepeats(false);
-                timer.start();
+                parentFrame.dispose();
             });
         }
 

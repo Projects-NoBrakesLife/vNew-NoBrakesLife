@@ -73,6 +73,7 @@ public class GameModeMenu extends JFrame {
         private boolean wasHoveringButton = false;
         private long lastClickTime = 0;
         private static final long CLICK_COOLDOWN = 500;
+        private boolean isTransitioning = false;
 
         public MenuPanel() {
             uiElements = new ArrayList<>();
@@ -295,44 +296,44 @@ public class GameModeMenu extends JFrame {
         }
 
         public void startGame() {
+            if (isTransitioning) {
+                return;
+            }
             long currentTime = System.currentTimeMillis();
             if (currentTime - lastClickTime < CLICK_COOLDOWN) {
                 return;
             }
             lastClickTime = currentTime;
+            isTransitioning = true;
 
             JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+            parentFrame.setEnabled(false);
 
             SwingUtilities.invokeLater(() -> {
                 GameLobbyMenu gameLobbyMenu = new GameLobbyMenu();
                 gameLobbyMenu.setVisible(true);
-
-                javax.swing.Timer timer = new javax.swing.Timer(100, _ -> {
-                    parentFrame.dispose();
-                });
-                timer.setRepeats(false);
-                timer.start();
+                parentFrame.dispose();
             });
         }
 
         public void backToMainMenu() {
+            if (isTransitioning) {
+                return;
+            }
             long currentTime = System.currentTimeMillis();
             if (currentTime - lastClickTime < CLICK_COOLDOWN) {
                 return;
             }
             lastClickTime = currentTime;
+            isTransitioning = true;
 
             JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+            parentFrame.setEnabled(false);
 
             SwingUtilities.invokeLater(() -> {
                 MainMenu mainMenu = new MainMenu();
                 mainMenu.setVisible(true);
-
-                javax.swing.Timer timer = new javax.swing.Timer(100, _ -> {
-                    parentFrame.dispose();
-                });
-                timer.setRepeats(false);
-                timer.start();
+                parentFrame.dispose();
             });
         }
     }
