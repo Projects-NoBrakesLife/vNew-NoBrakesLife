@@ -162,7 +162,7 @@ public class GameConfig {
 
         // ===== ตั้งค่าเกม =====
         public static final int MAX_PLAYERS = 3; // จำนวนผู้เล่นสูงสุด
-        public static final int MIN_PLAYERS_TO_START = 4; // จำนวนผู้เล่นขั้นต่ำในการเริ่มเกม
+        public static final int MIN_PLAYERS_TO_START = 3; // จำนวนผู้เล่นขั้นต่ำในการเริ่มเกม
         public static final int MAX_TURNS = 2; // จำนวนเทิร์นทั้งหมด (สัปดาห์)
         public static final int TURN_HEALTH_PENALTY = 55; // สุขภาพที่ลดลงทุกเทิร์น
 

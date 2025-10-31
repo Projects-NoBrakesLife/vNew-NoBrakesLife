@@ -72,6 +72,8 @@ public class MainMenu extends JFrame {
         private boolean isMousePressed = false;
         private boolean isHoveringButton = false;
         private boolean wasHoveringButton = false;
+        private long lastClickTime = 0;
+        private static final long CLICK_COOLDOWN = 500;
 
         public MenuPanel() {
             uiElements = new ArrayList<>();
@@ -406,6 +408,12 @@ public class MainMenu extends JFrame {
         }
 
         public void startGame() {
+            long currentTime = System.currentTimeMillis();
+            if (currentTime - lastClickTime < CLICK_COOLDOWN) {
+                return;
+            }
+            lastClickTime = currentTime;
+
             JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
 
             SwingUtilities.invokeLater(() -> {
@@ -421,6 +429,12 @@ public class MainMenu extends JFrame {
         }
 
         public void openSettings() {
+            long currentTime = System.currentTimeMillis();
+            if (currentTime - lastClickTime < CLICK_COOLDOWN) {
+                return;
+            }
+            lastClickTime = currentTime;
+
             JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
 
             SwingUtilities.invokeLater(() -> {
@@ -436,6 +450,12 @@ public class MainMenu extends JFrame {
         }
 
         public void openAbout() {
+            long currentTime = System.currentTimeMillis();
+            if (currentTime - lastClickTime < CLICK_COOLDOWN) {
+                return;
+            }
+            lastClickTime = currentTime;
+
             JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
 
             SwingUtilities.invokeLater(() -> {

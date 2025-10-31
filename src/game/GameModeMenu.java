@@ -71,6 +71,8 @@ public class GameModeMenu extends JFrame {
         private boolean isMousePressed = false;
         private boolean isHoveringButton = false;
         private boolean wasHoveringButton = false;
+        private long lastClickTime = 0;
+        private static final long CLICK_COOLDOWN = 500;
 
         public MenuPanel() {
             uiElements = new ArrayList<>();
@@ -135,7 +137,7 @@ public class GameModeMenu extends JFrame {
                         if (!"back_icon".equals(buttonId)) {
                             boolean isHovering = element.contains(mousePosition.x, mousePosition.y);
                             element.setHovered(isHovering);
-                            
+
                             if (isHovering) {
                                 isHoveringButton = true;
                             }
@@ -176,25 +178,29 @@ public class GameModeMenu extends JFrame {
         }
 
         public static void loadMenuElements(MenuPanel panel) {
-            MenuElement img = new MenuElement(MenuElement.ElementType.IMAGE, "assets\\ui\\plays\\cards\\Hand-Held.png", -93.0, -41.0, 606.2, 342.4);
+            MenuElement img = new MenuElement(MenuElement.ElementType.IMAGE, "assets\\ui\\plays\\cards\\Hand-Held.png",
+                    -93.0, -41.0, 606.2, 342.4);
             panel.addElement(img);
-            
-            MenuElement img2 = new MenuElement(MenuElement.ElementType.IMAGE, "assets\\ui\\plays\\cards\\Pony-Runman.png", 1084.0, -247.0, 1152.0, 1182.0);
+
+            MenuElement img2 = new MenuElement(MenuElement.ElementType.IMAGE,
+                    "assets\\ui\\plays\\cards\\Pony-Runman.png", 1084.0, -247.0, 1152.0, 1182.0);
             panel.addElement(img2);
-            
-            MenuElement img3 = new MenuElement(MenuElement.ElementType.IMAGE, "assets\\ui\\plays\\cards\\2.png", 1209.0, 207.6, 373.3, 571.2);
+
+            MenuElement img3 = new MenuElement(MenuElement.ElementType.IMAGE, "assets\\ui\\plays\\cards\\2.png", 1209.0,
+                    207.6, 373.3, 571.2);
             panel.addElement(img3);
-            
-            MenuElement img4 = new MenuElement(MenuElement.ElementType.IMAGE, 
-                "assets\\ui\\plays\\cards\\3.png", 
-                797.0, 205.3, 376.4, 575.8,
-                "play_online",
-                () -> panel.startGame());
+
+            MenuElement img4 = new MenuElement(MenuElement.ElementType.IMAGE,
+                    "assets\\ui\\plays\\cards\\3.png",
+                    797.0, 205.3, 376.4, 575.8,
+                    "play_online",
+                    () -> panel.startGame());
             img4.setUseScaleEffect(true);
             img4.setHoverImage(null);
             panel.addElement(img4);
 
-            MenuElement img5 = new MenuElement(MenuElement.ElementType.IMAGE, "assets\\ui\\plays\\cards\\1.png", 388.0, 205.9, 375.5, 574.6);
+            MenuElement img5 = new MenuElement(MenuElement.ElementType.IMAGE, "assets\\ui\\plays\\cards\\1.png", 388.0,
+                    205.9, 375.5, 574.6);
             panel.addElement(img5);
 
             MenuElement textOnline = new MenuElement("เล่นออนไลน์", 839.7, 725.0, 55);
@@ -228,7 +234,6 @@ public class GameModeMenu extends JFrame {
                     () -> panel.backToMainMenu());
             panel.addElement(backIcon);
         }
-        
 
         @Override
         public void mouseMoved(MouseEvent e) {
@@ -241,7 +246,8 @@ public class GameModeMenu extends JFrame {
             if (e.getButton() == MouseEvent.BUTTON1) {
                 Point p = e.getPoint();
                 for (MenuElement element : uiElements) {
-                    if (element.getType() == MenuElement.ElementType.IMAGE && element.contains(p.x, p.y) && element.getButtonId() != null) {
+                    if (element.getType() == MenuElement.ElementType.IMAGE && element.contains(p.x, p.y)
+                            && element.getButtonId() != null) {
                         playClickSound();
                         element.executeAction();
                         return;
@@ -289,6 +295,12 @@ public class GameModeMenu extends JFrame {
         }
 
         public void startGame() {
+            long currentTime = System.currentTimeMillis();
+            if (currentTime - lastClickTime < CLICK_COOLDOWN) {
+                return;
+            }
+            lastClickTime = currentTime;
+
             JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
 
             SwingUtilities.invokeLater(() -> {
@@ -304,6 +316,12 @@ public class GameModeMenu extends JFrame {
         }
 
         public void backToMainMenu() {
+            long currentTime = System.currentTimeMillis();
+            if (currentTime - lastClickTime < CLICK_COOLDOWN) {
+                return;
+            }
+            lastClickTime = currentTime;
+
             JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
 
             SwingUtilities.invokeLater(() -> {
@@ -319,4 +337,3 @@ public class GameModeMenu extends JFrame {
         }
     }
 }
-

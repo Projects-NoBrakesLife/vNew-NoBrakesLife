@@ -74,12 +74,15 @@ public class GameLobbyMenu extends JFrame {
         private boolean isMousePressed = false;
         private boolean isHoveringButton = false;
         private boolean wasHoveringButton = false;
-        
+        private long lastClickTime = 0;
+        private static final long CLICK_COOLDOWN = 500;
+
         private MenuElement player1Text, player2Text, player3Text, player4Text, playerCountText;
         private MenuElement player1Img, player2Img, player3Img, player4Img;
         private MenuElement player1Icon, player2Icon, player3Icon, player4Icon;
-        
-        private MenuElement connectionErrorText, ipInputField, ipInputText, connectButton, connectButtonText, priceTagBg;
+
+        private MenuElement connectionErrorText, ipInputField, ipInputText, connectButton, connectButtonText,
+                priceTagBg;
         private javax.swing.JTextField ipTextField;
         private boolean showConnectionUI = false;
 
@@ -92,10 +95,11 @@ public class GameLobbyMenu extends JFrame {
             addMouseListener(this);
             addMouseMotionListener(this);
             loadMenuElements(this);
-            
+
             NetworkManager.getInstance().setLobbyMenu(GameLobbyMenu.this);
             if (!NetworkManager.getInstance().isConnected()) {
-                boolean connected = NetworkManager.getInstance().connect(GameConfig.getServerHost(), GameConfig.SERVER_PORT);
+                boolean connected = NetworkManager.getInstance().connect(GameConfig.getServerHost(),
+                        GameConfig.SERVER_PORT);
                 if (!connected) {
                     showConnectionUI = true;
                     if (playerCountText != null) {
@@ -163,20 +167,19 @@ public class GameLobbyMenu extends JFrame {
                             if (!"back_icon".equals(buttonId)) {
                                 boolean isHovering = element.contains(mousePosition.x, mousePosition.y);
                                 element.setHovered(isHovering);
-                                
-                                
+
                                 if (isHovering) {
                                     isHoveringButton = true;
                                 }
                             } else {
                                 element.setHovered(false);
                             }
-                        } else if (element == menuPanel.player1Img || element == menuPanel.player2Img || 
-                                   element == menuPanel.player3Img || element == menuPanel.player4Img) {
+                        } else if (element == menuPanel.player1Img || element == menuPanel.player2Img ||
+                                element == menuPanel.player3Img || element == menuPanel.player4Img) {
                             if (element.getVisibility()) {
                                 boolean isHovering = element.contains(mousePosition.x, mousePosition.y);
                                 element.setHovered(isHovering);
-                                
+
                                 if (isHovering) {
                                     isHoveringButton = true;
                                 }
@@ -218,52 +221,74 @@ public class GameLobbyMenu extends JFrame {
         }
 
         public static void loadMenuElements(MenuPanel panel) {
-            MenuElement img1 = new MenuElement(MenuElement.ElementType.IMAGE, "assets" + File.separator + "ui" + File.separator + "joins" + File.separator + "Computer-Crappy.png", 26.0, 293.0, 524.5, 481.4);
+            MenuElement img1 = new MenuElement(MenuElement.ElementType.IMAGE, "assets" + File.separator + "ui"
+                    + File.separator + "joins" + File.separator + "Computer-Crappy.png", 26.0, 293.0, 524.5, 481.4);
             panel.addElement(img1);
-            
-            MenuElement img2 = new MenuElement(MenuElement.ElementType.IMAGE, "assets" + File.separator + "ui" + File.separator + "joins" + File.separator + "CD.png", 1496.0, 10.0, 774.7, 774.7);
+
+            MenuElement img2 = new MenuElement(MenuElement.ElementType.IMAGE,
+                    "assets" + File.separator + "ui" + File.separator + "joins" + File.separator + "CD.png", 1496.0,
+                    10.0, 774.7, 774.7);
             panel.addElement(img2);
-            
-            panel.player1Img = new MenuElement(MenuElement.ElementType.IMAGE, "assets" + File.separator + "ui" + File.separator + "joins" + File.separator + "1.png", 420.0, 479.0, 245.9, 245.9);
+
+            panel.player1Img = new MenuElement(MenuElement.ElementType.IMAGE,
+                    "assets" + File.separator + "ui" + File.separator + "joins" + File.separator + "1.png", 420.0,
+                    479.0, 245.9, 245.9);
             panel.player1Img.setVisibility(false);
             panel.player1Img.setUseScaleEffect(true);
             panel.addElement(panel.player1Img);
-            
-            panel.player2Img = new MenuElement(MenuElement.ElementType.IMAGE, "assets" + File.separator + "ui" + File.separator + "joins" + File.separator + "2.png", 693.0, 479.0, 245.8, 245.8);
+
+            panel.player2Img = new MenuElement(MenuElement.ElementType.IMAGE,
+                    "assets" + File.separator + "ui" + File.separator + "joins" + File.separator + "2.png", 693.0,
+                    479.0, 245.8, 245.8);
             panel.player2Img.setVisibility(false);
             panel.player2Img.setUseScaleEffect(true);
             panel.addElement(panel.player2Img);
-            
-            panel.player3Img = new MenuElement(MenuElement.ElementType.IMAGE, "assets" + File.separator + "ui" + File.separator + "joins" + File.separator + "3.png", 971.0, 478.1, 247.6, 247.6);
+
+            panel.player3Img = new MenuElement(MenuElement.ElementType.IMAGE,
+                    "assets" + File.separator + "ui" + File.separator + "joins" + File.separator + "3.png", 971.0,
+                    478.1, 247.6, 247.6);
             panel.player3Img.setVisibility(false);
             panel.player3Img.setUseScaleEffect(true);
             panel.addElement(panel.player3Img);
-            
-            panel.player4Img = new MenuElement(MenuElement.ElementType.IMAGE, "assets" + File.separator + "ui" + File.separator + "joins" + File.separator + "4.png", 1255.0, 479.3, 245.3, 245.3);
+
+            panel.player4Img = new MenuElement(MenuElement.ElementType.IMAGE,
+                    "assets" + File.separator + "ui" + File.separator + "joins" + File.separator + "4.png", 1255.0,
+                    479.3, 245.3, 245.3);
             panel.player4Img.setVisibility(false);
             panel.player4Img.setUseScaleEffect(true);
             panel.addElement(panel.player4Img);
-            
-            panel.player1Icon = new MenuElement(MenuElement.ElementType.IMAGE, "assets" + File.separator + "ui" + File.separator + "joins" + File.separator + "Icon-Attribute-Score.png", 550.5, 366.0, 193.2, 193.2);
+
+            panel.player1Icon = new MenuElement(MenuElement.ElementType.IMAGE, "assets" + File.separator + "ui"
+                    + File.separator + "joins" + File.separator + "Icon-Attribute-Score.png", 550.5, 366.0, 193.2,
+                    193.2);
             panel.player1Icon.setVisibility(false);
             panel.addElement(panel.player1Icon);
-            
-            panel.player2Icon = new MenuElement(MenuElement.ElementType.IMAGE, "assets" + File.separator + "ui" + File.separator + "joins" + File.separator + "Icon-Attribute-Score.png", 828.0, 364.3, 196.5, 196.5);
+
+            panel.player2Icon = new MenuElement(MenuElement.ElementType.IMAGE, "assets" + File.separator + "ui"
+                    + File.separator + "joins" + File.separator + "Icon-Attribute-Score.png", 828.0, 364.3, 196.5,
+                    196.5);
             panel.player2Icon.setVisibility(false);
             panel.addElement(panel.player2Icon);
-            
-            panel.player3Icon = new MenuElement(MenuElement.ElementType.IMAGE, "assets" + File.separator + "ui" + File.separator + "joins" + File.separator + "Icon-Attribute-Score.png", 1112.0, 378.4, 195.0, 195.0);
+
+            panel.player3Icon = new MenuElement(MenuElement.ElementType.IMAGE, "assets" + File.separator + "ui"
+                    + File.separator + "joins" + File.separator + "Icon-Attribute-Score.png", 1112.0, 378.4, 195.0,
+                    195.0);
             panel.player3Icon.setVisibility(false);
             panel.addElement(panel.player3Icon);
-            
-            panel.player4Icon = new MenuElement(MenuElement.ElementType.IMAGE, "assets" + File.separator + "ui" + File.separator + "joins" + File.separator + "Icon-Attribute-Score.png", 1402.0, 379.0, 193.8, 193.8);
+
+            panel.player4Icon = new MenuElement(MenuElement.ElementType.IMAGE, "assets" + File.separator + "ui"
+                    + File.separator + "joins" + File.separator + "Icon-Attribute-Score.png", 1402.0, 379.0, 193.8,
+                    193.8);
             panel.player4Icon.setVisibility(false);
             panel.addElement(panel.player4Icon);
-            
-            MenuElement img7 = new MenuElement(MenuElement.ElementType.IMAGE, "assets" + File.separator + "ui" + File.separator + "button" + File.separator + "Button-Medium-Gray.png", 693.0, 784.7, 540.0, 195.0);
+
+            MenuElement img7 = new MenuElement(MenuElement.ElementType.IMAGE, "assets" + File.separator + "ui"
+                    + File.separator + "button" + File.separator + "Button-Medium-Gray.png", 693.0, 784.7, 540.0,
+                    195.0);
             panel.addElement(img7);
-            
-            MenuElement img8 = new MenuElement(MenuElement.ElementType.IMAGE, "assets" + File.separator + "ui" + File.separator + "joins" + File.separator + "QuestNotepad_Small.png", 529.1, 66.0, 861.8, 312.4);
+
+            MenuElement img8 = new MenuElement(MenuElement.ElementType.IMAGE, "assets" + File.separator + "ui"
+                    + File.separator + "joins" + File.separator + "QuestNotepad_Small.png", 529.1, 66.0, 861.8, 312.4);
             panel.addElement(img8);
             MenuElement welcomeText = new MenuElement("ยินดีต้อนรับ", 600.0 + (0.1 * 1920), 210.0, 42);
             welcomeText.setTextColor(new Color(30, 30, 40));
@@ -272,27 +297,27 @@ public class GameLobbyMenu extends JFrame {
             MenuElement infoText = new MenuElement(infoLine, 540.0 + (0.1 * 1920), 270.0, 28);
             infoText.setTextColor(new Color(30, 30, 40));
             panel.addElement(infoText);
-            
+
             panel.player1Text = new MenuElement("", 473.9, 530.0, 32);
             panel.player1Text.setVisibility(false);
             panel.player1Text.setTextColor(new Color(30, 30, 40));
             panel.addElement(panel.player1Text);
-            
+
             panel.player2Text = new MenuElement("", 746.9, 530.0, 32);
             panel.player2Text.setVisibility(false);
             panel.player2Text.setTextColor(new Color(30, 30, 40));
             panel.addElement(panel.player2Text);
-            
+
             panel.player3Text = new MenuElement("", 1025.8, 530.0, 32);
             panel.player3Text.setVisibility(false);
             panel.player3Text.setTextColor(new Color(30, 30, 40));
             panel.addElement(panel.player3Text);
-            
+
             panel.player4Text = new MenuElement("", 1308.6, 530.0, 32);
             panel.player4Text.setVisibility(false);
             panel.player4Text.setTextColor(new Color(30, 30, 40));
             panel.addElement(panel.player4Text);
-            
+
             panel.playerCountText = new MenuElement("กำลังโหลด...", 828.0, 893.0, 50);
             panel.addElement(panel.playerCountText);
 
@@ -314,19 +339,22 @@ public class GameLobbyMenu extends JFrame {
                     "back_icon",
                     () -> panel.backToGameMode());
             panel.addElement(backIcon);
-            
-            panel.priceTagBg = new MenuElement(MenuElement.ElementType.IMAGE, "assets" + File.separator + "ui" + File.separator + "icon" + File.separator + "Price Tag Background.png", 1012.5, 611.8, 260.0, 80.0);
+
+            panel.priceTagBg = new MenuElement(MenuElement.ElementType.IMAGE, "assets" + File.separator + "ui"
+                    + File.separator + "icon" + File.separator + "Price Tag Background.png", 1012.5, 611.8, 260.0,
+                    80.0);
             panel.priceTagBg.setVisibility(false);
             panel.addElement(panel.priceTagBg);
-            
+
             panel.connectButtonText = new MenuElement("เชื่อมต่อ", 1069.0, 663.0, 41);
             panel.connectButtonText.setVisibility(false);
             panel.connectButtonText.setTextColor(new Color(30, 30, 40));
             panel.addElement(panel.connectButtonText);
-            
+
             panel.connectButton = new MenuElement(
                     MenuElement.ElementType.IMAGE,
-                    "assets" + File.separator + "ui" + File.separator + "icon" + File.separator + "Icon-Settings-Controller #42393.png",
+                    "assets" + File.separator + "ui" + File.separator + "icon" + File.separator
+                            + "Icon-Settings-Controller #42393.png",
                     866.7, 594.0, 186.7, 115.6,
                     "connect_button",
                     () -> panel.handleConnect());
@@ -334,26 +362,29 @@ public class GameLobbyMenu extends JFrame {
             panel.connectButton.setUseScaleEffect(true);
             panel.connectButton.setUseRotationEffect(true);
             panel.addElement(panel.connectButton);
-            
-            panel.ipInputField = new MenuElement(MenuElement.ElementType.IMAGE, "assets" + File.separator + "ui" + File.separator + "Input-Field-Small-White_0.png",  677.5, 485.0, 565.0, 94.1);
+
+            panel.ipInputField = new MenuElement(MenuElement.ElementType.IMAGE,
+                    "assets" + File.separator + "ui" + File.separator + "Input-Field-Small-White_0.png", 677.5, 485.0,
+                    565.0, 94.1);
             panel.ipInputField.setVisibility(false);
             panel.addElement(panel.ipInputField);
-            
+
             panel.ipInputText = new MenuElement("10.10.10.10", 900.5, 551.0, 58);
             panel.ipInputText.setVisibility(false);
             panel.ipInputText.setTextColor(new Color(30, 30, 40));
             panel.addElement(panel.ipInputText);
-            
-            panel.connectionErrorText = new MenuElement("โปรดเชื่อมต่อเชิฟเวอร์ให้ถูกต้อง กรอก IP ด้านล่าง", 613.5, 447.0, 32);
+
+            panel.connectionErrorText = new MenuElement("โปรดเชื่อมต่อเชิฟเวอร์ให้ถูกต้อง กรอก IP ด้านล่าง", 613.5,
+                    447.0, 32);
             panel.connectionErrorText.setVisibility(false);
-          
+
             panel.addElement(panel.connectionErrorText);
         }
-        
+
         private void setupConnectionUI() {
             if (ipTextField == null) {
                 ipTextField = new javax.swing.JTextField(GameConfig.getServerHost());
-                ipTextField.setBounds((int)777.5, (int)485.0, 565, 94);
+                ipTextField.setBounds((int) 777.5, (int) 485.0, 565, 94);
                 ipTextField.setFont(FontManager.getThaiFont(Font.PLAIN, 58));
                 ipTextField.setBackground(new Color(255, 255, 255, 0));
                 ipTextField.setForeground(new Color(30, 30, 40));
@@ -363,49 +394,60 @@ public class GameLobbyMenu extends JFrame {
                 add(ipTextField);
             } else {
                 ipTextField.setText(GameConfig.getServerHost());
-                ipTextField.setBounds((int)777.5, (int)485.0, 565, 94);
+                ipTextField.setBounds((int) 777.5, (int) 485.0, 565, 94);
                 ipTextField.setVisible(showConnectionUI);
             }
-            
-            if (connectionErrorText != null) connectionErrorText.setVisibility(showConnectionUI);
+
+            if (connectionErrorText != null)
+                connectionErrorText.setVisibility(showConnectionUI);
             if (ipInputField != null) {
                 ipInputField.setVisibility(showConnectionUI);
-                
+
             }
             if (ipInputText != null) {
                 ipInputText.setVisibility(false);
             }
-            if (connectButton != null) connectButton.setVisibility(showConnectionUI);
-            if (connectButtonText != null) connectButtonText.setVisibility(showConnectionUI);
-            if (priceTagBg != null) priceTagBg.setVisibility(showConnectionUI);
-            
+            if (connectButton != null)
+                connectButton.setVisibility(showConnectionUI);
+            if (connectButtonText != null)
+                connectButtonText.setVisibility(showConnectionUI);
+            if (priceTagBg != null)
+                priceTagBg.setVisibility(showConnectionUI);
+
             if (playerCountText != null) {
                 playerCountText.setText("ไม่พบเซิร์ฟเวอร์");
                 playerCountText.setVisibility(true);
             }
-            
+
             repaint();
         }
-        
+
         private void hideConnectionUI() {
-            if (connectionErrorText != null) connectionErrorText.setVisibility(false);
-            if (ipInputField != null) ipInputField.setVisibility(false);
-            if (ipInputText != null) ipInputText.setVisibility(false);
-            if (ipTextField != null) ipTextField.setVisible(false);
-            if (connectButton != null) connectButton.setVisibility(false);
-            if (connectButtonText != null) connectButtonText.setVisibility(false);
-            if (priceTagBg != null) priceTagBg.setVisibility(false);
+            if (connectionErrorText != null)
+                connectionErrorText.setVisibility(false);
+            if (ipInputField != null)
+                ipInputField.setVisibility(false);
+            if (ipInputText != null)
+                ipInputText.setVisibility(false);
+            if (ipTextField != null)
+                ipTextField.setVisible(false);
+            if (connectButton != null)
+                connectButton.setVisibility(false);
+            if (connectButtonText != null)
+                connectButtonText.setVisibility(false);
+            if (priceTagBg != null)
+                priceTagBg.setVisibility(false);
             repaint();
         }
-        
+
         private void handleConnect() {
             String ipAddress = ipTextField != null ? ipTextField.getText().trim() : GameConfig.getServerHost();
             if (ipAddress.isEmpty()) {
                 ipAddress = "localhost";
             }
-            
+
             NetworkManager.getInstance().disconnect();
-            
+
             boolean connected = false;
             try {
                 connected = NetworkManager.getInstance().connect(ipAddress, GameConfig.SERVER_PORT);
@@ -413,7 +455,7 @@ public class GameLobbyMenu extends JFrame {
                 System.err.println("=== Connection error: " + e.getMessage() + " ===");
                 connected = false;
             }
-            
+
             if (connected) {
                 GameConfig.setServerHost(ipAddress);
                 showConnectionUI = false;
@@ -430,7 +472,7 @@ public class GameLobbyMenu extends JFrame {
                 }
                 setupConnectionUI();
             }
-            
+
             repaint();
         }
 
@@ -445,13 +487,14 @@ public class GameLobbyMenu extends JFrame {
             if (e.getButton() == MouseEvent.BUTTON1) {
                 Point p = e.getPoint();
                 for (MenuElement element : uiElements) {
-                    if (element.getType() == MenuElement.ElementType.IMAGE && element.contains(p.x, p.y) && element.getButtonId() != null) {
+                    if (element.getType() == MenuElement.ElementType.IMAGE && element.contains(p.x, p.y)
+                            && element.getButtonId() != null) {
                         playClickSound();
                         element.executeAction();
                         return;
                     }
                 }
-                
+
                 if (ipTextField != null && showConnectionUI) {
                     if (ipTextField.contains(p.x, p.y)) {
                         ipTextField.requestFocus();
@@ -499,15 +542,21 @@ public class GameLobbyMenu extends JFrame {
         }
 
         public void startGame() {
+            long currentTime = System.currentTimeMillis();
+            if (currentTime - lastClickTime < CLICK_COOLDOWN) {
+                return;
+            }
+            lastClickTime = currentTime;
+
             JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
 
             SoundManager.getInstance().stopBackgroundMusic();
 
             SwingUtilities.invokeLater(() -> {
-            
+
                 boolean isOnlineMode = NetworkManager.getInstance().isConnected();
                 System.out.println("=== GameLobbyMenu: Starting game in online mode: " + isOnlineMode + " ===");
-                
+
                 GameWindow gameWindow = new GameWindow(isOnlineMode);
                 gameWindow.setVisible(true);
 
@@ -520,8 +569,14 @@ public class GameLobbyMenu extends JFrame {
         }
 
         public void backToGameMode() {
+            long currentTime = System.currentTimeMillis();
+            if (currentTime - lastClickTime < CLICK_COOLDOWN) {
+                return;
+            }
+            lastClickTime = currentTime;
+
             JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
-            
+
             NetworkManager.getInstance().disconnect();
 
             SwingUtilities.invokeLater(() -> {
@@ -535,16 +590,16 @@ public class GameLobbyMenu extends JFrame {
                 timer.start();
             });
         }
-        
+
     }
-    
+
     public void showGameStartedMessage() {
         if (menuPanel != null && menuPanel.playerCountText != null) {
             menuPanel.playerCountText.setText("เกมเริ่มไปแล้ว...");
             menuPanel.repaint();
         }
     }
-    
+
     public void showConnectionError() {
         if (menuPanel != null) {
             menuPanel.showConnectionUI = true;
@@ -556,81 +611,83 @@ public class GameLobbyMenu extends JFrame {
             menuPanel.repaint();
         }
     }
-    
+
     public void updateLobbyInfo(List<PlayerInfo> players) {
         System.out.println("=== GameLobbyMenu: updateLobbyInfo called with " + players.size() + " players ===");
         for (PlayerInfo p : players) {
-            System.out.println("  Player " + p.playerId + ": " + p.playerName + " - " + (p.isConnected ? "CONNECTED" : "DISCONNECTED"));
+            System.out.println("  Player " + p.playerId + ": " + p.playerName + " - "
+                    + (p.isConnected ? "CONNECTED" : "DISCONNECTED"));
         }
         SwingUtilities.invokeLater(() -> {
             if (menuPanel != null) {
                 int connectedCount = 0;
                 int localPlayerId = NetworkManager.getInstance().getPlayerId();
-                System.out.println("=== GameLobbyMenu: menuPanel is not null, updating UI, localPlayerId=" + localPlayerId + " ===");
-                
+                System.out.println("=== GameLobbyMenu: menuPanel is not null, updating UI, localPlayerId="
+                        + localPlayerId + " ===");
+
                 for (int i = 0; i < 4; i++) {
                     MenuElement imgElement = null;
                     MenuElement textElement = null;
                     MenuElement iconElement = null;
-                    
+
                     switch (i) {
-                        case 0: 
+                        case 0:
                             imgElement = menuPanel.player1Img;
-                            textElement = menuPanel.player1Text; 
+                            textElement = menuPanel.player1Text;
                             iconElement = menuPanel.player1Icon;
                             break;
-                        case 1: 
+                        case 1:
                             imgElement = menuPanel.player2Img;
-                            textElement = menuPanel.player2Text; 
+                            textElement = menuPanel.player2Text;
                             iconElement = menuPanel.player2Icon;
                             break;
-                        case 2: 
+                        case 2:
                             imgElement = menuPanel.player3Img;
-                            textElement = menuPanel.player3Text; 
+                            textElement = menuPanel.player3Text;
                             iconElement = menuPanel.player3Icon;
                             break;
-                        case 3: 
+                        case 3:
                             imgElement = menuPanel.player4Img;
-                            textElement = menuPanel.player4Text; 
+                            textElement = menuPanel.player4Text;
                             iconElement = menuPanel.player4Icon;
                             break;
                     }
-                    
+
                     boolean isConnected = (i < players.size() && players.get(i).isConnected);
                     boolean isLocalPlayer = (i + 1 == localPlayerId);
-                    
+
                     if (imgElement != null) {
                         imgElement.setVisibility(isConnected);
                     }
-                    
+
                     if (iconElement != null) {
                         iconElement.setVisibility(isLocalPlayer && isConnected);
                     }
-                    
+
                     if (textElement != null) {
                         if (isConnected) {
                             textElement.setText("Player_" + (i + 1));
                             textElement.setTextColor(new Color(30, 30, 40));
                             textElement.setVisibility(true);
                             connectedCount++;
-                            System.out.println("Slot " + (i+1) + ": Set text to Player_" + (i + 1));
+                            System.out.println("Slot " + (i + 1) + ": Set text to Player_" + (i + 1));
                         } else {
                             textElement.setText("");
                             textElement.setVisibility(false);
                         }
                     }
                 }
-                
+
                 if (menuPanel.playerCountText != null) {
                     menuPanel.playerCountText.setText("รอผู้เล่น " + connectedCount + "/" + GameConfig.MAX_PLAYERS);
                     menuPanel.playerCountText.setVisibility(true);
                 }
-                
+
                 if (connectedCount > 0) {
                     menuPanel.showConnectionUI = false;
                     menuPanel.hideConnectionUI();
                 }
-                
+
                 menuPanel.repaint();
                 System.out.println("=== GameLobbyMenu: UI update complete, called repaint() ===");
             } else {
@@ -638,9 +695,8 @@ public class GameLobbyMenu extends JFrame {
             }
         });
     }
-    
+
     public void startGame() {
         menuPanel.startGame();
     }
 }
-

@@ -13,6 +13,8 @@ public class AboutMenu extends JFrame {
             + "Score-Screen-Background.png";
 
     private AboutPanel aboutPanel;
+    private long lastBackClickTime = 0;
+    private static final long CLICK_COOLDOWN = 500;
 
     public AboutMenu() {
         initializeWindow();
@@ -83,6 +85,8 @@ public class AboutMenu extends JFrame {
         private boolean isMousePressed = false;
         private boolean isHoveringButton = false;
         private boolean wasHoveringButton = false;
+        private long lastClickTime = 0;
+        private static final long CLICK_COOLDOWN = 500;
 
         public AboutPanel() {
             uiElements = new ArrayList<>();
@@ -290,6 +294,12 @@ public class AboutMenu extends JFrame {
         }
 
         public void backToMainMenu() {
+            long currentTime = System.currentTimeMillis();
+            if (currentTime - lastClickTime < CLICK_COOLDOWN) {
+                return;
+            }
+            lastClickTime = currentTime;
+
             SwingUtilities.invokeLater(() -> {
                 MainMenu mainMenu = new MainMenu();
                 mainMenu.setVisible(true);
@@ -304,6 +314,12 @@ public class AboutMenu extends JFrame {
     }
 
     public void backToMainMenuStatic() {
+        long currentTime = System.currentTimeMillis();
+        if (currentTime - lastBackClickTime < CLICK_COOLDOWN) {
+            return;
+        }
+        lastBackClickTime = currentTime;
+
         SwingUtilities.invokeLater(() -> {
             MainMenu mainMenu = new MainMenu();
             mainMenu.setVisible(true);
